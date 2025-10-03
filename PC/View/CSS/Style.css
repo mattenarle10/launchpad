@@ -1,0 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+*
+{
+    padding: 0;
+    margin: 0;
+    font-family: 'Poppins';
+}
+
+body
+{
+    background-color: #F0F3FA;
+}
+
+/* LOGO */
+
+.Container
+{
+    position: absolute;
+    left: 15%;
+    top: 32%;
+    font-size: 25px;
+    display: flex;
+    gap: 15px;
+}
+
+.Container img
+{
+    width: 600px;
+}
+
+.Container2
+{
+    position: absolute;
+    left: 25%;
+    top: 55%;
+    font-size: 25px;
+    display: flex;
+    gap: 15px;
+}
+
+.Container2 h1
+{
+    color: #395886;
+    font-size: 30px;
+}
+
+/* LOGIN FORM */
+
+.Login_Form
+{
+    width: 400px;
+    height: 480px;
+    position: absolute;
+    top: 30%;
+    left: 60%;
+    background-color: #395886;
+    border-radius: 30px;
+}
+
+.Box h2
+{
+    text-align: center;
+    color: #F0F3FA;
+    margin-top: 50px;
+    margin-bottom: 20px;
+}
+
+.Box a
+{
+    display: inline-block;
+    color: #F0F3FA;
+    text-decoration: none;
+    margin-top: 15px;
+    font-weight: bold;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.Box label
+{
+    color: #F0F3FA;
+    margin-left: 30px;
+    font-size: 15px;
+}
+
+.Box input
+{
+    width: 80%;
+    margin: 10px;
+    padding: 18px 18px;
+    margin-top: 18px;
+    margin-left: 21px;
+    border: none;
+    border-radius: 25px;
+    background-color: #F0F3FA;
+    color: #395886;
+    outline: none;
+}
+
+button
+{
+    width: 200px;
+    margin: 30px auto 0;
+    display: block;
+    padding: 11px;
+    border: none;
+    border-radius: 30px;
+    background-image: linear-gradient(to right, #F0F3FA, #B1C9EF);
+    color: #395886;
+    font-size: 20px;
+    font-weight: bold;
+    transition-duration: 0.4s;
+    cursor: pointer;
+}
+
+.error
+{
+    color: #D85656;
+    text-align: center;
+}

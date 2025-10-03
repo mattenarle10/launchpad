@@ -1,0 +1,325 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+*
+{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins';
+}
+
+/* BODY LAYOUT */
+.Body
+{
+    display: flex;
+    height: 100vh;
+}
+
+/* NAV BAR */
+.Sidebar
+{
+    width: 250px;
+    background-color: #B1C9EF;
+    color: white;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* NAV BAR LP LOGO */
+
+.Sidebar .Logo
+{
+    text-align: center;
+    margin-top: 50px;
+    margin-bottom: 20px;
+}
+
+.Sidebar .Logo img
+{
+    width: 200px;
+}
+
+/* NAV BAR CONTENTS */
+
+.Sidebar ul 
+{
+    list-style: none;
+    width: 100%;
+    padding: 0;
+}
+
+.Sidebar ul li 
+{
+    width: 100%;
+    margin: 20px 0;
+}
+
+.Sidebar ul li a 
+{
+    text-decoration: none;
+    color: #395886;
+    display: block;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.Sidebar ul li a:hover
+{
+    background-color: #F0F3FA;
+    border-radius: 35px;
+}
+
+/* PROFILE BUTTON */
+
+.Profile
+{
+    position: relative;
+}
+
+.Profile_Btn
+{
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.Profile_Btn_Logo
+{
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #B1C9EF;
+}
+
+/* DROPDOWN MENU */
+.Drop_Menu
+{
+    position: absolute;
+    top: 60px;
+    right: 0;
+    background: #395886;
+    border-radius: 30px;
+    display: none;
+    flex-direction: column;
+    padding: 30px;
+    height: 400px;
+    width: 255px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.Drop_Menu p
+{
+    color: #F0F3FA;
+    display: block;
+    text-align: center;
+    margin-bottom: 50px;
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.Drop_Menu a
+{
+    color: #395886;
+    text-decoration: none;
+    display: block;
+    background-image: linear-gradient(to right, #8AAEE0, #F0F3FA);
+    padding: 10px;
+    border-radius: 30px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.Profile_Logo
+{
+    width: 100px;
+    height: 100px;
+    display: block;
+    margin: 5px auto 20px;
+    border-radius: 50%;
+    background-color: #F0F3FA;
+}
+
+/* DROPDOWN MENU ACTIVE */
+.show
+{
+    display: flex;
+}
+
+/* MAIN */
+.Main_Content
+{
+    flex-grow: 1;
+    padding: 20px;
+    background-color: #F0F3FA;
+}
+
+header
+{
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px;
+}
+
+/* ADMIN NAME (HEADER TEXT) */
+
+.DB_Header
+{
+    display: flex;
+    gap: 30rem;
+}
+
+.Header_Text
+{
+    display: flex;
+    margin-left: 50px;
+}
+
+.Profile_Pic
+{
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    background-color: #B1C9EF;
+}
+
+.Admin_Name
+{
+    color: #395886;
+    margin-left: 50px;
+    margin-top: 50px;
+}
+
+.Admin_Name h1
+{
+    font-size: 70px;
+}
+
+.Admin_Name h3
+{
+    font-size: 40px;
+}
+
+.Admin_Name p
+{
+    font-size: 30px;
+}
+
+/* DATA */
+
+.DB_Data
+{
+    display: flex;
+    gap: 25px;
+    margin-top: 40px;
+    margin-left: 50px;
+}
+
+.OJT_Students, .Total_Students, .Total_Jobs, .Top_Students
+{
+    color: #395886;
+}
+
+.OJT_Students h1, .Total_Students h1, .Total_Jobs h1, .Top_Students h1
+{
+    font-size: 70px;
+}
+
+/* OJT STUDENTS */
+
+.OJT_Students_Cont
+{
+    background-color: #D5D8E2;
+    height: 200px;
+    width: 350px;
+    border-radius: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.Chart_Legend
+{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-right: 50px;
+}
+
+.Legend_Color
+{
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.Legend_Color.IT
+{
+    background-color: #628ECB;
+}
+
+.Legend_Color.CS
+{
+    background-color: #B1C9EF;
+}
+
+.Legend_Color.EMC
+{
+    background-color: #395886;
+}
+
+/* TOTAL STUDENTS */
+
+.Total_Students_Cont
+{
+    background-color: #D5D8E2;
+    height: 200px;
+    width: 350px;
+    border-radius: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* TOTAL JOB OPPORTUNITIES */
+
+.Total_Jobs_Cont
+{
+    background-color: #D5D8E2;
+    height: 200px;
+    width: 350px;
+    border-radius: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* TOP STUDENTS */
+
+.Top_Students_Cont
+{
+    background-color: #D5D8E2;
+    height: 200px;
+    width: 350px;
+    border-radius: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.Top_Students_Cont li
+{
+    font-size: 17px;
+}

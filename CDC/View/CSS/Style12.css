@@ -1,0 +1,290 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+*
+{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins';
+}
+
+/* BODY LAYOUT */
+.Body
+{
+    display: flex;
+    height: 100vh;
+}
+
+/* NAV BAR */
+.Sidebar
+{
+    width: 250px;
+    background-color: #B1C9EF;
+    color: white;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* NAV BAR LP LOGO */
+
+.Sidebar .Logo
+{
+    text-align: center;
+    margin-top: 50px;
+    margin-bottom: 20px;
+}
+
+.Sidebar .Logo img
+{
+    width: 200px;
+}
+
+/* NAV BAR CONTENTS */
+
+.Sidebar ul 
+{
+    list-style: none;
+    width: 100%;
+    padding: 0;
+}
+
+.Sidebar ul li 
+{
+    width: 100%;
+    margin: 20px 0;
+}
+
+.Sidebar ul li a 
+{
+    text-decoration: none;
+    color: #395886;
+    display: block;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.Sidebar ul li a:hover
+{
+    background-color: #F0F3FA;
+    border-radius: 35px;
+}
+
+/* PROFILE BUTTON */
+
+.Profile
+{
+    position: relative;
+}
+
+.Profile_Btn
+{
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.Profile_Btn_Logo
+{
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #B1C9EF;
+}
+
+/*
+.Profile_Btn_Logo img
+{
+    max-width: 100%;
+    max-height: 100%;
+    width: 50px;
+}
+*/
+
+/* DROPDOWN MENU */
+.Drop_Menu
+{
+    position: absolute;
+    top: 60px;
+    right: 0;
+    background: #395886;
+    border-radius: 30px;
+    display: none;
+    flex-direction: column;
+    padding: 30px;
+    height: 400px;
+    width: 255px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.Drop_Menu p
+{
+    color: #F0F3FA;
+    display: block;
+    text-align: center;
+    margin-bottom: 50px;
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.Drop_Menu a
+{
+    color: #395886;
+    text-decoration: none;
+    display: block;
+    background-image: linear-gradient(to right, #8AAEE0, #F0F3FA);
+    padding: 10px;
+    border-radius: 30px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.Profile_Logo
+{
+    width: 100px;
+    height: 100px;
+    display: block;
+    margin: 5px auto 20px;
+    border-radius: 50%;
+    background-color: #F0F3FA;
+}
+
+.Profile_Logo img
+{
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* DROPDOWN MENU ACTIVE */
+.show
+{
+    display: flex;
+}
+
+/* MAIN */
+.Main_Content
+{
+    flex-grow: 1;
+    padding: 20px;
+    background-color: #F0F3FA;
+}
+
+header
+{
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px;
+}
+
+/* CONTENT */
+
+.Title
+{
+    text-align: center;
+    margin-top: 50px;
+    font-size: 20px;
+    color: #395886;
+}
+
+.Details_Main
+{
+    display: flex;
+    margin-top: 10rem;
+    margin-left: 50px;
+    gap: 10rem;
+}
+
+.Details_Cont
+{
+    margin-top: 50px;
+}
+
+.Details_Cont p
+{
+    color: #628ECB;
+    font-size: 30px;
+}
+
+.Details_Cont strong
+{
+    color: #395886;
+    font-size: 30px;
+}
+
+.Details_Cont2
+{
+    width: 700px;
+    max-width: 1550px;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    background: #D5DEEF;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    align-items: center;
+}
+
+.Details_Cont2 p
+{
+    color: #628ECB;
+    font-size: 30px;
+    margin-top: 10px;
+    margin-bottom: 50px;
+}
+
+.Details_Cont2 strong
+{
+    color: #395886;
+    font-size: 30px;
+}
+
+.Hours_Cont label
+{
+    display: block;
+    margin-top: 10px;
+    font-size: 17px;
+    font-weight: bold;
+    color: #395886;
+}
+
+.Hours_Cont input
+{
+    width: 300px;
+    padding: 20px;
+    margin-top: 10px;
+    border-radius: 30px;
+    border: none;
+    outline: none;
+}
+
+.Hours_Cont input[type="number"]
+{
+    font-size: 15px;
+    font-weight: bold;
+    color: #628ECB;
+}
+
+
+.Hours_Cont button
+{
+    width: 200px;
+    padding: 20px;
+    margin-top: 50px;
+    border: none;
+    border-radius: 30px;
+    background-color: #395886;
+    color: #F0F3FA;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.Hours_Cont button:hover
+{
+    background-color: #628ECB;
+}

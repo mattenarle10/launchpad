@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+*
+{
+    padding: 0;
+    margin: 0;
+    font-family: 'Poppins';
+}
+
+body
+{
+    background-color: #F0F3FA;
+}
+
+/* LOGO */
+
+.Container
+{
+    position: absolute;
+    left: 15%;
+    top: 32%;
+    font-size: 25px;
+    display: flex;
+    gap: 15px;
+}
+
+.Container img
+{
+    width: 700px;
+}
+
+.Container2
+{
+    position: absolute;
+    left: 25%;
+    top: 55%;
+    font-size: 25px;
+    display: flex;
+    gap: 15px;
+}
+
+.Container2 img
+{
+    width: 100px;
+}
+
+.Container2 h1
+{
+    color: #395886;
+    font-size: 30px;
+}
+
+/* SELECTION */
+
+.Form
+{
+    width: 400px;
+    height: 470px;
+    position: absolute;
+    top: 30%;
+    left: 60%;
+}
+
+.CDC, .PC
+{
+    background: linear-gradient(90deg, #31558a, #5784ba);
+    color: #F0F3FA;
+    border-radius: 25px;
+    padding: 25px 40px;
+    width: 350px;
+    text-align: left;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    align-items: center;
+    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.15);
+    gap: 50px;
+}
+
+.CDC
+{
+    margin-bottom: 50px;
+}
+
+.CDC:hover, .PC:hover
+{
+    transform: translateY(-3px);
+}
