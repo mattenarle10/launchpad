@@ -5,7 +5,7 @@ A complete system for managing On-the-Job Training (OJT) for schools, students, 
 ## 📖 What is this?
 
 LaunchPad is a tracking and management system that helps:
-- **Schools** - Monitor student OJT progress and approve companies
+- **Schools(CDC)** - Monitor student OJT progress and approve companies
 - **Students** - Track their training hours, submit reports, and find job opportunities
 - **Companies** - Post job openings, evaluate student performance, and manage OJT trainees
 
