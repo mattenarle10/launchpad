@@ -17,7 +17,7 @@ LaunchPad/
 ├── CDC/            # Career Development Center portal
 ├── PC/             # Program Coordinator portal
 ├── LaunchPad.sql   # Database setup file
-├── mobile-app/     # Flutter mobile app (coming soon!)
+├── launchpad-app/     # Flutter mobile app (coming soon!)
 └── Index.php       # Entry point
 ```
 
