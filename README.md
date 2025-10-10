@@ -117,14 +117,4 @@ This is a school project, so feel free to:
 - File uploads (like student COR, company MOA, profile pics) are stored locally
 - The mobile app will use the same backend as the web app - no separate API needed!
 
-## 📧 Support
-
-Having trouble? Check if:
-- XAMPP Apache and MySQL are running
-- Database is created and imported correctly
-- File paths in the config are correct
-- PHP error reporting is enabled to see error messages
-
 ---
-
-**Built with ❤️ for schools and students**
