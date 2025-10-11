@@ -92,6 +92,12 @@ try {
 
     // Route: /companies
     if ($pathParts[0] === 'companies') {
+        // /companies/register (POST - no auth)
+        if (count($pathParts) === 2 && $pathParts[1] === 'register') {
+            require __DIR__ . '/../routes/companies/register.php';
+            exit;
+        }
+        
         // /companies
         if (count($pathParts) === 1) {
             require __DIR__ . '/../routes/companies/get-all.php';
@@ -114,6 +120,12 @@ try {
             exit;
         }
         
+        // /admin/unverified/companies
+        if (count($pathParts) === 3 && $pathParts[1] === 'unverified' && $pathParts[2] === 'companies') {
+            require __DIR__ . '/../routes/admin/get-unverified-companies.php';
+            exit;
+        }
+        
         // /admin/verify/students/:id
         if (count($pathParts) === 4 && $pathParts[1] === 'verify' && $pathParts[2] === 'students') {
             $id = $pathParts[3];
@@ -121,10 +133,24 @@ try {
             exit;
         }
         
+        // /admin/verify/companies/:id
+        if (count($pathParts) === 4 && $pathParts[1] === 'verify' && $pathParts[2] === 'companies') {
+            $id = $pathParts[3];
+            require __DIR__ . '/../routes/admin/verify-company.php';
+            exit;
+        }
+        
         // /admin/reject/students/:id
         if (count($pathParts) === 4 && $pathParts[1] === 'reject' && $pathParts[2] === 'students') {
             $id = $pathParts[3];
             require __DIR__ . '/../routes/admin/reject-student.php';
+            exit;
+        }
+        
+        // /admin/reject/companies/:id
+        if (count($pathParts) === 4 && $pathParts[1] === 'reject' && $pathParts[2] === 'companies') {
+            $id = $pathParts[3];
+            require __DIR__ . '/../routes/admin/reject-company.php';
             exit;
         }
     }

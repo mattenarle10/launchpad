@@ -18,12 +18,7 @@ if ($user['role'] === ROLE_STUDENT && $user['id'] !== $studentId) {
 
 $conn = Database::getConnection();
 $stmt = $conn->prepare("
-    SELECT s.*, c.name as company_name, c.address as company_address,
-           o.done_hours, o.required_hours
-    FROM verified_students s
-    LEFT JOIN verified_companies c ON s.company_id = c.company_id
-    LEFT JOIN ojt_progress o ON s.student_id = o.student_id
-    WHERE s.student_id = ?
+    SELECT * FROM verified_students WHERE student_id = ?
 ");
 $stmt->bind_param('i', $studentId);
 $stmt->execute();

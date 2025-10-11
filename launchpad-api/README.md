@@ -2,30 +2,43 @@
 
 Modern RESTful API backend for the LaunchPad OJT Tracking System.
 
-## 📁 Structure
+## 📁 Current Structure
 
 ```
 launchpad-api/
 ├── config/
-│   ├── database.php          # Database connection & credentials
-│   └── constants.php          # App-wide constants
-├── src/
-│   ├── Controllers/          # Request handlers
-│   ├── Models/               # Database models
-│   ├── Middleware/           # Auth, CORS, validation
-│   └── Utils/                # Helpers, response formatters
+│   ├── database.php          # Database connection
+│   └── constants.php          # App constants
+├── lib/
+│   ├── response.php           # API response helper
+│   ├── cors.php               # CORS middleware
+│   └── auth.php               # JWT authentication
 ├── routes/
-│   ├── api.php               # Main API routes
-│   ├── auth.php              # Authentication routes
-│   ├── students.php          # Student endpoints
-│   ├── companies.php         # Company endpoints
-│   └── admin.php             # CDC/PC admin endpoints
-├── uploads/                  # File storage (reports, images)
+│   ├── auth/
+│   │   ├── login.php          # User login
+│   │   ├── logout.php         # User logout
+│   │   └── refresh.php        # Refresh token
+│   ├── students/
+│   │   ├── register.php       # Student registration
+│   │   ├── get-all.php        # List all students
+│   │   ├── get-one.php        # Get student profile
+│   │   ├── get-notifications.php
+│   │   ├── get-reports.php
+│   │   └── create-report.php
+│   ├── admin/
+│   │   ├── get-unverified-students.php
+│   │   ├── verify-student.php
+│   │   └── reject-student.php
+│   └── companies/             # Coming soon!
+├── uploads/
+│   ├── student_ids/           # Student ID photos
+│   ├── reports/               # Student reports
+│   └── images/                # Profile pictures
 ├── public/
-│   └── index.php             # Entry point
-├── .htaccess                 # Apache routing
-├── composer.json             # PHP dependencies
-└── database.sql              # Database schema
+│   └── index.php              # Entry point & router
+├── .htaccess                  # Apache routing
+├── database.sql               # Database schema
+└── TEST.md                    # Testing guide
 ```
 
 ## 🛠️ Tech Stack
@@ -37,74 +50,51 @@ launchpad-api/
 
 ## 🚀 Getting Started
 
-1. **Install Dependencies**
-   ```bash
-   cd launchpad-api
-   composer install
-   ```
-
-2. **Configure Database**
-   - Create database: `launchpad_db`
+1. **Import Database**
+   - Open phpMyAdmin: `http://localhost/phpmyadmin`
    - Import `database.sql`
-   - Update credentials in `config/database.php`
 
-3. **Set Permissions**
+2. **Set Permissions**
    ```bash
    chmod -R 777 uploads/
    ```
 
-4. **Access API**
+3. **Access API**
    - Base URL: `http://localhost/LaunchPad/launchpad-api/public`
    - Health check: `GET /health`
 
-## 📡 API Endpoints
+## 📡 Available Endpoints
 
-### Authentication
-- `POST /auth/login` - Login (CDC/PC/Student/Company)
+### ✅ Authentication
+- `POST /auth/login` - Login (CDC/Student/Company)
 - `POST /auth/logout` - Logout
 - `POST /auth/refresh` - Refresh token
 
-### Students
-- `GET /students` - List all students (admin)
-- `GET /students/:id` - Get student details
-- `POST /students` - Register student
-- `PUT /students/:id` - Update student
-- `DELETE /students/:id` - Delete student
-- `GET /students/:id/ojt` - Get OJT progress
-- `PUT /students/:id/ojt` - Update OJT hours
+### ✅ Students
+- `POST /students/register` - Register new student (no auth)
+- `GET /students` - List all students (CDC only)
+- `GET /students/:id` - Get student profile
 - `GET /students/:id/notifications` - Get notifications
 - `GET /students/:id/reports` - Get submitted reports
 - `POST /students/:id/reports` - Submit report (multipart)
 
-### Companies
-- `GET /companies` - List companies
-- `GET /companies/:id` - Get company details
-- `POST /companies` - Register company
-- `PUT /companies/:id` - Update company
-- `DELETE /companies/:id` - Delete company
-- `GET /companies/:id/students` - List assigned students
-- `POST /companies/:id/evaluate` - Submit student evaluation
-
-### Job Postings
-- `GET /jobs` - List all jobs
-- `GET /jobs/:id` - Get job details
-- `POST /jobs` - Create job posting (company)
-- `PUT /jobs/:id` - Update job posting
-- `DELETE /jobs/:id` - Delete job posting
-
-### Admin (CDC/PC)
-- `POST /admin/verify/students/:id` - Verify student
-- `POST /admin/verify/companies/:id` - Verify company
+### ✅ Admin (CDC)
+- `GET /admin/unverified/students` - List pending students
+- `POST /admin/verify/students/:id` - Approve student
 - `DELETE /admin/reject/students/:id` - Reject student
-- `DELETE /admin/reject/companies/:id` - Reject company
-- `POST /admin/notifications` - Broadcast notification
-- `GET /admin/stats` - Dashboard statistics
+
+### 🚧 Coming Soon
+- Companies registration & verification
+- Job postings
+- OJT hours tracking
+- Notifications system
+- Student evaluations
 
 ## 🔒 Authentication
 
-All protected endpoints require Bearer token:
+Protected endpoints require Bearer token:
 
-```bash
+```
 Authorization: Bearer <your_jwt_token>
 ```
 
@@ -115,17 +105,19 @@ Authorization: Bearer <your_jwt_token>
   "success": true,
   "data": { ... },
   "message": "Operation successful",
-  "timestamp": "2025-10-11T12:00:00Z"
+  "timestamp": "2025-10-11T12:00:00+08:00"
 }
 ```
 
-## 🧪 Development
+## 🧪 Testing
 
-- Enable error reporting in `config/constants.php`
-- Check logs in `logs/` directory
-- Use Postman collection (coming soon)
+See `TEST.md` for Postman setup and testing flows.
+
+**Test Accounts:**
+- CDC Admin: `cdc_admin` / `admin123`
+- Test Student: `2021-00001` / `student123`
 
 ---
 
-**Built with ❤️ for modern PHP development**
-
+**Phase 1 Complete: Student Registration & Verification ✅**  
+**Phase 2 In Progress: Company Registration 🚧**
