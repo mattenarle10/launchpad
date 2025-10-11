@@ -91,8 +91,10 @@ $moaFilename = null;
 if (isset($_FILES['moa_document']) && $_FILES['moa_document']['error'] === UPLOAD_ERR_OK) {
     $file = $_FILES['moa_document'];
     
-    if (!in_array($file['type'], ALLOWED_DOCUMENT_TYPES)) {
-        Response::error('Invalid MOA file type. Only PDF and Word documents allowed', 400);
+    // Allow documents and images for MOA
+    $allowedMoaTypes = array_merge(ALLOWED_DOCUMENT_TYPES, ALLOWED_IMAGE_TYPES);
+    if (!in_array($file['type'], $allowedMoaTypes)) {
+        Response::error('Invalid MOA file type. Allowed: PDF, Word, JPEG, PNG, WebP', 400);
     }
     
     if ($file['size'] > MAX_FILE_SIZE) {
