@@ -1,15 +1,11 @@
 <?php
 
 /**
- * Authentication Middleware
- * JWT-based authentication
+ * Authentication Helper
  */
 
 class Auth
 {
-    /**
-     * Verify JWT token from Authorization header
-     */
     public static function verify(): ?array
     {
         $headers = getallheaders();
@@ -23,9 +19,6 @@ class Auth
         return self::decodeToken($token);
     }
 
-    /**
-     * Require authentication
-     */
     public static function requireAuth(): array
     {
         $payload = self::verify();
@@ -37,9 +30,6 @@ class Auth
         return $payload;
     }
 
-    /**
-     * Require specific role
-     */
     public static function requireRole(string|array $roles): array
     {
         $payload = self::requireAuth();
@@ -52,9 +42,6 @@ class Auth
         return $payload;
     }
 
-    /**
-     * Generate JWT token
-     */
     public static function generateToken(array $payload): string
     {
         $header = base64_encode(json_encode(['alg' => JWT_ALGORITHM, 'typ' => 'JWT']));
@@ -68,9 +55,6 @@ class Auth
         return "$header.$payloadEncoded.$signatureEncoded";
     }
 
-    /**
-     * Decode JWT token
-     */
     private static function decodeToken(string $token): ?array
     {
         $parts = explode('.', $token);
@@ -80,7 +64,6 @@ class Auth
 
         [$header, $payloadEncoded, $signature] = $parts;
 
-        // Verify signature
         $expectedSignature = base64_encode(
             hash_hmac('sha256', "$header.$payloadEncoded", JWT_SECRET, true)
         );
@@ -91,7 +74,6 @@ class Auth
 
         $payload = json_decode(base64_decode($payloadEncoded), true);
 
-        // Check expiration
         if (isset($payload['exp']) && $payload['exp'] < time()) {
             return null;
         }
@@ -99,17 +81,11 @@ class Auth
         return $payload;
     }
 
-    /**
-     * Hash password
-     */
     public static function hashPassword(string $password): string
     {
         return password_hash($password, PASSWORD_BCRYPT);
     }
 
-    /**
-     * Verify password
-     */
     public static function verifyPassword(string $password, string $hash): bool
     {
         return password_verify($password, $hash);

@@ -6,9 +6,6 @@
 
 class Response
 {
-    /**
-     * Send success response
-     */
     public static function success(mixed $data = null, string $message = 'Success', int $code = 200): void
     {
         self::json([
@@ -19,9 +16,6 @@ class Response
         ], $code);
     }
 
-    /**
-     * Send error response
-     */
     public static function error(string $message = 'Error', int $code = 400, mixed $errors = null): void
     {
         self::json([
@@ -32,9 +26,6 @@ class Response
         ], $code);
     }
 
-    /**
-     * Send paginated response
-     */
     public static function paginated(array $data, int $page, int $pageSize, int $total): void
     {
         self::json([
@@ -50,9 +41,6 @@ class Response
         ]);
     }
 
-    /**
-     * Send JSON response
-     */
     private static function json(array $data, int $code = 200): void
     {
         http_response_code($code);
@@ -61,9 +49,6 @@ class Response
         exit;
     }
 
-    /**
-     * Handle exceptions
-     */
     public static function handleException(Throwable $e): void
     {
         error_log($e->getMessage());
