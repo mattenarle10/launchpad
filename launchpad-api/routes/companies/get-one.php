@@ -13,7 +13,7 @@ $companyId = intval($id);
 
 $conn = Database::getConnection();
 $stmt = $conn->prepare("
-    SELECT company_id, name, email, contact_num, address, website, profile_pic, verified_at
+    SELECT company_id, company_name, username, email, contact_num, address, website, company_logo, moa_document, verified_at
     FROM verified_companies
     WHERE company_id = ?
 ");

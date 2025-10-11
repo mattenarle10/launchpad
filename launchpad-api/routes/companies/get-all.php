@@ -18,7 +18,7 @@ $result = $conn->query("SELECT COUNT(*) as total FROM verified_companies");
 $total = $result->fetch_assoc()['total'];
 
 $stmt = $conn->prepare("
-    SELECT company_id, name, email, contact_num, address, website, profile_pic
+    SELECT company_id, company_name, username, email, contact_num, address, website, company_logo, verified_at
     FROM verified_companies
     ORDER BY verified_at DESC
     LIMIT ? OFFSET ?
