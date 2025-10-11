@@ -19,7 +19,7 @@ define('JWT_EXPIRATION', 3600 * 24); // 24 hours
 define('PASSWORD_MIN_LENGTH', 8);
 
 // File Uploads
-define('UPLOAD_DIR', __DIR__ . '/../uploads/');
+define('UPLOAD_DIR', dirname(__DIR__) . '/uploads/');
 define('MAX_FILE_SIZE', 10 * 1024 * 1024); // 10MB
 define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/jpg', 'image/webp']);
 define('ALLOWED_DOCUMENT_TYPES', ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']);
