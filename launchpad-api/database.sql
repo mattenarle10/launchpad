@@ -92,3 +92,56 @@ CREATE TABLE IF NOT EXISTS verified_companies (
 INSERT INTO verified_companies (company_name, username, email, contact_num, address, website, password) VALUES 
 ('Acme Corp', 'acme_corp', 'contact@acme.com', '09123456789', '123 Business St, Cebu City', 'https://acme.com', '$2y$12$tb.YAahiGjhdso.2l8AEbuCmzuhUcIPj2ccuNXE9gZ5Oay3AU.Gve')
 ON DUPLICATE KEY UPDATE password='$2y$12$tb.YAahiGjhdso.2l8AEbuCmzuhUcIPj2ccuNXE9gZ5Oay3AU.Gve';
+
+-- OJT Progress Tracking (Phase 3)
+CREATE TABLE IF NOT EXISTS ojt_progress (
+    progress_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    required_hours INT NOT NULL DEFAULT 500,
+    completed_hours DECIMAL(6,2) NOT NULL DEFAULT 0,
+    status ENUM('not_started', 'in_progress', 'completed') DEFAULT 'not_started',
+    start_date DATE DEFAULT NULL,
+    end_date DATE DEFAULT NULL,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES verified_students(student_id) ON DELETE CASCADE,
+    UNIQUE KEY unique_student_progress (student_id)
+);
+
+-- Daily Reports Submission (with hours request)
+CREATE TABLE IF NOT EXISTS daily_reports (
+    report_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    report_date DATE NOT NULL,
+    hours_requested DECIMAL(5,2) NOT NULL,
+    description TEXT NOT NULL,
+    activity_type VARCHAR(100),
+    report_file VARCHAR(255) NOT NULL,
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    reviewed_by INT DEFAULT NULL,
+    reviewed_at TIMESTAMP NULL,
+    rejection_reason TEXT DEFAULT NULL,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES verified_students(student_id) ON DELETE CASCADE,
+    FOREIGN KEY (reviewed_by) REFERENCES cdc_users(id) ON DELETE SET NULL,
+    INDEX idx_student_status (student_id, status),
+    INDEX idx_status (status)
+);
+
+-- Create OJT progress for test student
+INSERT INTO ojt_progress (student_id, required_hours, completed_hours, status, start_date) 
+SELECT student_id, 500, 16, 'in_progress', '2025-01-15' FROM verified_students WHERE id_num = '2021-00001'
+ON DUPLICATE KEY UPDATE student_id=student_id;
+
+-- Add sample reports for test student
+INSERT INTO daily_reports (student_id, report_date, hours_requested, description, activity_type, report_file, status, reviewed_at)
+SELECT student_id, '2025-01-15', 8, 'Initial orientation and setup', 'Training', 'report_test_1.pdf', 'approved', NOW()
+FROM verified_students WHERE id_num = '2021-00001';
+
+INSERT INTO daily_reports (student_id, report_date, hours_requested, description, activity_type, report_file, status, reviewed_at)
+SELECT student_id, '2025-01-16', 8, 'Frontend development tasks', 'Development', 'report_test_2.pdf', 'approved', NOW()
+FROM verified_students WHERE id_num = '2021-00001';
+
+-- Add pending report
+INSERT INTO daily_reports (student_id, report_date, hours_requested, description, activity_type, report_file, status)
+SELECT student_id, '2025-01-17', 7.5, 'Backend API development', 'Development', 'report_test_3.pdf', 'pending'
+FROM verified_students WHERE id_num = '2021-00001';

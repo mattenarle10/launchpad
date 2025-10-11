@@ -71,20 +71,20 @@ try {
             exit;
         }
         
-        // /students/:id/notifications
-        if (count($pathParts) === 3 && $pathParts[2] === 'notifications') {
+        // /students/:id/ojt
+        if (count($pathParts) === 3 && $pathParts[2] === 'ojt') {
             $id = $pathParts[1];
-            require __DIR__ . '/../routes/students/get-notifications.php';
+            require __DIR__ . '/../routes/students/get-ojt-progress.php';
             exit;
         }
         
-        // /students/:id/reports
-        if (count($pathParts) === 3 && $pathParts[2] === 'reports') {
+        // /students/:id/reports/daily
+        if (count($pathParts) === 4 && $pathParts[2] === 'reports' && $pathParts[3] === 'daily') {
             $id = $pathParts[1];
             if ($method === 'GET') {
-                require __DIR__ . '/../routes/students/get-reports.php';
+                require __DIR__ . '/../routes/students/get-daily-reports.php';
             } else if ($method === 'POST') {
-                require __DIR__ . '/../routes/students/create-report.php';
+                require __DIR__ . '/../routes/students/submit-daily-report.php';
             }
             exit;
         }
@@ -151,6 +151,31 @@ try {
         if (count($pathParts) === 4 && $pathParts[1] === 'reject' && $pathParts[2] === 'companies') {
             $id = $pathParts[3];
             require __DIR__ . '/../routes/admin/reject-company.php';
+            exit;
+        }
+        
+        // /admin/ojt/progress
+        if (count($pathParts) === 3 && $pathParts[1] === 'ojt' && $pathParts[2] === 'progress') {
+            require __DIR__ . '/../routes/admin/get-all-ojt-progress.php';
+            exit;
+        }
+        
+        // /admin/ojt/stats
+        if (count($pathParts) === 3 && $pathParts[1] === 'ojt' && $pathParts[2] === 'stats') {
+            require __DIR__ . '/../routes/admin/get-ojt-stats.php';
+            exit;
+        }
+        
+        // /admin/reports/pending
+        if (count($pathParts) === 3 && $pathParts[1] === 'reports' && $pathParts[2] === 'pending') {
+            require __DIR__ . '/../routes/admin/get-pending-reports.php';
+            exit;
+        }
+        
+        // /admin/reports/:id/review
+        if (count($pathParts) === 4 && $pathParts[1] === 'reports' && $pathParts[3] === 'review') {
+            $id = $pathParts[2];
+            require __DIR__ . '/../routes/admin/review-report.php';
             exit;
         }
     }

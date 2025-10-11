@@ -435,7 +435,7 @@ This account is already in the database for quick testing!
 ## ✅ Testing Checklist
 
 ### Phase 1: Students ✅
-- [ ] Health check returns 200
+- [ ] Health check returns 200 - ALL GOODS
 - [ ] Student can register with ID photo
 - [ ] Duplicate email shows error
 - [ ] Duplicate ID number shows error
@@ -446,17 +446,356 @@ This account is already in the database for quick testing!
 - [ ] Verified student can login
 - [ ] Student can view own profile
 
-### Phase 2: Companies 🚧
-- [ ] Company can register with logo & MOA
-- [ ] Duplicate email shows error
-- [ ] Duplicate username shows error
-- [ ] CDC can view unverified companies
-- [ ] CDC can verify company
-- [ ] CDC can reject company
-- [ ] Verified company can login
-- [ ] Can view company profile
-- [ ] Can list all companies
-- [ ] Pre-loaded account works (acme_corp)
+### Phase 2: Companies ✅
+- [x] Company can register with logo & MOA
+- [x] Duplicate email shows error
+- [x] Duplicate username shows error
+- [x] CDC can view unverified companies
+- [x] CDC can verify company
+- [x] CDC can reject company
+- [x] Verified company can login
+- [x] Can view company profile
+- [x] Can list all companies
+
+### Phase 3: OJT Hours Tracking (Report-Based) 🚧
+- [ ] Student submits daily report with file
+- [ ] Student can view report history
+- [ ] Cannot submit future dates
+- [ ] Cannot submit duplicate dates
+- [ ] CDC views pending reports
+- [ ] CDC can approve reports (adds hours)
+- [ ] CDC can reject reports (with reason)
+- [ ] Student can view OJT progress
+- [ ] CDC can view all students' progress
+- [ ] CDC can view dashboard stats
+
+---
+
+## 📊 Phase 3: OJT Hours Tracking (Report-Based Approval)
+
+### ✅ Test 15: View Student OJT Progress
+**GET** `http://localhost/LaunchPad/launchpad-api/public/students/1/ojt`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_STUDENT_TOKEN
+```
+
+**Expected Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "progress": {
+      "progress_id": 1,
+      "student_id": 1,
+      "required_hours": 500,
+      "completed_hours": 120,
+      "status": "in_progress",
+      "start_date": "2025-01-15",
+      "end_date": null,
+      "completion_percentage": 24,
+      "remaining_hours": 380
+    },
+    "hours_log": [
+      {
+  
+    ],
+    "total_logs": 0
+  }
+}
+```
+
+---
+
+### ✅ Test 16: Submit Daily Report
+**POST** `http://localhost/LaunchPad/launchpad-api/public/students/1/reports/daily`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_STUDENT_TOKEN
+```
+
+**Body Type:** `form-data`
+
+**Fields:**
+| Key | Value | Type |
+|-----|-------|------|
+| report_date | `2025-10-11` | Text |
+| hours_requested | `8` | Text |
+| description | `Backend API development` | Text |
+| activity_type | `Development` | Text |
+| report_file | (PDF/Image file) | File |
+
+**Expected Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "report_id": 4,
+    "status": "pending",
+    "message": "Report submitted! Waiting for CDC approval."
+  },
+  "message": "Report submitted successfully"
+}
+```
+
+**Validation Tests:**
+- Try > 24 hours → should error
+- Try 0 hours → should error
+- Try future date → should error
+- Try same date twice → should error
+- Missing file → should error
+
+---
+
+### ✅ Test 17: View Student Daily Reports
+**GET** `http://localhost/LaunchPad/launchpad-api/public/students/1/reports/daily`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_STUDENT_TOKEN
+```
+
+**Optional Query Params:**
+- `status=pending` (all, pending, approved, rejected)
+
+**Expected Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "reports": [
+      {
+        "report_id": 4,
+        "student_id": 1,
+        "report_date": "2025-10-11",
+        "hours_requested": 8,
+        "description": "Backend API development",
+        "activity_type": "Development",
+        "report_file": "daily_report_1_2025-10-11_1234567890.pdf",
+        "status": "pending",
+        "submitted_at": "..."
+      },
+      {
+        "report_id": 3,
+        "student_id": 1,
+        "report_date": "2025-01-17",
+        "hours_requested": 7.5,
+        "description": "Backend API development",
+        "status": "pending",
+        ...
+      }
+    ],
+    "summary": {
+      "total": 3,
+      "pending": 2,
+      "approved": 2,
+      "rejected": 0
+    }
+  }
+}
+```
+
+---
+
+---
+
+### ✅ Test 18: CDC Views Pending Reports
+**GET** `http://localhost/LaunchPad/launchpad-api/public/admin/reports/pending`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_CDC_TOKEN
+```
+
+**Optional Query Params:**
+- `page=1`
+- `pageSize=20`
+
+**Expected Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "report_id": 4,
+      "student_id": 1,
+      "report_date": "2025-10-11",
+      "hours_requested": 8,
+      "description": "Backend API development",
+      "activity_type": "Development",
+      "report_file": "daily_report_1_2025-10-11_1234567890.pdf",
+      "status": "pending",
+      "id_num": "2021-00001",
+      "first_name": "Juan",
+      "last_name": "Dela Cruz",
+      "email": "juan@student.com",
+      "course": "IT",
+      "company_name": "Ingent",
+      "submitted_at": "..."
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 20,
+    "total": 1,
+    "totalPages": 1
+  }
+}
+```
+
+---
+
+### ✅ Test 19: CDC Approves Report (Hours Added!)
+**POST** `http://localhost/LaunchPad/launchpad-api/public/admin/reports/4/review`
+
+Replace `4` with the report_id.
+
+**Headers:**
+```
+Authorization: Bearer YOUR_CDC_TOKEN
+Content-Type: application/json
+```
+
+**Body (raw JSON):**
+```json
+{
+  "action": "approve"
+}
+```
+
+**Expected Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "report_id": 4,
+    "action": "approved",
+    "hours_added": 8,
+    "new_total_hours": 24,
+    "completion_percentage": 4.8,
+    "status": "in_progress"
+  },
+  "message": "Report approved and hours added to student progress"
+}
+```
+
+---
+
+### ✅ Test 20: CDC Rejects Report
+**POST** `http://localhost/LaunchPad/launchpad-api/public/admin/reports/4/review`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_CDC_TOKEN
+Content-Type: application/json
+```
+
+**Body (raw JSON):**
+```json
+{
+  "action": "reject",
+  "rejection_reason": "Insufficient details about tasks performed"
+}
+```
+
+**Expected Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "report_id": 4,
+    "action": "rejected",
+    "reason": "Insufficient details about tasks performed"
+  },
+  "message": "Report rejected"
+}
+```
+
+---
+
+### ✅ Test 21: CDC Views All OJT Progress
+**GET** `http://localhost/LaunchPad/launchpad-api/public/admin/ojt/progress`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_CDC_TOKEN
+```
+
+**Optional Query Params:**
+- `status=in_progress` (filter: not_started, in_progress, completed, all)
+- `page=1`
+- `pageSize=20`
+
+**Expected Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "progress_id": 1,
+      "student_id": 1,
+      "required_hours": 500,
+      "completed_hours": 128,
+      "status": "in_progress",
+      "start_date": "2025-01-15",
+      "id_num": "2021-00001",
+      "first_name": "Juan",
+      "last_name": "Dela Cruz",
+      "email": "juan@student.com",
+      "course": "IT",
+      "company_name": "Ingent",
+      "completion_percentage": 25.6,
+      "remaining_hours": 372
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 20,
+    "total": 1,
+    "totalPages": 1
+  }
+}
+```
+
+---
+
+### ✅ Test 22: CDC Dashboard Stats
+**GET** `http://localhost/LaunchPad/launchpad-api/public/admin/ojt/stats`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_CDC_TOKEN
+```
+
+**Expected Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "total_students": 5,
+    "students_with_progress": 3,
+    "total_hours_logged": 856,
+    "average_completion": 42.5,
+    "status_breakdown": {
+      "not_started": 2,
+      "in_progress": 2,
+      "completed": 1
+    },
+    "recent_logs": 15,
+    "top_performers": [
+      {
+        "id_num": "2021-00001",
+        "first_name": "Juan",
+        "last_name": "Dela Cruz",
+        "completed_hours": 500,
+        "status": "completed"
+      }
+    ]
+  }
+}
+```
 
 ---
 
@@ -477,8 +816,4 @@ This account is already in the database for quick testing!
 ### "Unauthorized"
 ✅ Copy full token from login response
 ✅ Use format: `Bearer <token>` with space
-
----
-
-**Ready to test! Start with Test 1! 🚀**
 
