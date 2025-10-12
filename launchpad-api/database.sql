@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS unverified_students (
     contact_num VARCHAR(20),
     password VARCHAR(255) NOT NULL,
     id_photo VARCHAR(255) NOT NULL,
-    company_id INT DEFAULT NULL,
+    company_name VARCHAR(150) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -31,10 +31,9 @@ CREATE TABLE IF NOT EXISTS verified_students (
     contact_num VARCHAR(20),
     password VARCHAR(255) NOT NULL,
     id_photo VARCHAR(255) NOT NULL,
-    company_id INT DEFAULT NULL,
+    company_name VARCHAR(150) DEFAULT NULL,
     profile_pic VARCHAR(255) DEFAULT NULL,
-    verified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (company_id) REFERENCES verified_companies(company_id) ON DELETE SET NULL
+    verified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CDC Users (Career Development Center staff)
@@ -78,11 +77,6 @@ CREATE TABLE IF NOT EXISTS verified_companies (
     moa_document VARCHAR(255) DEFAULT NULL,
     verified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
--- Insert test verified company (password: company123)
-INSERT INTO verified_companies (company_name, username, email, contact_num, address, website, password) VALUES 
-('Acme Corp', 'acme_corp', 'contact@acme.com', '09123456789', '123 Business St, Cebu City', 'https://acme.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi')
-ON DUPLICATE KEY UPDATE password='$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi';
 
 -- OJT Progress Tracking (Phase 3)
 CREATE TABLE IF NOT EXISTS ojt_progress (

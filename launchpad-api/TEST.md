@@ -5,31 +5,21 @@
 ### 1. Import Database
 1. Open phpMyAdmin: `http://localhost/phpmyadmin`
 2. Click "Import" tab
-3. Choose file: `database.sql`
+3. Choose file: `launchpad-api/database.sql`
 4. Click "Go"
-5. You should see `launchpad_db` database created with 3 tables:
+5. You should see `launchpad_db` database created with 7 tables:
    - `unverified_students`
    - `verified_students`
    - `cdc_users`
+   - `unverified_companies`
+   - `verified_companies`
+   - `ojt_progress`
+   - `daily_reports`
 
 ### 2. Test Base URL
 ```
 http://localhost/LaunchPad/launchpad-api/public
 ```
-
----
-
-## 📋 Test Accounts
-
-### CDC Admin
-- **Username**: `cdc_admin`
-- **Password**: `admin123`
-- **User Type**: `cdc`
-
-### Verified Student (for login testing)
-- **ID Number**: `2021-00001`
-- **Password**: `student123`
-- **User Type**: `student`
 
 ---
 

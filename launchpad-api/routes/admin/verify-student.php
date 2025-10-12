@@ -48,6 +48,22 @@ $stmt->bind_param(
 $stmt->execute();
 $newStudentId = $conn->insert_id;
 
+// Create OJT progress with required hours based on course
+// IT = 500 hours, COMSCI = 300 hours, EMC = 300 hours
+$requiredHours = match($student['course']) {
+    'IT' => 500,
+    'COMSCI' => 300,
+    'EMC' => 500,
+    default => 500
+};
+
+$stmt = $conn->prepare("
+    INSERT INTO ojt_progress (student_id, required_hours, status)
+    VALUES (?, ?, 'not_started')
+");
+$stmt->bind_param('ii', $newStudentId, $requiredHours);
+$stmt->execute();
+
 // Delete from unverified
 $stmt = $conn->prepare("DELETE FROM unverified_students WHERE student_id = ?");
 $stmt->bind_param('i', $studentId);
