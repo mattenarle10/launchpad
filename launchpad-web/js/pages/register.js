@@ -1,6 +1,5 @@
 /**
  * Company Registration - 3 Step Form
- * DRY principles: Reusable functions, minimal code
  */
 
 import CompanyAPI from '../api/company.js';
