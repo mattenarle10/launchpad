@@ -6,36 +6,172 @@
     <title>CDC Dashboard - LaunchPad</title>
     <link rel="icon" type="image/x-icon" href="../../favicon.ico">
     <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../css/sidebar.css">
+    <link rel="stylesheet" href="../../css/dashboard.css">
 </head>
 <body>
-    <div class="container" style="padding-top: 50px;">
-        <h1 style="color: var(--primary-blue);">🎉 CDC Dashboard</h1>
-        <p>Welcome, <span id="user-name"></span>!</p>
-        <p>Login successful! You're authenticated as CDC.</p>
-        
-        <div style="margin-top: 30px;">
-            <button class="btn btn-secondary" onclick="logout()">Logout</button>
-        </div>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <h2>
+                    <span class="logo-launch">Launch</span><span class="logo-pad">Pad</span>
+                </h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item active">Dashboard</a>
+                <a href="students.html" class="nav-item">Students</a>
+                <a href="companies.html" class="nav-item">Companies</a>
+                <a href="verify-users.html" class="nav-item">Verify Users</a>
+                <a href="send-notification.html" class="nav-item">Send Notification</a>
+                <a href="submission-reports.html" class="nav-item">Submission Reports</a>
+                <a href="ojt-hours.html" class="nav-item">Students' OJT Hours</a>
+                <a href="job-postings.html" class="nav-item">Job Postings</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="page-header">
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar">C</div>
+                    <div class="user-details">
+                        <h1 id="user-name">Loading...</h1>
+                        <p>Career Development Centre Portal</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <div class="user-badge" id="user-badge">C</div>
+                    <button class="logout-btn" id="logout-btn">Logout</button>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div class="dashboard-content">
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <!-- Total Students -->
+                    <div class="card stat-card">
+                        <h3 class="card-title">Total Users (Students)</h3>
+                        <div class="stat-number">300</div>
+                        <p class="stat-label">Verified Students</p>
+                    </div>
+
+                    <!-- Total Companies -->
+                    <div class="card stat-card">
+                        <h3 class="card-title">Total Users (Companies)</h3>
+                        <div class="stat-number">5</div>
+                        <p class="stat-label">Partner Companies</p>
+                    </div>
+
+                    <!-- Unverified Users -->
+                    <div class="card stat-card">
+                        <h3 class="card-title">Unverified Users</h3>
+                        <div class="stat-number">42</div>
+                        <p class="stat-label">Pending Verification</p>
+                    </div>
+
+                    <!-- OJT Students Chart -->
+                    <div class="card chart-card">
+                        <h3 class="card-title">OJT Students</h3>
+                        <div class="chart-container">
+                            <div class="chart-placeholder">
+                                <div class="chart-center">300</div>
+                            </div>
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <span class="legend-color it"></span>
+                                <span class="legend-text">IT - 120</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color cs"></span>
+                                <span class="legend-text">CS - 120</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color emc"></span>
+                                <span class="legend-text">EMC - 60</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Cards -->
+                <div class="stats-grid">
+                    <!-- Students Performance -->
+                    <div class="card info-card">
+                        <h3 class="card-title">Students Performance</h3>
+                        <ul class="info-list">
+                            <li class="info-item">
+                                <span class="info-label">Information Technology</span>
+                                <span class="info-badge good">Good</span>
+                            </li>
+                            <li class="info-item">
+                                <span class="info-label">Computer Science</span>
+                                <span class="info-badge bad">Bad</span>
+                            </li>
+                            <li class="info-item">
+                                <span class="info-label">Entertainment and Multimedia</span>
+                                <span class="info-badge good">Good</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Students Evaluations -->
+                    <div class="card info-card">
+                        <h3 class="card-title">Students Evaluations</h3>
+                        <ul class="info-list">
+                            <li class="info-item">
+                                <span class="info-label">Information Technology</span>
+                                <span class="info-badge">93.21</span>
+                            </li>
+                            <li class="info-item">
+                                <span class="info-label">Computer Science</span>
+                                <span class="info-badge">39.13</span>
+                            </li>
+                            <li class="info-item">
+                                <span class="info-label">Entertainment and Multimedia</span>
+                                <span class="info-badge">82.72</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Recent Job Postings -->
+                    <div class="card list-card">
+                        <h3 class="card-title">Recent Job Postings</h3>
+                        <div class="info-list">
+                            <div class="list-item">
+                                <div class="list-avatar">G</div>
+                                <div class="list-info">
+                                    <h4 class="list-name">End-user Support</h4>
+                                    <p class="list-meta">₱ 300k - ₱ 360k per year</p>
+                                    <div class="tags">
+                                        <span class="tag">Tagalog</span>
+                                        <span class="tag">Helpdesk</span>
+                                        <span class="tag">On-Site</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="list-item">
+                                <div class="list-avatar">🍎</div>
+                                <div class="list-info">
+                                    <h4 class="list-name">End-user Support</h4>
+                                    <p class="list-meta">₱ 320k - ₱ 390k per year</p>
+                                    <div class="tags">
+                                        <span class="tag">Makati</span>
+                                        <span class="tag">IT Support</span>
+                                        <span class="tag">On-Site</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <script type="module">
-        import { AuthAPI } from '../../js/api/index.js';
-        
-        // Check if user is authenticated
-        if (!AuthAPI.isAuthenticated()) {
-            window.location.href = '../login.html?type=cdc';
-        }
-        
-        // Display user info
-        const user = AuthAPI.getCurrentUser();
-        document.getElementById('user-name').textContent = user.first_name + ' ' + user.last_name;
-        
-        // Logout function
-        window.logout = async () => {
-            await AuthAPI.logout();
-            window.location.href = '../../index.html';
-        };
-    </script>
+    <script type="module" src="../../js/pages/cdc/dashboard.js"></script>
 </body>
 </html>
-

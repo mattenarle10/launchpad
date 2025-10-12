@@ -13,7 +13,7 @@ $data = json_decode(file_get_contents('php://input'), true);
 
 $username = $data['username'] ?? '';
 $password = $data['password'] ?? '';
-$userType = $data['userType'] ?? 'student';
+$userType = $data['user_type'] ?? $data['userType'] ?? 'student'; // Support both formats
 
 if (empty($username) || empty($password)) {
     Response::error('Username and password are required', 400);
