@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDC Login - LaunchPad</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/login.css">
+</head>
+<body>
+    <div class="login-page">
+        <!-- Left Side - Logo -->
+        <div class="login-left">
+            <img src="../images/logo/launchpad.png" alt="LaunchPad Logo" class="logo-main">
+            <h1 class="portal-subtitle">Career Development Center</h1>
+        </div>
+
+        <!-- Right Side - Login Form -->
+        <div class="login-right">
+            <div class="login-card">
+                <h2 class="login-title">CDC Login</h2>
+                
+                <!-- Alert Container -->
+                <div id="alert-container"></div>
+
+                <!-- Login Form -->
+                <form id="login-form">
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            class="form-input form-input-light" 
+                            placeholder="Enter your username"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            class="form-input form-input-light" 
+                            placeholder="Enter your password"
+                            required
+                        >
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Login</button>
+                </form>
+
+                <div class="login-footer">
+                    <a href="../index.html" class="back-link">← Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="../js/pages/cdc-login.js"></script>
+</body>
+</html>
+
