@@ -2,19 +2,57 @@
  * CDC Dashboard Logic
  */
 
-import { initSidebar } from '../sidebar.js';
+import { AuthAPI } from '../../api/index.js';
 import { showAlert } from '../../components.js';
+import { initUserDropdown, updateDropdownUserName } from '../dropdown.js';
 
-// Initialize sidebar and get current user
-const currentUser = initSidebar({
-    userType: 'cdc',
-    portalName: 'Career Development Centre Portal'
-});
-
-// If currentUser is undefined, initSidebar already handled the redirect
-if (!currentUser) {
-    throw new Error('User not authenticated');
+// Check authentication
+if (!AuthAPI.isAuthenticated()) {
+    window.location.href = '../login.html?type=cdc';
 }
+
+const currentUser = AuthAPI.getCurrentUser();
+
+// Check if user exists
+if (!currentUser) {
+    showAlert('Session expired. Please login again.', 'error');
+    setTimeout(() => {
+        window.location.href = '../login.html?type=cdc';
+    }, 1500);
+}
+
+// Display user info in header
+const userName = `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim() 
+    || currentUser.username 
+    || 'User';
+
+document.getElementById('user-name').textContent = userName;
+updateDropdownUserName(userName);
+
+// Initialize dropdown menu
+initUserDropdown(
+    'user-menu-toggle',
+    'user-dropdown',
+    // Logout callback
+    async () => {
+        try {
+            await AuthAPI.logout();
+            showAlert('Logged out successfully', 'success');
+            setTimeout(() => {
+                window.location.href = '../login.html?type=cdc';
+            }, 1000);
+        } catch (error) {
+            console.error('Logout error:', error);
+            window.location.href = '../login.html?type=cdc';
+        }
+    },
+    // Profile callback (optional)
+    () => {
+        showAlert('Profile page coming soon!', 'info');
+        // TODO: Navigate to profile page
+        // window.location.href = 'profile.html';
+    }
+);
 
 console.log('CDC Dashboard loaded for:', currentUser);
 

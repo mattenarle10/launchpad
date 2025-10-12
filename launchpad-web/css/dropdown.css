@@ -1,0 +1,150 @@
+/**
+ * Reusable User Dropdown Menu Component
+ * Used for user profile menu in CDC and PC portals
+ */
+
+/* User Menu Container */
+.user-menu {
+    position: relative;
+}
+
+.user-menu-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+}
+
+.user-menu-toggle:hover {
+    background: #F3F4F6;
+}
+
+.dropdown-arrow {
+    color: #6B7280;
+    transition: transform 0.3s ease;
+}
+
+.user-menu-toggle:hover .dropdown-arrow {
+    color: #374151;
+}
+
+.user-menu.active .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+/* Dropdown Menu */
+.user-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 280px;
+    background: #5B7BA6;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.user-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Dropdown Header */
+.dropdown-header {
+    padding: 30px 20px;
+    text-align: center;
+    background: #4A6A95;
+}
+
+.dropdown-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #B1C9EF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.dropdown-avatar img {
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+}
+
+.dropdown-header h3 {
+    margin: 0;
+    font-size: 20px;
+    color: white;
+    font-weight: 600;
+}
+
+/* Dropdown Divider */
+.dropdown-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0;
+}
+
+/* Dropdown Items */
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    background: transparent;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+    text-align: left;
+}
+
+.dropdown-item:hover {
+    background: #4A6A95;
+}
+
+.dropdown-item svg {
+    flex-shrink: 0;
+}
+
+.dropdown-item span {
+    flex: 1;
+}
+
+/* Close Button (optional) */
+.dropdown-close {
+    display: block;
+    width: 100%;
+    padding: 16px 20px;
+    background: #4A6A95;
+    color: white;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dropdown-close:hover {
+    background: #3D5A80;
+}
+
