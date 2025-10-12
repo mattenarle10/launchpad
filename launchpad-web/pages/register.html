@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Registration - LaunchPad</title>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/login.css">
+</head>
+<body>
+    <div class="login-page">
+        <!-- Left Side - Logo & Title -->
+        <div class="login-left">
+            <div class="logo-container">
+                <img src="../images/logo/launchpad.png" alt="LaunchPad Logo" class="logo-icon">
+                <div class="title-container">
+                    <h1 class="portal-title">Launch<span class="text-sky">Pad</span></h1>
+                    <p class="portal-subtitle">Partner Company</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Registration Form -->
+        <div class="login-right">
+            <div class="login-card register-card">
+                <!-- Progress Stepper -->
+                <div class="stepper" id="stepper">
+                    <div class="step-item active" data-step="1">
+                        <div class="step-circle">1</div>
+                        <div class="step-label">Company Info</div>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step-item" data-step="2">
+                        <div class="step-circle">2</div>
+                        <div class="step-label">Account Setup</div>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step-item" data-step="3">
+                        <div class="step-circle">3</div>
+                        <div class="step-label">Documents</div>
+                    </div>
+                </div>
+
+                <h2 class="login-title" id="step-title">Step 1: Company Information</h2>
+                
+                <!-- Alert Container -->
+                <div id="alert-container"></div>
+
+                <!-- Registration Form -->
+                <form id="register-form">
+                    <!-- Step 1: Company Information -->
+                    <div id="step-1" class="step-content">
+                        <div class="form-grid">
+                            <div class="form-group col-span-2">
+                                <label class="form-label">Company Name *</label>
+                                <input type="text" id="company_name" class="form-input form-input-light" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email Address *</label>
+                                <input type="email" id="email" class="form-input form-input-light" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Contact Number</label>
+                                <input type="tel" id="contact_num" class="form-input form-input-light" placeholder="09XXXXXXXXX">
+                            </div>
+                            <div class="form-group col-span-2">
+                                <label class="form-label">Company Address *</label>
+                                <textarea id="address" class="form-input form-input-light" rows="2" required></textarea>
+                            </div>
+                            <div class="form-group col-span-2">
+                                <label class="form-label">Website (Optional)</label>
+                                <input type="url" id="website" class="form-input form-input-light" placeholder="https://example.com">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Account Setup -->
+                    <div id="step-2" class="step-content hidden">
+                        <div class="form-grid">
+                            <div class="form-group col-span-2">
+                                <label class="form-label">Username *</label>
+                                <input type="text" id="username" class="form-input form-input-light" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Password *</label>
+                                <div class="input-with-icon">
+                                    <input type="password" id="password" class="form-input form-input-light" minlength="8" required>
+                                    <button type="button" class="icon-button" id="toggle-password" aria-label="Show password" title="Show password">
+                                        <svg id="icon-eye" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    </button>
+                                </div>
+                                <small class="form-hint">Minimum 8 characters</small>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Confirm Password *</label>
+                                <div class="input-with-icon">
+                                    <input type="password" id="confirm_password" class="form-input form-input-light" required>
+                                    <button type="button" class="icon-button" id="toggle-confirm-password" aria-label="Show password" title="Show password">
+                                        <svg id="icon-eye-confirm" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    </button>
+                                </div>
+                                <small id="password-match" class="form-hint"></small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Documents -->
+                    <div id="step-3" class="step-content hidden">
+                        <p class="form-hint" style="margin-bottom: 20px;">These documents are optional but recommended for faster verification.</p>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Company Logo</label>
+                                <input type="file" id="company_logo" class="form-input" accept="image/*">
+                                <small class="form-hint">JPEG, PNG, or WebP (Max 10MB)</small>
+                                <div id="logo-preview" class="file-preview"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">MOA Document</label>
+                                <input type="file" id="moa_document" class="form-input" accept=".pdf,.doc,.docx,image/*">
+                                <small class="form-hint">PDF, Word, or Image (Max 10MB)</small>
+                                <div id="moa-preview" class="file-preview"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Success State -->
+                    <div id="success-state" class="step-content hidden">
+                        <div class="success-icon">✓</div>
+                        <h3 class="success-title">Registration Submitted!</h3>
+                        <p class="success-message">Your registration is being reviewed by the CDC. We will notify you when verification is complete.</p>
+                    </div>
+                </form>
+
+                <!-- Navigation Buttons -->
+                <div class="step-navigation" id="step-navigation">
+                    <button type="button" id="back-btn" class="btn btn-secondary hidden">← Back</button>
+                    <button type="button" id="next-btn" class="btn btn-primary">Next →</button>
+                </div>
+
+                <!-- Success Navigation -->
+                <div id="success-navigation" class="step-navigation hidden">
+                    <button type="button" onclick="window.location.href='../index.html'" class="btn btn-primary btn-block">Done - Go to Home</button>
+                </div>
+
+                <div class="login-footer">
+                    <p>Already registered? <a href="login.html?type=company">Login here</a></p>
+                    <p><a href="../index.html">← Back to Home</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../js/pages/register.js"></script>
+</body>
+</html>
+

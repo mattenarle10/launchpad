@@ -8,7 +8,8 @@ import { showAlert } from '../components.js';
 
 // Get login type from URL parameter (?type=cdc or ?type=company)
 const urlParams = new URLSearchParams(window.location.search);
-const loginType = urlParams.get('type') || 'cdc'; // Default to CDC
+const rawType = urlParams.get('type');
+const loginType = rawType ? rawType.toLowerCase() : 'cdc'; // Default to CDC, case-insensitive
 
 // Update page title and subtitle based on type
 const pageTitle = document.title;
@@ -19,10 +20,14 @@ if (loginType === 'cdc') {
     document.title = 'CDC Login - LaunchPad';
     pageSubtitle.textContent = 'Career Development Center';
     loginTitle.textContent = 'CDC Login';
+    // Hide register link for CDC
+    const registerLink = document.getElementById('register-link');
+    if (registerLink) registerLink.style.display = 'none';
 } else if (loginType === 'company') {
     document.title = 'Company Login - LaunchPad';
     pageSubtitle.textContent = 'Partner Company';
     loginTitle.textContent = 'Company Login';
+    // Register link stays visible for company
 }
 
 // Handle form submission
