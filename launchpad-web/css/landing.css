@@ -17,22 +17,47 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--spacing-md);
-    padding-left: 5%;
+    justify-content: center;
+    padding-left: 10%;
 }
 
-.logo-main {
-    width: 100%;
-    max-width: 500px;
-    height: auto;
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
+
+.logo-icon {
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+    flex-shrink: 0;
+}
+
+.title-container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .portal-title {
-    font-size: 48px;
+    font-size: 68px;
     color: var(--primary-blue);
-    font-weight: 600;
+    font-weight: 700;
     margin: 0;
-    padding-left: 20px;
+    line-height: 1;
+}
+
+.text-sky {
+    color: var(--secondary-blue);
+}
+
+.portal-subtitle {
+    font-size: 42px;
+    font-weight: 600;
+    color: var(--primary-blue);
+    margin: 0;
 }
 
 /* ========== RIGHT SIDE (User Type Cards) ========== */
@@ -96,18 +121,20 @@
     }
 
     .landing-left {
-        align-items: center;
-        text-align: center;
         padding-left: 0;
     }
 
-    .logo-main {
-        max-width: 400px;
+    .logo-icon {
+        width: 100px;
+        height: 100px;
     }
 
     .portal-title {
-        font-size: 36px;
-        padding-left: 0;
+        font-size: 44px;
+    }
+    
+    .portal-subtitle {
+        font-size: 28px;
     }
 
     .landing-right {
@@ -118,12 +145,17 @@
 }
 
 @media (max-width: 768px) {
-    .logo-main {
-        max-width: 300px;
+    .logo-icon {
+        width: 80px;
+        height: 80px;
     }
 
     .portal-title {
-        font-size: 28px;
+        font-size: 36px;
+    }
+    
+    .portal-subtitle {
+        font-size: 24px;
     }
 
     .user-type-card {
@@ -146,12 +178,22 @@
         padding: var(--spacing-sm);
     }
 
-    .logo-main {
-        max-width: 250px;
+    .logo-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .logo-icon {
+        width: 70px;
+        height: 70px;
     }
 
     .portal-title {
-        font-size: 24px;
+        font-size: 28px;
+    }
+    
+    .portal-subtitle {
+        font-size: 18px;
     }
 
     .user-type-card {

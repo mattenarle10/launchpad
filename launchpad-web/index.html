@@ -11,12 +11,17 @@
     <!-- Landing Page - User Type Selection -->
     <div class="landing-page">
         <div class="landing-left">
-            <img src="images/logo/launchpad.png" alt="LaunchPad Logo" class="logo-main">
-            <h1 class="portal-title">Admin Portal</h1>
+            <div class="logo-container">
+                <img src="images/logo/launchpad.png" alt="LaunchPad Logo" class="logo-icon">
+                <div class="title-container">
+                    <h1 class="portal-title">Launch<span class="text-sky">Pad</span></h1>
+                    <p class="portal-subtitle">Admin Portal</p>
+                </div>
+            </div>
         </div>
 
         <div class="landing-right">
-            <div class="user-type-card" onclick="window.location.href='pages/cdc-login.html'">
+            <div class="user-type-card" onclick="window.location.href='pages/login.html?type=cdc'">
                 <img src="images/logo/cdc.png" alt="CDC Icon" class="card-icon">
                 <div class="card-text">
                     <h2>Career Development</h2>
@@ -24,7 +29,7 @@
                 </div>
             </div>
 
-            <div class="user-type-card" onclick="window.location.href='pages/company-login.html'">
+            <div class="user-type-card" onclick="window.location.href='pages/login.html?type=company'">
                 <img src="images/logo/pc.png" alt="Partner Company Icon" class="card-icon">
                 <div class="card-text">
                     <h2>Partner</h2>
