@@ -5,13 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LaunchPad - OJT Tracker</title>
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/landing.css">
 </head>
 <body>
-    <!-- Landing Page -->
-    <div id="app"></div>
+    <!-- Landing Page - User Type Selection -->
+    <div class="landing-page">
+        <div class="landing-left">
+            <img src="images/logo/launchpad.png" alt="LaunchPad Logo" class="logo-main">
+            <h1 class="portal-title">Admin Portal</h1>
+        </div>
 
-    <!-- Scripts -->
-    <script type="module" src="js/main.js"></script>
+        <div class="landing-right">
+            <div class="user-type-card" onclick="window.location.href='pages/cdc-login.html'">
+                <img src="images/logo/cdc.png" alt="CDC Icon" class="card-icon">
+                <div class="card-text">
+                    <h2>Career Development</h2>
+                    <h2>Center (CDC)</h2>
+                </div>
+            </div>
+
+            <div class="user-type-card" onclick="window.location.href='pages/company-login.html'">
+                <img src="images/logo/pc.png" alt="Partner Company Icon" class="card-icon">
+                <div class="card-text">
+                    <h2>Partner</h2>
+                    <h2>Company</h2>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
-
