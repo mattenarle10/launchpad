@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDC Dashboard - LaunchPad</title>
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+    <link rel="stylesheet" href="../../css/main.css">
+</head>
+<body>
+    <div class="container" style="padding-top: 50px;">
+        <h1 style="color: var(--primary-blue);">🎉 CDC Dashboard</h1>
+        <p>Welcome, <span id="user-name"></span>!</p>
+        <p>Login successful! You're authenticated as CDC.</p>
+        
+        <div style="margin-top: 30px;">
+            <button class="btn btn-secondary" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { AuthAPI } from '../../js/api/index.js';
+        
+        // Check if user is authenticated
+        if (!AuthAPI.isAuthenticated()) {
+            window.location.href = '../login.html?type=cdc';
+        }
+        
+        // Display user info
+        const user = AuthAPI.getCurrentUser();
+        document.getElementById('user-name').textContent = user.first_name + ' ' + user.last_name;
+        
+        // Logout function
+        window.logout = async () => {
+            await AuthAPI.logout();
+            window.location.href = '../../index.html';
+        };
+    </script>
+</body>
+</html>
+

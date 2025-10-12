@@ -53,9 +53,9 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
             // Redirect based on user type
             setTimeout(() => {
                 if (loginType === 'cdc') {
-                    window.location.href = 'cdc-dashboard.html';
+                    window.location.href = 'cdc/dashboard.html';
                 } else if (loginType === 'company') {
-                    window.location.href = 'company-dashboard.html';
+                    window.location.href = 'pc/dashboard.html';
                 }
             }, 1000);
         }
