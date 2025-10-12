@@ -1,4 +1,4 @@
-import '../api-client.dart';
+import '../client.dart';
 
 class BaseApiGroup {
   BaseApiGroup(this.client, this.basePath);

@@ -1,4 +1,4 @@
-import '../api-client.dart';
+import '../client.dart';
 import 'base.dart';
 
 class CompanyApi extends BaseApiGroup {
