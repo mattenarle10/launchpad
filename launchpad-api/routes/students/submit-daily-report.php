@@ -27,9 +27,9 @@ if (empty($description)) {
     Response::error('Description is required', 400);
 }
 
-// Validate hours
+// Validate hours (must be greater than 0 and up to 24)
 if ($hoursRequested <= 0 || $hoursRequested > 24) {
-    Response::error('Hours must be between 0 and 24', 400);
+    Response::error('Hours must be between 0.1 and 24. Received: ' . $hoursRequested, 400);
 }
 
 // Validate date

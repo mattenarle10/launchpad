@@ -20,9 +20,11 @@ $result = $conn->query("SELECT COUNT(*) as total FROM verified_students");
 $total = $result->fetch_assoc()['total'];
 
 $stmt = $conn->prepare("
-    SELECT s.*, c.name as company_name, o.done_hours, o.required_hours
+    SELECT 
+        s.student_id, s.id_num, s.first_name, s.last_name, s.email, 
+        s.course, s.contact_num, s.company_name, s.profile_pic, s.verified_at,
+        o.required_hours, o.completed_hours, o.status as ojt_status
     FROM verified_students s
-    LEFT JOIN verified_companies c ON s.company_id = c.company_id
     LEFT JOIN ojt_progress o ON s.student_id = o.student_id
     ORDER BY s.verified_at DESC
     LIMIT ? OFFSET ?

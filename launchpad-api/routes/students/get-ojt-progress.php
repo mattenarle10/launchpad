@@ -34,27 +34,29 @@ if ($result->num_rows === 0) {
 $progress = $result->fetch_assoc();
 
 // Calculate percentage
-$progress['completion_percentage'] = ($progress['completed_hours'] / $progress['required_hours']) * 100;
+$progress['completion_percentage'] = round(($progress['completed_hours'] / $progress['required_hours']) * 100, 2);
 $progress['remaining_hours'] = $progress['required_hours'] - $progress['completed_hours'];
 
-// Get hours log history
+// Get approved daily reports (these are the hours that were added)
 $stmt = $conn->prepare("
-    SELECT * FROM ojt_hours_log 
-    WHERE student_id = ? 
-    ORDER BY log_date DESC, created_at DESC
+    SELECT report_id, report_date, hours_requested, description, activity_type, 
+           status, reviewed_at, submitted_at
+    FROM daily_reports 
+    WHERE student_id = ? AND status = 'approved'
+    ORDER BY report_date DESC
 ");
 $stmt->bind_param('i', $studentId);
 $stmt->execute();
 $result = $stmt->get_result();
 
-$hoursLog = [];
+$approvedReports = [];
 while ($row = $result->fetch_assoc()) {
-    $hoursLog[] = $row;
+    $approvedReports[] = $row;
 }
 
 Response::success([
     'progress' => $progress,
-    'hours_log' => $hoursLog,
-    'total_logs' => count($hoursLog)
+    'approved_reports' => $approvedReports,
+    'total_approved' => count($approvedReports)
 ]);
 

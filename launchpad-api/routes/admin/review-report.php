@@ -53,6 +53,16 @@ if ($action === 'approve') {
     $stmt->bind_param('ii', $user['id'], $reportId);
     $stmt->execute();
     
+    // Check if OJT progress exists (should have been created during verification)
+    $stmt = $conn->prepare("SELECT progress_id FROM ojt_progress WHERE student_id = ?");
+    $stmt->bind_param('i', $report['student_id']);
+    $stmt->execute();
+    $progressExists = $stmt->get_result()->fetch_assoc();
+    
+    if (!$progressExists) {
+        Response::error('OJT progress not found for this student. Student may need to be re-verified.', 500);
+    }
+    
     // Add hours to OJT progress
     $stmt = $conn->prepare("
         UPDATE ojt_progress 
@@ -72,7 +82,7 @@ if ($action === 'approve') {
             END
         WHERE student_id = ?
     ");
-    $stmt->bind_param('dddsd', 
+    $stmt->bind_param('dddsdi', 
         $report['hours_requested'], 
         $report['hours_requested'], 
         $report['hours_requested'], 
