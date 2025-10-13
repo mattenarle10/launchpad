@@ -3,6 +3,8 @@ import '../../styles/colors.dart';
 import '../../components/bottom-nav.dart';
 import '../../components/menu.dart';
 import '../../services/api/client.dart';
+import '../../services/api/endpoints/student.dart';
+import 'report.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,12 +16,15 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 1; // Home is default
   Map<String, dynamic>? _userData;
+  Map<String, dynamic>? _ojtProgress;
   bool _isLoading = true;
+  bool _isLoadingProgress = false;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _loadOjtProgress();
   }
 
   Future<void> _loadUserData() async {
@@ -33,6 +38,41 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _loadOjtProgress() async {
+    setState(() {
+      _isLoadingProgress = true;
+    });
+
+    try {
+      final user = await ApiClient.I.getCurrentUser();
+      if (user != null && user['student_id'] != null) {
+        final studentApi = StudentApi(ApiClient.I);
+        final response = await studentApi.getOjtProgress(user['student_id']);
+        if (mounted) {
+          setState(() {
+            _ojtProgress = response['data']['progress'];
+            _isLoadingProgress = false;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoadingProgress = false;
+            _ojtProgress = null;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error loading OJT progress: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingProgress = false;
+          _ojtProgress = null; // Set to null so it shows "Not Started"
+        });
+      }
     }
   }
 
@@ -115,16 +155,16 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : Padding(
-                      padding: const EdgeInsets.all(24.0),
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.all(20.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 20),
+                          // Welcome Section
                           const Text(
-                            'Welcome,',
+                            'Welcome back,',
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 16,
                               color: Color(0xFF6B7280),
                             ),
                           ),
@@ -132,92 +172,165 @@ class _HomeScreenState extends State<HomeScreen> {
                           Text(
                             '${_userData?['first_name'] ?? ''} ${_userData?['last_name'] ?? ''}',
                             style: const TextStyle(
-                              fontSize: 32,
+                              fontSize: 28,
                               fontWeight: FontWeight.bold,
                               color: Color(0xFF3D5A7E),
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE8EFF9),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.school,
-                                  size: 16,
-                                  color: Color(0xFF4A6491),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  _userData?['course'] ?? 'Student',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Color(0xFF4A6491),
-                                    fontWeight: FontWeight.w600,
+                          const SizedBox(height: 16),
+                          
+                          // Info Cards Row
+                          Row(
+                            children: [
+                              // Course Badge
+                              Expanded(
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE8EFF9),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.school,
+                                        size: 20,
+                                        color: Color(0xFF4A6491),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          _userData?['course'] ?? 'N/A',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Color(0xFF4A6491),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          if (_userData?['company_name'] != null)
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.business,
-                                  size: 18,
-                                  color: Color(0xFF6B7280),
+                              ),
+                              const SizedBox(width: 12),
+                              // ID Badge
+                              Expanded(
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF3F4F6),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.badge,
+                                        size: 20,
+                                        color: Color(0xFF6B7280),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          _userData?['id_num'] ?? 'N/A',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Color(0xFF6B7280),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: Text(
-                                    _userData?['company_name'] ?? '',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      color: Color(0xFF6B7280),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          
+                          // Company Card
+                          if (_userData?['company_name'] != null)
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF4A6491), Color(0xFF3D5A7E)],
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.business,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Company',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.white70,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          _userData?['company_name'] ?? 'N/A',
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          const SizedBox(height: 12),
-                          if (_userData?['id_num'] != null)
-                            Text(
-                              'ID: ${_userData?['id_num']}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF9CA3AF),
+                                ],
                               ),
                             ),
-                          const Spacer(),
-                          Center(
-                            child: Column(
-                              children: [
-                                Image.asset(
-                                  'lib/img/logo/launchpad.png',
-                                  width: 80,
-                                  height: 80,
+                          const SizedBox(height: 24),
+                          
+                          // OJT Progress Section
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'OJT Progress',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF3D5A7E),
                                 ),
-                                const SizedBox(height: 16),
-                                const Text(
-                                  'Your OJT Dashboard',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Color(0xFF9CA3AF),
-                                  ),
+                              ),
+                              TextButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const ReportScreen(),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.add_circle, size: 20),
+                                label: const Text('Submit Report'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: const Color(0xFF4A6491),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                          const Spacer(),
+                          const SizedBox(height: 16),
+                          
+                          // Progress Card
+                          _buildProgressCard(),
+                          const SizedBox(height: 20),
+                          
+                          // Stats Grid
+                          _buildStatsGrid(),
                         ],
                       ),
                     ),
@@ -240,6 +353,296 @@ class _HomeScreenState extends State<HomeScreen> {
             // Notifications page
           }
         },
+      ),
+    );
+  }
+
+  Widget _buildProgressCard() {
+    // Show "Not Started" state if no progress data
+    if (_isLoadingProgress) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_ojtProgress == null) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Icon(
+              Icons.hourglass_empty,
+              size: 48,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Not Started',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF6B7280),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Your OJT progress will appear here once you start',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Handle both string and number types from API
+    final completedHours = double.tryParse(_ojtProgress?['completed_hours']?.toString() ?? '0') ?? 0.0;
+    final requiredHours = double.tryParse(_ojtProgress?['required_hours']?.toString() ?? '500') ?? 500.0;
+    final remainingHours = requiredHours - completedHours;
+    final percentage = (completedHours / requiredHours * 100).clamp(0, 100);
+    final status = _ojtProgress?['status'] ?? 'not_started';
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                status == 'not_started' ? 'Not Started' : status == 'completed' ? 'Completed' : 'In Progress',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: status == 'completed' ? const Color(0xFF10B981) : status == 'in_progress' ? const Color(0xFF3B82F6) : const Color(0xFF6B7280),
+                ),
+              ),
+              Text(
+                '${percentage.toStringAsFixed(1)}%',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF4A6491),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Progress Bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: percentage / 100,
+              minHeight: 12,
+              backgroundColor: const Color(0xFFE5E7EB),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                status == 'completed' ? const Color(0xFF10B981) : const Color(0xFF4A6491),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Completed',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${completedHours.toStringAsFixed(0)} hrs',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF10B981),
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  const Text(
+                    'Remaining',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${remainingHours.toStringAsFixed(0)} hrs',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFEF4444),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3F4F6),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.access_time,
+                  size: 16,
+                  color: Color(0xFF6B7280),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Required: ${requiredHours.toStringAsFixed(0)} hours',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsGrid() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildStatCard(
+            icon: Icons.assessment,
+            title: 'Evaluation',
+            value: 'N/A',
+            subtitle: 'Not yet evaluated',
+            color: const Color(0xFF3B82F6),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildStatCard(
+            icon: Icons.star,
+            title: 'Performance',
+            value: 'N/A',
+            subtitle: 'Not yet rated',
+            color: const Color(0xFFF59E0B),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCard({
+    required IconData icon,
+    required String title,
+    required String value,
+    required String subtitle,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 20,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFF6B7280),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF3D5A7E),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: const TextStyle(
+              fontSize: 11,
+              color: Color(0xFF9CA3AF),
+            ),
+          ),
+        ],
       ),
     );
   }

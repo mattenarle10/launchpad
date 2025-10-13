@@ -36,9 +36,10 @@ class Toast {
           borderRadius: BorderRadius.circular(8),
         ),
         margin: const EdgeInsets.only(
-          top: 50,
+          top: 16,
           right: 16,
           left: 16,
+          bottom: 16,
         ),
         duration: duration,
       ),
