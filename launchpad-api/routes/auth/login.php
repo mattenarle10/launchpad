@@ -49,6 +49,18 @@ if ($result->num_rows === 0) {
         }
     }
     
+    // For companies, check if they exist in unverified_companies table
+    if ($userType === 'company') {
+        $unverifiedStmt = $conn->prepare("SELECT * FROM unverified_companies WHERE username = ? LIMIT 1");
+        $unverifiedStmt->bind_param('s', $username);
+        $unverifiedStmt->execute();
+        $unverifiedResult = $unverifiedStmt->get_result();
+        
+        if ($unverifiedResult->num_rows > 0) {
+            Response::error('Your company account is pending verification. Please wait for CDC approval.', 401);
+        }
+    }
+    
     Response::error('Invalid credentials', 401);
 }
 

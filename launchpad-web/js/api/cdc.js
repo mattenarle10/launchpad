@@ -320,21 +320,21 @@ const CDCAPI = {
             
             const content = `
                 <div style="padding: 10px 0;">
-                    <p style="margin-bottom: 16px; color: #6B7280;">
+                    <p style="margin-bottom: 20px; color: #6B7280; line-height: 1.6;">
                         Select a partner company to assign <strong>${student.first_name} ${student.last_name}</strong> to:
                     </p>
                     <div class="form-group">
-                        <label for="company-select" style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                        <label for="company-select" style="display: block; margin-bottom: 10px; font-weight: 600; color: #374151; font-size: 14px;">
                             Partner Company <span style="color: #EF4444;">*</span>
                         </label>
-                        <select id="company-select" style="width: 100%; padding: 10px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 14px;" required>
-                            <option value="">-- Select a company --</option>
+                        <select id="company-select" class="custom-select" required>
+                            <option value="" disabled selected>-- Select a company --</option>
                             ${companiesOptions}
                         </select>
                     </div>
-                    <div style="background: #EFF6FF; border-left: 4px solid #3B82F6; padding: 12px; border-radius: 6px; margin-top: 16px;">
-                        <p style="margin: 0; color: #1E40AF; font-size: 13px;">
-                            <strong>Note:</strong> The student will be associated with the selected company for their OJT placement.
+                    <div style="background: #EFF6FF; border-left: 4px solid #3B82F6; padding: 14px 16px; border-radius: 8px; margin-top: 20px;">
+                        <p style="margin: 0; color: #1E40AF; font-size: 13px; line-height: 1.5;">
+                            <strong>💼 Note:</strong> The student will be associated with the selected company for their OJT placement.
                         </p>
                     </div>
                 </div>
@@ -360,14 +360,20 @@ const CDCAPI = {
             
             // Set up approve button handler
             setTimeout(() => {
+                const companySelect = document.getElementById('company-select');
+                
                 document.getElementById('confirm-approve-btn')?.addEventListener('click', async () => {
-                    const companySelect = document.getElementById('company-select');
-                    const companyId = parseInt(companySelect.value);
+                    const companyId = parseInt(companySelect.value, 10);
                     
-                    if (!companyId) {
+                    if (!companyId || isNaN(companyId) || companyId <= 0) {
                         showError('Please select a company');
+                        companySelect.classList.add('error');
+                        companySelect.focus();
                         return;
                     }
+                    
+                    // Remove error class if valid
+                    companySelect.classList.remove('error');
                     
                     try {
                         await this.verifyStudent(student.student_id, companyId);

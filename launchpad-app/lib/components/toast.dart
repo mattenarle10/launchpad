@@ -35,7 +35,11 @@ class Toast {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
-        margin: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(
+          top: 50,
+          right: 16,
+          left: 16,
+        ),
         duration: duration,
       ),
     );

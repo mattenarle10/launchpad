@@ -68,8 +68,10 @@ class APIClient {
         }
 
         try {
+            console.log('API Request:', { url, method: config.method, body: config.body });
             const response = await fetch(url, config);
             const data = await response.json();
+            console.log('API Response:', { status: response.status, data });
 
             if (!response.ok) {
                 throw new Error(data.message || 'Request failed');

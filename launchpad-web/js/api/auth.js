@@ -6,7 +6,7 @@ import client from './client.js';
 
 const AuthAPI = {
     /**
-     * Login user (CDC, Student, or Company)
+     * Login user (CDC,  or Company)
      */
     async login(username, password, userType) {
         const data = await client.post('/auth/login', { 

@@ -13,8 +13,11 @@ Auth::requireRole(ROLE_CDC);
 
 $studentId = intval($id);
 
+// Get JSON input
+$data = json_decode(file_get_contents('php://input'), true);
+
 // Require company_id to attach student to an existing verified company
-$companyId = isset($_POST['company_id']) ? intval($_POST['company_id']) : 0;
+$companyId = isset($data['company_id']) ? intval($data['company_id']) : 0;
 if ($companyId <= 0) {
     Response::error('company_id is required and must be a positive integer', 400);
 }

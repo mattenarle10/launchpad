@@ -4,7 +4,7 @@
  */
 
 import { AuthAPI } from '../api/index.js';
-import { showSuccess, showError } from '../utils/notifications.js';
+import { showSuccess, showError, showWarning } from '../utils/notifications.js';
 
 // Get login type from URL parameter (?type=cdc or ?type=company)
 const urlParams = new URLSearchParams(window.location.search);
@@ -50,7 +50,9 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     
     try {
         // Call login API with appropriate user type
+        console.log('Attempting login:', { username, userType: loginType });
         const response = await AuthAPI.login(username, password, loginType);
+        console.log('Login response:', response);
         
         if (response.success) {
             showSuccess('Login successful! Redirecting...');
@@ -65,7 +67,24 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
             }, 1000);
         }
     } catch (error) {
-        showError(error.message || 'Login failed. Please check your credentials.');
+        console.error('Login error:', error);
+        
+        const errorMessage = error.message || 'Login failed';
+        
+        // Check for specific error types
+        if (errorMessage.toLowerCase().includes('pending verification') || 
+            errorMessage.toLowerCase().includes('pending approval')) {
+            showWarning(errorMessage);
+        } else if (errorMessage.toLowerCase().includes('invalid credentials') || 
+                   errorMessage.toLowerCase().includes('unauthorized')) {
+            showError('Invalid username or password. Please try again.');
+        } else if (errorMessage.toLowerCase().includes('network') || 
+                   errorMessage.toLowerCase().includes('fetch')) {
+            showError('Network error. Please check your connection and try again.');
+        } else {
+            showError(errorMessage);
+        }
+        
         submitBtn.disabled = false;
         submitBtn.textContent = 'Login';
     }
