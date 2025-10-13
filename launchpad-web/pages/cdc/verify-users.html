@@ -85,30 +85,76 @@
                     </div>
                 </div>
 
-                <!-- Table -->
-                <div class="table-container">
-                    <div class="table-header">
-                        <h2 class="table-title">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 8px;">
-                                <path d="M9 11l3 3L22 4"></path>
-                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                            </svg>
-                            Pending Student Verifications
-                        </h2>
-                        <div class="table-search">
-                            <input type="text" class="search-input" id="search-input" placeholder="Search by ID, name, or email...">
-                            <select class="filter-dropdown" id="course-filter">
-                                <option value="">All Courses</option>
-                                <option value="IT">IT</option>
-                                <option value="COMSCI">Computer Science</option>
-                                <option value="EMC">EMC</option>
-                            </select>
+                <!-- Tab Navigation -->
+                <div class="tab-navigation">
+                    <button class="tab-btn active" data-tab="students">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        Students
+                    </button>
+                    <button class="tab-btn" data-tab="companies">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                        Companies
+                    </button>
+                </div>
+
+                <!-- Students Tab -->
+                <div class="tab-content active" id="students-tab">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 8px;">
+                                    <path d="M9 11l3 3L22 4"></path>
+                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                                </svg>
+                                Pending Student Verifications
+                            </h2>
+                            <div class="table-search">
+                                <input type="text" class="search-input" id="students-search-input" placeholder="Search by ID, name, or email...">
+                                <select class="filter-dropdown" id="course-filter">
+                                    <option value="">All Courses</option>
+                                    <option value="IT">IT</option>
+                                    <option value="COMSCI">Computer Science</option>
+                                    <option value="EMC">EMC</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="students-table-wrapper">
+                            <div class="loading">
+                                <p>Loading pending students...</p>
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    <div id="table-wrapper">
-                        <div class="loading">
-                            <p>Loading pending students...</p>
+                <!-- Companies Tab -->
+                <div class="tab-content" id="companies-tab">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 8px;">
+                                    <path d="M9 11l3 3L22 4"></path>
+                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                                </svg>
+                                Pending Company Verifications
+                            </h2>
+                            <div class="table-search">
+                                <input type="text" class="search-input" id="companies-search-input" placeholder="Search by name, email, or website...">
+                            </div>
+                        </div>
+
+                        <div id="companies-table-wrapper">
+                            <div class="loading">
+                                <p>Loading pending companies...</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -120,9 +166,15 @@
         import { loadSidebar, loadUserInfo } from '../../js/components.js';
         import { initUserDropdown } from '../../js/pages/dropdown.js';
         import CDCAPI from '../../js/api/cdc.js';
+        import CompanyAPI from '../../js/api/company.js';
         import client from '../../js/api/client.js';
         import { showError } from '../../js/utils/notifications.js';
         import { openImageViewer } from '../../js/utils/image-viewer.js';
+
+        let studentsData = [];
+        let companiesData = [];
+        let studentDataTable = null;
+        let companyDataTable = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
             // Check authentication
@@ -148,21 +200,51 @@
             );
             
             // Load students table using CDC API
-            const { dataTable, students } = await CDCAPI.loadUnverifiedStudentsTable('table-wrapper', 'pending-students-count');
+            const studentsResult = await CDCAPI.loadUnverifiedStudentsTable('students-table-wrapper', 'pending-students-count');
+            studentDataTable = studentsResult.dataTable;
+            studentsData = studentsResult.students;
 
-            // Setup search
-            document.getElementById('search-input')?.addEventListener('input', (e) => {
-                dataTable.search(e.target.value);
+            // Load companies table using Company API
+            const companiesResult = await CompanyAPI.loadUnverifiedCompaniesTable('companies-table-wrapper', 'pending-companies-count');
+            companyDataTable = companiesResult.dataTable;
+            companiesData = companiesResult.companies;
+
+            // Setup students search
+            document.getElementById('students-search-input')?.addEventListener('input', (e) => {
+                studentDataTable.search(e.target.value);
             });
 
             // Setup course filter
             document.getElementById('course-filter')?.addEventListener('change', (e) => {
                 const course = e.target.value;
                 if (course) {
-                    dataTable.setData(students.filter(s => s.course === course));
+                    studentDataTable.setData(studentsData.filter(s => s.course === course));
                 } else {
-                    dataTable.setData(students);
+                    studentDataTable.setData(studentsData);
                 }
+            });
+
+            // Setup companies search
+            document.getElementById('companies-search-input')?.addEventListener('input', (e) => {
+                companyDataTable.search(e.target.value);
+            });
+
+            // Tab switching logic
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetTab = btn.getAttribute('data-tab');
+
+                    // Remove active class from all tabs and buttons
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+
+                    // Add active class to clicked button and corresponding tab
+                    btn.classList.add('active');
+                    document.getElementById(`${targetTab}-tab`).classList.add('active');
+                });
             });
         });
     </script>

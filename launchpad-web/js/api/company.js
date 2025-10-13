@@ -67,6 +67,216 @@ const CompanyAPI = {
         return client.delete(`/admin/companies/${id}`);
     },
 
+    // ========== VERIFICATION PAGE FUNCTIONS ==========
+
+    /**
+     * Load and display unverified companies awaiting verification
+     */
+    async loadUnverifiedCompaniesTable(tableWrapperId, statElementId) {
+        const tableWrapper = document.getElementById(tableWrapperId);
+        tableWrapper.innerHTML = '<div class="loading"><div class="loading-spinner"></div><p>Loading pending companies...</p></div>';
+
+        try {
+            const response = await this.getUnverified();
+            const companies = response.data || [];
+
+            // Update stats if element exists
+            if (statElementId) {
+                const statElement = document.getElementById(statElementId);
+                if (statElement) statElement.textContent = companies.length;
+            }
+
+            // Create DataTable
+            const dataTable = new DataTable({
+                containerId: tableWrapperId,
+                columns: [
+                    { key: 'company_name', label: 'Company Name', sortable: true },
+                    { key: 'email', label: 'Email', sortable: true },
+                    { key: 'contact_num', label: 'Contact', sortable: true },
+                    { 
+                        key: 'address', 
+                        label: 'Address', 
+                        sortable: true,
+                        format: (value) => value || 'N/A'
+                    },
+                    { 
+                        key: 'website', 
+                        label: 'Website', 
+                        sortable: true,
+                        format: (value) => value ? `<a href="${value}" target="_blank" style="color: #3B82F6;">${value}</a>` : 'N/A'
+                    },
+                    { 
+                        key: 'created_at', 
+                        label: 'Submitted', 
+                        sortable: true,
+                        format: (value) => this.formatDate(value)
+                    }
+                ],
+                actions: [
+                    {
+                        type: 'view',
+                        label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>View',
+                        onClick: (row) => this.viewUnverifiedCompanyModal(row, () => this.loadUnverifiedCompaniesTable(tableWrapperId, statElementId))
+                    }
+                ],
+                data: companies,
+                pageSize: 10,
+                emptyMessage: 'No pending company verifications'
+            });
+
+            return { dataTable, companies };
+
+        } catch (error) {
+            console.error('Error loading unverified companies:', error);
+            tableWrapper.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                    </div>
+                    <div class="empty-state-text">Error loading pending companies</div>
+                    <div class="empty-state-subtext">${error.message}</div>
+                </div>
+            `;
+            showError('Failed to load pending companies: ' + error.message);
+            throw error;
+        }
+    },
+
+    /**
+     * Show unverified company details in modal with approve/reject actions
+     */
+    viewUnverifiedCompanyModal(company, onSuccess) {
+        const logoUrl = company.company_logo ? `../../../launchpad-api/uploads/company_logos/${company.company_logo}` : null;
+        const moaUrl = company.moa_document ? `../../../launchpad-api/uploads/company_moas/${company.moa_document}` : null;
+
+        const content = `
+            <div class="detail-row">
+                <span class="detail-label">Company Name:</span>
+                <span class="detail-value">${company.company_name}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Username:</span>
+                <span class="detail-value">${company.username || 'N/A'}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Email:</span>
+                <span class="detail-value">${company.email}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Contact:</span>
+                <span class="detail-value">${company.contact_num || 'N/A'}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Address:</span>
+                <span class="detail-value">${company.address || 'N/A'}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Website:</span>
+                <span class="detail-value">
+                    ${company.website ? `<a href="${company.website}" target="_blank" style="color: #3B82F6;">${company.website}</a>` : 'N/A'}
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Submitted:</span>
+                <span class="detail-value">${this.formatDate(company.created_at)}</span>
+            </div>
+            ${logoUrl || moaUrl ? `
+                <div class="cor-preview">
+                    <h4>Documents</h4>
+                    <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: center;">
+                        ${logoUrl ? `
+                            <button class="btn-action btn-view" onclick="window.viewCompanyDocImage('${logoUrl}', '${company.company_name} - Logo')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                                View Logo
+                            </button>
+                        ` : ''}
+                        ${moaUrl ? `
+                            <button class="btn-action btn-view" onclick="window.viewCompanyDocImage('${moaUrl}', '${company.company_name} - MOA')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                </svg>
+                                View MOA
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            ` : ''}
+        `;
+
+        const modal = createModal('company-verification-modal', {
+            title: `Verify Company - ${company.company_name}`,
+            size: 'medium'
+        });
+
+        const footer = `
+            <button class="btn-modal btn-reject" id="reject-company-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+                Reject
+            </button>
+            <button class="btn-modal btn-approve" id="approve-company-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Approve
+            </button>
+        `;
+
+        modal.setFooter(footer);
+        modal.open(content);
+
+        // Setup image viewer
+        setTimeout(() => {
+            window.viewCompanyDocImage = (imageUrl, title) => {
+                openImageViewer(imageUrl, title);
+            };
+
+            // Approve handler
+            document.getElementById('approve-company-btn')?.addEventListener('click', async () => {
+                try {
+                    await this.verifyCompany(company.company_id);
+                    showSuccess(`${company.company_name} has been verified successfully!`);
+                    modal.close();
+                    
+                    if (onSuccess) {
+                        setTimeout(() => onSuccess(), 1000);
+                    }
+                } catch (error) {
+                    console.error('Error verifying company:', error);
+                    showError('Failed to verify company: ' + error.message);
+                }
+            });
+
+            // Reject handler
+            document.getElementById('reject-company-btn')?.addEventListener('click', async () => {
+                try {
+                    await this.rejectCompany(company.company_id);
+                    showWarning(`${company.company_name} has been rejected.`);
+                    modal.close();
+                    
+                    if (onSuccess) {
+                        setTimeout(() => onSuccess(), 1000);
+                    }
+                } catch (error) {
+                    console.error('Error rejecting company:', error);
+                    showError('Failed to reject company: ' + error.message);
+                }
+            });
+        }, 0);
+    },
+
     // ========== COMPANIES PAGE FUNCTIONS ==========
 
     /**
