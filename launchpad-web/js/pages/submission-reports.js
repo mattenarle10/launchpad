@@ -12,8 +12,11 @@ import { showSuccess, showError, showWarning } from '../utils/notifications.js';
 import { createModal } from '../utils/modal.js';
 import { openFileViewer } from '../utils/file-viewer.js';
 
-let reportsData = [];
-let dataTable = null;
+let pendingReportsData = [];
+let approvedReportsData = [];
+let pendingDataTable = null;
+let approvedDataTable = null;
+let currentTab = 'pending';
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Check authentication
@@ -38,18 +41,48 @@ document.addEventListener('DOMContentLoaded', async () => {
         () => console.log('View profile')
     );
     
-    // Load reports table
-    await loadReportsTable();
+    // Load both tables
+    await loadPendingReports();
+    await loadApprovedReports();
 
-    // Setup search
-    document.getElementById('reports-search-input')?.addEventListener('input', (e) => {
-        dataTable.search(e.target.value);
+    // Setup tabs
+    setupTabs();
+
+    // Setup search for pending tab
+    document.getElementById('pending-search-input')?.addEventListener('input', (e) => {
+        pendingDataTable?.search(e.target.value);
+    });
+
+    // Setup search for approved tab
+    document.getElementById('approved-search-input')?.addEventListener('input', (e) => {
+        approvedDataTable?.search(e.target.value);
     });
 });
 
-async function loadReportsTable() {
-    const tableWrapper = document.getElementById('reports-table-wrapper');
-    tableWrapper.innerHTML = '<div class="loading"><div class="loading-spinner"></div><p>Loading reports...</p></div>';
+function setupTabs() {
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetTab = btn.getAttribute('data-tab');
+
+            // Remove active class from all tabs and buttons
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+
+            // Add active class to clicked button and corresponding tab
+            btn.classList.add('active');
+            document.getElementById(`${targetTab}-tab`).classList.add('active');
+            
+            currentTab = targetTab;
+        });
+    });
+}
+
+async function loadPendingReports() {
+    const tableWrapper = document.getElementById('pending-table-wrapper');
+    tableWrapper.innerHTML = '<div class="loading"><div class="loading-spinner"></div><p>Loading pending reports...</p></div>';
 
     try {
         const response = await ReportAPI.getPendingReports();
@@ -59,11 +92,11 @@ async function loadReportsTable() {
         const statElement = document.getElementById('pending-reports-count');
         if (statElement) statElement.textContent = reports.length;
 
-        reportsData = reports;
+        pendingReportsData = reports;
 
         // Create DataTable
-        dataTable = new DataTable({
-            containerId: 'reports-table-wrapper',
+        pendingDataTable = new DataTable({
+            containerId: 'pending-table-wrapper',
             columns: [
                 { 
                     key: 'report_date', 
@@ -143,11 +176,101 @@ async function loadReportsTable() {
                 <div class="empty-state-subtext">${error.message}</div>
             </div>
         `;
-        showError('Failed to load reports: ' + error.message);
+        showError('Failed to load pending reports: ' + error.message);
     }
 }
 
-function viewReportModal(report) {
+async function loadApprovedReports() {
+    const tableWrapper = document.getElementById('approved-table-wrapper');
+    tableWrapper.innerHTML = '<div class="loading"><div class="loading-spinner"></div><p>Loading approved reports...</p></div>';
+
+    try {
+        const response = await ReportAPI.getApprovedReports();
+        const reports = response.data || [];
+
+        // Update stats
+        const statElement = document.getElementById('approved-reports-count');
+        if (statElement) statElement.textContent = reports.length;
+
+        approvedReportsData = reports;
+
+        // Create DataTable (view only, no approve/decline actions)
+        approvedDataTable = new DataTable({
+            containerId: 'approved-table-wrapper',
+            columns: [
+                { 
+                    key: 'report_date', 
+                    label: 'Date', 
+                    sortable: true,
+                    format: (value) => formatDate(value)
+                },
+                { 
+                    key: 'id_num', 
+                    label: 'Student ID', 
+                    sortable: true
+                },
+                { 
+                    key: 'first_name', 
+                    label: 'Student Name', 
+                    sortable: true,
+                    format: (value, row) => `${row.first_name} ${row.last_name}`
+                },
+                { 
+                    key: 'course', 
+                    label: 'Course', 
+                    sortable: true,
+                    format: (value) => `<span class="course-badge ${value.toLowerCase()}">${value}</span>`
+                },
+                { 
+                    key: 'hours_requested', 
+                    label: 'Hours', 
+                    sortable: true,
+                    format: (value) => `<strong style="color: #10B981;">${value} hrs</strong>`
+                },
+                { 
+                    key: 'activity_type', 
+                    label: 'Activity', 
+                    sortable: true
+                },
+                { 
+                    key: 'reviewed_at', 
+                    label: 'Approved', 
+                    sortable: true,
+                    format: (value) => formatDate(value)
+                }
+            ],
+            actions: [
+                {
+                    type: 'view',
+                    label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>View',
+                    onClick: (row) => viewReportModal(row, true)
+                }
+            ],
+            data: reports,
+            pageSize: 10,
+            emptyMessage: 'No approved reports yet'
+        });
+
+    } catch (error) {
+        console.error('Error loading approved reports:', error);
+        tableWrapper.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                </div>
+                <div class="empty-state-text">Error loading approved reports</div>
+                <div class="empty-state-subtext">${error.message}</div>
+            </div>
+        `;
+        showError('Failed to load approved reports: ' + error.message);
+    }
+}
+
+function viewReportModal(report, isApproved = false) {
     const reportUrl = `../../../launchpad-api/uploads/daily_reports/${report.report_file}`;
     
     const content = `
@@ -200,7 +323,9 @@ function viewReportModal(report) {
         size: 'medium'
     });
 
-    const footer = `
+    const footer = isApproved ? `
+        <button class="btn-modal" data-modal-close>Close</button>
+    ` : `
         <button class="btn-modal" data-modal-close>Close</button>
         <button class="btn-modal btn-reject" id="modal-reject-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
@@ -226,15 +351,17 @@ function viewReportModal(report) {
             openFileViewer(url, title);
         };
 
-        document.getElementById('modal-approve-btn')?.addEventListener('click', () => {
-            modal.close();
-            approveReportWithConfirm(report);
-        });
+        if (!isApproved) {
+            document.getElementById('modal-approve-btn')?.addEventListener('click', () => {
+                modal.close();
+                approveReportWithConfirm(report);
+            });
 
-        document.getElementById('modal-reject-btn')?.addEventListener('click', () => {
-            modal.close();
-            rejectReportWithConfirm(report);
-        });
+            document.getElementById('modal-reject-btn')?.addEventListener('click', () => {
+                modal.close();
+                rejectReportWithConfirm(report);
+            });
+        }
     }, 0);
 }
 
@@ -349,7 +476,10 @@ async function approveReportWithConfirm(report) {
                 modal.close();
                 showSuccess(`Report approved! ${hours} hours added to ${report.first_name} ${report.last_name}'s progress.`);
                 
-                setTimeout(() => loadReportsTable(), 1000);
+                setTimeout(() => {
+                    loadPendingReports();
+                    loadApprovedReports();
+                }, 1000);
             } catch (error) {
                 console.error('Error approving report:', error);
                 showError('Failed to approve report: ' + error.message);
@@ -424,7 +554,7 @@ async function rejectReportWithConfirm(report) {
                 modal.close();
                 showWarning(`Report declined. ${report.first_name} ${report.last_name} will be notified.`);
                 
-                setTimeout(() => loadReportsTable(), 1000);
+                setTimeout(() => loadPendingReports(), 1000);
             } catch (error) {
                 console.error('Error declining report:', error);
                 showError('Failed to decline report: ' + error.message);

@@ -13,6 +13,13 @@ const ReportAPI = {
     },
 
     /**
+     * Get approved reports
+     */
+    async getApprovedReports(page = 1, pageSize = 100) {
+        return client.get(`/admin/reports/approved?page=${page}&pageSize=${pageSize}`);
+    },
+
+    /**
      * Review report (approve or reject)
      */
     async reviewReport(reportId, action, rejectionReason = null) {

@@ -194,6 +194,12 @@ try {
             exit;
         }
         
+        // /admin/reports/approved
+        if (count($pathParts) === 3 && $pathParts[1] === 'reports' && $pathParts[2] === 'approved') {
+            require __DIR__ . '/../routes/admin/get-approved-reports.php';
+            exit;
+        }
+        
         // /admin/reports/:id/review
         if (count($pathParts) === 4 && $pathParts[1] === 'reports' && $pathParts[3] === 'review') {
             $id = $pathParts[2];

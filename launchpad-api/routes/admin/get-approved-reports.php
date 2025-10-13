@@ -1,0 +1,49 @@
+<?php
+
+/**
+ * GET /admin/reports/approved
+ * CDC views all approved daily reports
+ */
+
+if ($method !== 'GET') {
+    Response::error('Method not allowed', 405);
+}
+
+Auth::requireRole(ROLE_CDC);
+
+$conn = Database::getConnection();
+
+$page = intval($_GET['page'] ?? 1);
+$pageSize = min(intval($_GET['pageSize'] ?? DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE);
+$offset = ($page - 1) * $pageSize;
+
+// Get total count
+$total = $conn->query("SELECT COUNT(*) as count FROM daily_reports WHERE status = 'approved'")->fetch_assoc()['count'];
+
+// Get approved reports with student info
+$stmt = $conn->prepare("
+    SELECT 
+        r.*,
+        s.id_num,
+        s.first_name,
+        s.last_name,
+        s.email,
+        s.course,
+        s.company_name
+    FROM daily_reports r
+    JOIN verified_students s ON r.student_id = s.student_id
+    WHERE r.status = 'approved'
+    ORDER BY r.reviewed_at DESC
+    LIMIT ? OFFSET ?
+");
+$stmt->bind_param('ii', $pageSize, $offset);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$reports = [];
+while ($row = $result->fetch_assoc()) {
+    $reports[] = $row;
+}
+
+Response::paginated($reports, $page, $pageSize, $total);
+
