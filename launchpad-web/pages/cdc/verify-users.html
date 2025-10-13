@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="../../css/dashboard.css">
     <link rel="stylesheet" href="../../css/dropdown.css">
     <link rel="stylesheet" href="../../css/table.css">
+    <link rel="stylesheet" href="../../css/notifications.css">
+    <link rel="stylesheet" href="../../css/image-viewer.css">
 </head>
 <body>
     <div class="app-layout">
@@ -86,7 +88,13 @@
                 <!-- Table -->
                 <div class="table-container">
                     <div class="table-header">
-                        <h2 class="table-title">📋 Pending Student Verifications</h2>
+                        <h2 class="table-title">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 8px;">
+                                <path d="M9 11l3 3L22 4"></path>
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                            </svg>
+                            Pending Student Verifications
+                        </h2>
                         <div class="table-search">
                             <input type="text" class="search-input" id="search-input" placeholder="Search by ID, name, or email...">
                             <select class="filter-dropdown" id="course-filter">
@@ -128,212 +136,67 @@
     <script type="module">
         import { loadSidebar, loadUserInfo } from '../../js/components.js';
         import { initUserDropdown } from '../../js/pages/dropdown.js';
-        import DataTable from '../../js/pages/table.js';
+        import CDCAPI from '../../js/api/cdc.js';
+        import client from '../../js/api/client.js';
+        import { showError } from '../../js/utils/notifications.js';
+        import { openImageViewer } from '../../js/utils/image-viewer.js';
 
-        // Load components on page load
         document.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication
+            if (!client.isAuthenticated()) {
+                showError('Please login to access this page');
+                setTimeout(() => window.location.href = '../login.html', 1500);
+                return;
+            }
+
+            // Load components
             await loadSidebar('verify-users');
             loadUserInfo();
             
-            // Initialize dropdown with handlers
+            // Initialize dropdown
             initUserDropdown(
                 'user-menu-toggle',
                 'user-dropdown',
                 () => {
-                    // Logout handler
-                    localStorage.removeItem('auth_token');
-                    localStorage.removeItem('user');
+                    client.clearAuth();
                     window.location.href = '../login.html';
                 },
-                () => {
-                    // Profile handler
-                    console.log('View profile');
-                }
+                () => console.log('View profile')
             );
             
-            initVerifyUsersPage();
-        });
+            // Load students table using CDC API
+            const { dataTable, students } = await CDCAPI.loadUnverifiedStudentsTable('table-wrapper', 'pending-students-count');
 
-        // Initialize the verify users page
-        function initVerifyUsersPage() {
-            // Sample data - Replace with API call
-            const sampleStudents = [
-                {
-                    student_id: 1,
-                    id_num: '2024-00001',
-                    first_name: 'Juan',
-                    last_name: 'Dela Cruz',
-                    email: 'juan@student.com',
-                    course: 'IT',
-                    contact_num: '09171234567',
-                    company_name: 'ABC Company',
-                    cor: 'cor_2024-00001_123456.pdf',
-                    created_at: '2025-10-10'
-                },
-                {
-                    student_id: 2,
-                    id_num: '2024-00002',
-                    first_name: 'Maria',
-                    last_name: 'Santos',
-                    email: 'maria@student.com',
-                    course: 'COMSCI',
-                    contact_num: '09181234567',
-                    company_name: 'XYZ Corp',
-                    cor: 'cor_2024-00002_123457.pdf',
-                    created_at: '2025-10-11'
-                }
-            ];
-
-            // Update stats
-            document.getElementById('pending-students-count').textContent = sampleStudents.length;
-
-            // Initialize DataTable
-            const table = new DataTable({
-                containerId: 'table-wrapper',
-                columns: [
-                    { key: 'id_num', label: 'ID Number', sortable: true },
-                    { 
-                        key: 'first_name', 
-                        label: 'Name', 
-                        sortable: true,
-                        format: (value, row) => `${row.first_name} ${row.last_name}`
-                    },
-                    { key: 'email', label: 'Email', sortable: true },
-                    { 
-                        key: 'course', 
-                        label: 'Course', 
-                        sortable: true,
-                        format: (value) => `<span class="course-badge ${value.toLowerCase()}">${value}</span>`
-                    },
-                    { key: 'company_name', label: 'Company', sortable: true },
-                    { key: 'created_at', label: 'Registered', sortable: true }
-                ],
-                actions: [
-                    {
-                        type: 'view',
-                        label: '👁 View',
-                        onClick: (row) => viewStudent(row)
-                    },
-                    {
-                        type: 'approve',
-                        label: '✓ Approve',
-                        onClick: (row) => approveStudent(row)
-                    },
-                    {
-                        type: 'reject',
-                        label: '✗ Reject',
-                        onClick: (row) => rejectStudent(row)
-                    }
-                ],
-                data: sampleStudents,
-                pageSize: 10,
-                emptyMessage: 'No pending student verifications'
+            // Setup search
+            document.getElementById('search-input')?.addEventListener('input', (e) => {
+                dataTable.search(e.target.value);
             });
 
-            // Search functionality
-            const searchInput = document.getElementById('search-input');
-            searchInput?.addEventListener('input', (e) => {
-                table.search(e.target.value);
-            });
-
-            // Filter functionality
-            const courseFilter = document.getElementById('course-filter');
-            courseFilter?.addEventListener('change', (e) => {
+            // Setup course filter
+            document.getElementById('course-filter')?.addEventListener('change', (e) => {
                 const course = e.target.value;
                 if (course) {
-                    const filtered = sampleStudents.filter(s => s.course === course);
-                    table.setData(filtered);
+                    dataTable.setData(students.filter(s => s.course === course));
                 } else {
-                    table.setData(sampleStudents);
+                    dataTable.setData(students);
                 }
             });
-        }
 
-        // View student details
-        function viewStudent(student) {
-            const modal = document.getElementById('view-modal');
-            const modalBody = document.getElementById('modal-body');
-
-            modalBody.innerHTML = `
-                <div class="detail-row">
-                    <span class="detail-label">ID Number:</span>
-                    <span class="detail-value">${student.id_num}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Name:</span>
-                    <span class="detail-value">${student.first_name} ${student.last_name}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Email:</span>
-                    <span class="detail-value">${student.email}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Course:</span>
-                    <span class="detail-value"><span class="course-badge ${student.course.toLowerCase()}">${student.course}</span></span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Contact:</span>
-                    <span class="detail-value">${student.contact_num}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Company:</span>
-                    <span class="detail-value">${student.company_name}</span>
-                </div>
-                <div class="cor-preview">
-                    <h4>Certificate of Registration</h4>
-                    <a href="../../uploads/student_cors/${student.cor}" target="_blank" class="file-link">
-                        📄 View COR Document
-                    </a>
-                </div>
-            `;
-
-            // Set up modal buttons
-            document.getElementById('modal-approve-btn').onclick = () => {
-                modal.style.display = 'none';
-                approveStudent(student);
+            // Setup modal handlers
+            window.closeModal = () => {
+                document.getElementById('view-modal').style.display = 'none';
             };
 
-            document.getElementById('modal-reject-btn').onclick = () => {
-                modal.style.display = 'none';
-                rejectStudent(student);
+            window.onclick = (event) => {
+                const modal = document.getElementById('view-modal');
+                if (event.target === modal) modal.style.display = 'none';
             };
 
-            modal.style.display = 'block';
-        }
-
-        // Approve student
-        function approveStudent(student) {
-            if (confirm(`Approve ${student.first_name} ${student.last_name}?`)) {
-                // TODO: Call API to approve student
-                console.log('Approving student:', student);
-                alert('Student verified successfully!');
-                location.reload();
-            }
-        }
-
-        // Reject student
-        function rejectStudent(student) {
-            const reason = prompt(`Why are you rejecting ${student.first_name} ${student.last_name}? (optional)`);
-            if (reason !== null) {
-                // TODO: Call API to reject student
-                console.log('Rejecting student:', student, 'Reason:', reason);
-                alert('Student registration rejected');
-                location.reload();
-            }
-        }
-
-        // Close modal
-        window.closeModal = function() {
-            document.getElementById('view-modal').style.display = 'none';
-        };
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('view-modal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        };
+            // Setup image viewer
+            window.viewCORImage = (imageUrl, title) => {
+                openImageViewer(imageUrl, title);
+            };
+        });
     </script>
 </body>
 </html>
