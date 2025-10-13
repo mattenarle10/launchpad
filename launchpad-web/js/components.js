@@ -1,81 +1,44 @@
 /**
- * Reusable UI Components
+ * Load Reusable Components
+ * Dynamically loads sidebar and other shared components
  */
 
-// Show loading spinner
-export function showLoading(containerId) {
-    const container = document.getElementById(containerId);
-    if (container) {
-        container.innerHTML = '<div class="loading-spinner"></div>';
+// Load Sidebar Component
+export async function loadSidebar(activePage) {
+    const sidebarPlaceholder = document.getElementById('sidebar-placeholder');
+    if (!sidebarPlaceholder) return;
+
+    try {
+        const response = await fetch('../sidebar.html');
+        const html = await response.text();
+        sidebarPlaceholder.innerHTML = html;
+
+        // Set active page
+        if (activePage) {
+            const navItems = sidebarPlaceholder.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                if (item.dataset.page === activePage) {
+                    item.classList.add('active');
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error loading sidebar:', error);
     }
 }
 
-// Show alert message
-export function showAlert(message, type = 'error', containerId = 'alert-container') {
-    const container = document.getElementById(containerId);
-    if (!container) return;
+// Load user info from localStorage
+export function loadUserInfo() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
     
-    const alertClass = type === 'error' ? 'alert-error' : 
-                      type === 'success' ? 'alert-success' : 'alert-info';
+    const userNameEl = document.getElementById('user-name');
+    const dropdownNameEl = document.getElementById('dropdown-user-name');
     
-    container.innerHTML = `<div class="alert ${alertClass}">${message}</div>`;
+    if (userNameEl && user.username) {
+        userNameEl.textContent = user.username;
+    }
     
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-        container.innerHTML = '';
-    }, 5000);
-}
-
-// Clear alerts
-export function clearAlert(containerId = 'alert-container') {
-    const container = document.getElementById(containerId);
-    if (container) {
-        container.innerHTML = '';
+    if (dropdownNameEl && user.username) {
+        dropdownNameEl.textContent = user.username;
     }
 }
-
-// Format date for display
-export function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-    });
-}
-
-// Format datetime for display
-export function formatDateTime(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-}
-
-// Show/hide elements
-export function show(elementId) {
-    const element = document.getElementById(elementId);
-    if (element) {
-        element.classList.remove('hidden');
-    }
-}
-
-export function hide(elementId) {
-    const element = document.getElementById(elementId);
-    if (element) {
-        element.classList.add('hidden');
-    }
-}
-
-// Toggle element visibility
-export function toggle(elementId) {
-    const element = document.getElementById(elementId);
-    if (element) {
-        element.classList.toggle('hidden');
-    }
-}
-
