@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 import '../services/api/client.dart';
-import '../screens/auth/login.dart';
+import '../screens/landing.dart';
 
 class MenuOverlay extends StatelessWidget {
   const MenuOverlay({super.key});
 
   Future<void> _handleLogout(BuildContext context) async {
+    // Close the menu first
+    Navigator.pop(context);
+    
+    // Clear authentication
     await ApiClient.I.clearAuth();
+    
+    // Navigate to landing page and clear all previous routes
     if (context.mounted) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        MaterialPageRoute(builder: (context) => const LandingScreen()),
         (route) => false,
       );
     }
@@ -81,10 +87,7 @@ class MenuOverlay extends StatelessWidget {
                 context,
                 'Logout',
                 Icons.logout_outlined,
-                () {
-                  Navigator.pop(context);
-                  _handleLogout(context);
-                },
+                () => _handleLogout(context),
               ),
               const SizedBox(height: 20),
               TextButton(

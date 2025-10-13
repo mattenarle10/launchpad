@@ -9,6 +9,7 @@ import '../../styles/colors.dart';
 import '../../services/api/client.dart';
 import '../../services/api/endpoints/student.dart';
 import 'signup-verify.dart';
+import '../landing.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -143,7 +144,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       });
 
       final studentApi = StudentApi(ApiClient.I);
-      final response = await studentApi.register(formData);
+      await studentApi.register(formData);
 
       if (!mounted) return;
 
@@ -184,7 +185,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
               )
             : IconButton(
                 icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LandingScreen()),
+                    (route) => false,
+                  );
+                },
               ),
       ),
       body: SafeArea(

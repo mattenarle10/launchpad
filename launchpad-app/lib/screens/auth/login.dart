@@ -6,6 +6,7 @@ import '../../services/api/client.dart';
 import '../../services/api/endpoints/student.dart';
 import 'signup.dart';
 import '../main/home.dart';
+import '../landing.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -81,7 +82,13 @@ class _LoginScreenState extends State<LoginScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const LandingScreen()),
+              (route) => false,
+            );
+          },
         ),
       ),
       body: SafeArea(
