@@ -114,3 +114,15 @@ CREATE TABLE IF NOT EXISTS daily_reports (
     INDEX idx_status (status)
 );
 
+-- Insert default CDC admin account (Anthony Gallego)
+-- Default password: admin123 (hashed with bcrypt)
+INSERT INTO cdc_users (username, email, first_name, last_name, password, role)
+VALUES (
+    'anthonygallego',
+    'anthony.gallego@cdc.edu',
+    'Anthony',
+    'Gallego',
+    '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+    'admin'
+);
+

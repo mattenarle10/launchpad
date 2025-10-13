@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import '../../components/custom_text_field.dart';
 import '../../components/custom_button.dart';
+import '../../components/toast.dart';
 import '../../styles/colors.dart';
 import '../../services/api/client.dart';
 import '../../services/api/endpoints/student.dart';
@@ -50,6 +52,11 @@ class _LoginScreenState extends State<LoginScreen> {
         data['user'] as Map<String, dynamic>,
       );
 
+      // Show success toast
+      if (mounted) {
+        Toast.success(context, 'Login successful!');
+      }
+
       // Navigate to home screen
       if (mounted) {
         Navigator.pushReplacement(
@@ -57,14 +64,22 @@ class _LoginScreenState extends State<LoginScreen> {
           MaterialPageRoute(builder: (context) => const HomeScreen()),
         );
       }
+    } on DioException catch (e) {
+      if (mounted) {
+        final errorMessage = e.response?.data?['message'] ?? 'Login failed';
+        
+        // Check if it's a pending verification error
+        if (errorMessage.contains('pending verification')) {
+          Toast.warning(context, errorMessage);
+        } else if (errorMessage.contains('Invalid credentials')) {
+          Toast.error(context, 'Invalid ID number or password');
+        } else {
+          Toast.error(context, errorMessage);
+        }
+      }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.red,
-          ),
-        );
+        Toast.error(context, 'An unexpected error occurred');
       }
     } finally {
       if (mounted) {

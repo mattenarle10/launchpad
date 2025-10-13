@@ -37,6 +37,18 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
+    // For students, check if they exist in unverified_students table
+    if ($userType === 'student') {
+        $unverifiedStmt = $conn->prepare("SELECT * FROM unverified_students WHERE id_num = ? LIMIT 1");
+        $unverifiedStmt->bind_param('s', $username);
+        $unverifiedStmt->execute();
+        $unverifiedResult = $unverifiedStmt->get_result();
+        
+        if ($unverifiedResult->num_rows > 0) {
+            Response::error('Your account is pending verification. Please wait for admin approval.', 401);
+        }
+    }
+    
     Response::error('Invalid credentials', 401);
 }
 
