@@ -13,6 +13,12 @@ Auth::requireRole(ROLE_CDC);
 
 $studentId = intval($id);
 
+// Require company_id to attach student to an existing verified company
+$companyId = isset($_POST['company_id']) ? intval($_POST['company_id']) : 0;
+if ($companyId <= 0) {
+    Response::error('company_id is required and must be a positive integer', 400);
+}
+
 $conn = Database::getConnection();
 
 // Get unverified student
@@ -27,14 +33,24 @@ if ($result->num_rows === 0) {
 
 $student = $result->fetch_assoc();
 
+// Validate target company exists (must be a verified company)
+$stmt = $conn->prepare("SELECT company_id, company_name FROM verified_companies WHERE company_id = ?");
+$stmt->bind_param('i', $companyId);
+$stmt->execute();
+$companyResult = $stmt->get_result();
+if ($companyResult->num_rows === 0) {
+    Response::error('Company not found or not verified', 404);
+}
+$company = $companyResult->fetch_assoc();
+
 // Move to verified_students
 $stmt = $conn->prepare("
     INSERT INTO verified_students 
-    (id_num, first_name, last_name, email, contact_num, course, password, cor, company_name)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    (id_num, first_name, last_name, email, contact_num, course, password, cor, company_name, company_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ");
 $stmt->bind_param(
-    'sssssssss',
+    'sssssssssi',
     $student['id_num'],
     $student['first_name'],
     $student['last_name'],
@@ -43,7 +59,8 @@ $stmt->bind_param(
     $student['course'],
     $student['password'],
     $student['cor'],
-    $student['company_name']
+    $company['company_name'],
+    $company['company_id']
 );
 $stmt->execute();
 $newStudentId = $conn->insert_id;

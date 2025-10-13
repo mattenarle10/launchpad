@@ -7,7 +7,8 @@ class StudentApi extends BaseApiGroup {
 
   /// Register a new student (no auth required)
   /// Requires FormData with:
-  /// - email, id_number, first_name, last_name, course, contact_num, password, company_name, cor (File - Certificate of Registration)
+  /// - email, id_number, first_name, last_name, course, contact_num, password, cor (File - Certificate of Registration)
+  /// Note: company will be assigned by CDC during verification
   Future<Map<String, dynamic>> register(FormData formData) async {
     final response = await client.post('/students/register', formData, skipAuth: true);
     return response as Map<String, dynamic>;

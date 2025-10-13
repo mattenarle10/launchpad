@@ -20,9 +20,11 @@ const CDCAPI = {
 
     /**
      * Verify student
+     * @param {number} id - Student ID
+     * @param {number} companyId - Company ID to attach student to
      */
-    async verifyStudent(id) {
-        return client.post(`/admin/verify/students/${id}`, {});
+    async verifyStudent(id, companyId) {
+        return client.post(`/admin/verify/students/${id}`, { company_id: companyId });
     },
 
     /**
@@ -143,7 +145,6 @@ const CDCAPI = {
                         sortable: true,
                         format: (value) => `<span class="course-badge ${value.toLowerCase()}">${value}</span>`
                     },
-                    { key: 'company_name', label: 'Company', sortable: true },
                     { 
                         key: 'created_at', 
                         label: 'Registered', 
@@ -225,12 +226,13 @@ const CDCAPI = {
                 <span class="detail-value">${student.contact_num || 'N/A'}</span>
             </div>
             <div class="detail-row">
-                <span class="detail-label">Company:</span>
-                <span class="detail-value">${student.company_name || 'N/A'}</span>
-            </div>
-            <div class="detail-row">
                 <span class="detail-label">Registered:</span>
                 <span class="detail-value">${this.formatDate(student.created_at)}</span>
+            </div>
+            <div style="background: #FFFBEB; border-left: 4px solid #F59E0B; padding: 12px; border-radius: 6px; margin-top: 16px;">
+                <p style="margin: 0; color: #92400E; font-size: 13px;">
+                    <strong>Note:</strong> Company will be assigned during verification.
+                </p>
             </div>
             <div class="cor-preview">
                 <h4>Certificate of Registration</h4>
@@ -295,23 +297,96 @@ const CDCAPI = {
     },
 
     /**
-     * Approve student with confirmation
+     * Approve student with company selection
      */
     async approveStudentWithConfirm(student, onSuccess) {
-        if (!confirm(`Approve ${student.first_name} ${student.last_name}?\n\nThis will verify the student and allow them to access the system.`)) {
-            return;
-        }
-
+        // Import CompanyAPI dynamically
+        const CompanyAPI = (await import('./company.js')).default;
+        
         try {
-            await this.verifyStudent(student.student_id);
-            showSuccess(`${student.first_name} ${student.last_name} has been verified successfully!`);
+            // Fetch all verified companies
+            const response = await CompanyAPI.getAll();
+            const companies = response.data || [];
             
-            if (onSuccess) {
-                setTimeout(() => onSuccess(), 1000);
+            if (companies.length === 0) {
+                showError('No verified companies available. Please verify a company first.');
+                return;
             }
+            
+            // Create company selection modal
+            const companiesOptions = companies.map(c => 
+                `<option value="${c.company_id}">${c.company_name}</option>`
+            ).join('');
+            
+            const content = `
+                <div style="padding: 10px 0;">
+                    <p style="margin-bottom: 16px; color: #6B7280;">
+                        Select a partner company to assign <strong>${student.first_name} ${student.last_name}</strong> to:
+                    </p>
+                    <div class="form-group">
+                        <label for="company-select" style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                            Partner Company <span style="color: #EF4444;">*</span>
+                        </label>
+                        <select id="company-select" style="width: 100%; padding: 10px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 14px;" required>
+                            <option value="">-- Select a company --</option>
+                            ${companiesOptions}
+                        </select>
+                    </div>
+                    <div style="background: #EFF6FF; border-left: 4px solid #3B82F6; padding: 12px; border-radius: 6px; margin-top: 16px;">
+                        <p style="margin: 0; color: #1E40AF; font-size: 13px;">
+                            <strong>Note:</strong> The student will be associated with the selected company for their OJT placement.
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            const modal = createModal('approve-student-modal', {
+                title: `Verify Student - ${student.first_name} ${student.last_name}`,
+                size: 'medium'
+            });
+            
+            const footer = `
+                <button class="btn-modal" data-modal-close>Cancel</button>
+                <button class="btn-modal btn-approve" id="confirm-approve-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Verify Student
+                </button>
+            `;
+            
+            modal.setFooter(footer);
+            modal.open(content);
+            
+            // Set up approve button handler
+            setTimeout(() => {
+                document.getElementById('confirm-approve-btn')?.addEventListener('click', async () => {
+                    const companySelect = document.getElementById('company-select');
+                    const companyId = parseInt(companySelect.value);
+                    
+                    if (!companyId) {
+                        showError('Please select a company');
+                        return;
+                    }
+                    
+                    try {
+                        await this.verifyStudent(student.student_id, companyId);
+                        modal.close();
+                        showSuccess(`${student.first_name} ${student.last_name} has been verified and assigned to ${companySelect.options[companySelect.selectedIndex].text}!`);
+                        
+                        if (onSuccess) {
+                            setTimeout(() => onSuccess(), 1000);
+                        }
+                    } catch (error) {
+                        console.error('Error approving student:', error);
+                        showError('Failed to approve student: ' + error.message);
+                    }
+                });
+            }, 0);
+            
         } catch (error) {
-            console.error('Error approving student:', error);
-            showError('Failed to approve student: ' + error.message);
+            console.error('Error loading companies:', error);
+            showError('Failed to load companies: ' + error.message);
         }
     },
 

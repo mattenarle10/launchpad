@@ -44,7 +44,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _obscureConfirmPassword = true;
 
   // Page 4 data
-  final _companyNameController = TextEditingController();
   File? _corFile;
   String? _corFileName;
 
@@ -60,7 +59,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _contactController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _companyNameController.dispose();
     super.dispose();
   }
 
@@ -127,7 +125,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Prepare form data
+      // Prepare form data (company will be assigned during verification)
       final formData = FormData.fromMap({
         'email': _emailController.text.trim(),
         'id_number': _idNumberController.text.trim(),
@@ -136,7 +134,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
         'course': _selectedCourse,
         'contact_num': _contactController.text.trim(),
         'password': _passwordController.text,
-        'company_name': _companyNameController.text.trim(),
         'cor': await MultipartFile.fromFile(
           _corFile!.path,
           filename: _corFileName,
@@ -503,8 +500,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Please enter a password';
                       }
-                      if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
+                      if (value.length < 8) {
+                        return 'Password must be at least 8 characters';
                       }
                       return null;
                     },
@@ -650,16 +647,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                CustomTextField(
-                  label: 'Company Name',
-                  controller: _companyNameController,
-                ),
-                const SizedBox(height: 16),
                 const Text(
                   'Upload Certificate of Registration (COR)',
                   style: TextStyle(
                     color: Color(0xFF7A8BA0),
                     fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Your company will be assigned by the Career Development Center during verification',
+                  style: TextStyle(
+                    color: Color(0xFF9CA3AF),
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
                   ),
                 ),
                 const SizedBox(height: 8),

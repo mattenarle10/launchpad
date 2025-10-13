@@ -8,9 +8,9 @@ class ApiClient {
     _dio = Dio(BaseOptions(
       baseUrl: baseUrl,
       headers: {'Accept': 'application/json'},
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 20),
-      sendTimeout: const Duration(seconds: 20),
+      connectTimeout: const Duration(seconds: 60),
+      receiveTimeout: const Duration(seconds: 60),
+      sendTimeout: const Duration(seconds: 60),
     ));
     _dio.interceptors.add(InterceptorsWrapper(onRequest: (options, handler) async {
       final token = await _auth.getToken();
@@ -39,19 +39,29 @@ class ApiClient {
     Map<String, dynamic>? headers,
     bool skipAuth = false,
   }) async {
-    final h = <String, dynamic>{};
-    if (headers != null) h.addAll(headers);
-    if (data != null && data is! FormData && !h.containsKey('Content-Type')) {
-      h['Content-Type'] = 'application/json';
+    try {
+      final h = <String, dynamic>{};
+      if (headers != null) h.addAll(headers);
+      if (data != null && data is! FormData && !h.containsKey('Content-Type')) {
+        h['Content-Type'] = 'application/json';
+      }
+      final options = Options(method: method, headers: h, extra: {'skipAuth': skipAuth});
+      final resp = await _dio.request(
+        endpoint,
+        queryParameters: query,
+        data: data,
+        options: options,
+      );
+      return resp.data;
+    } on DioException catch (e) {
+      print('=== API Error ===');
+      print('Endpoint: $method $endpoint');
+      print('Request data: $data');
+      print('Status code: ${e.response?.statusCode}');
+      print('Response data: ${e.response?.data}');
+      print('================');
+      rethrow;
     }
-    final options = Options(method: method, headers: h, extra: {'skipAuth': skipAuth});
-    final resp = await _dio.request(
-      endpoint,
-      queryParameters: query,
-      data: data,
-      options: options,
-    );
-    return resp.data;
   }
 
   Future<dynamic> get(

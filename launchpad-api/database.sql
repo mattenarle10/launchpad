@@ -5,37 +5,6 @@
 CREATE DATABASE IF NOT EXISTS launchpad_db;
 USE launchpad_db;
 
--- Unverified Students (pending CDC approval)
-CREATE TABLE IF NOT EXISTS unverified_students (
-    student_id INT AUTO_INCREMENT PRIMARY KEY,
-    id_num VARCHAR(50) NOT NULL UNIQUE,
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
-    email VARCHAR(150) NOT NULL UNIQUE,
-    course ENUM('IT', 'COMSCI', 'EMC') NOT NULL,
-    contact_num VARCHAR(20),
-    password VARCHAR(255) NOT NULL,
-    cor VARCHAR(255) NOT NULL COMMENT 'Certificate of Registration',
-    company_name VARCHAR(150) DEFAULT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Verified Students (approved by CDC)
-CREATE TABLE IF NOT EXISTS verified_students (
-    student_id INT AUTO_INCREMENT PRIMARY KEY,
-    id_num VARCHAR(50) NOT NULL UNIQUE,
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
-    email VARCHAR(150) NOT NULL UNIQUE,
-    course ENUM('IT', 'COMSCI', 'EMC') NOT NULL,
-    contact_num VARCHAR(20),
-    password VARCHAR(255) NOT NULL,
-    cor VARCHAR(255) NOT NULL COMMENT 'Certificate of Registration',
-    company_name VARCHAR(150) DEFAULT NULL,
-    profile_pic VARCHAR(255) DEFAULT NULL,
-    verified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 -- CDC Users (Career Development Center staff)
 CREATE TABLE IF NOT EXISTS cdc_users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -76,6 +45,39 @@ CREATE TABLE IF NOT EXISTS verified_companies (
     company_logo VARCHAR(255) DEFAULT NULL,
     moa_document VARCHAR(255) DEFAULT NULL,
     verified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Unverified Students (pending CDC approval)
+CREATE TABLE IF NOT EXISTS unverified_students (
+    student_id INT AUTO_INCREMENT PRIMARY KEY,
+    id_num VARCHAR(50) NOT NULL UNIQUE,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    course ENUM('IT', 'COMSCI', 'EMC') NOT NULL,
+    contact_num VARCHAR(20),
+    password VARCHAR(255) NOT NULL,
+    cor VARCHAR(255) NOT NULL COMMENT 'Certificate of Registration',
+    company_name VARCHAR(150) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Verified Students (approved by CDC)
+CREATE TABLE IF NOT EXISTS verified_students (
+    student_id INT AUTO_INCREMENT PRIMARY KEY,
+    id_num VARCHAR(50) NOT NULL UNIQUE,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    course ENUM('IT', 'COMSCI', 'EMC') NOT NULL,
+    contact_num VARCHAR(20),
+    password VARCHAR(255) NOT NULL,
+    cor VARCHAR(255) NOT NULL COMMENT 'Certificate of Registration',
+    company_name VARCHAR(150) DEFAULT NULL,
+    company_id INT DEFAULT NULL,
+    profile_pic VARCHAR(255) DEFAULT NULL,
+    verified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (company_id) REFERENCES verified_companies(company_id) ON DELETE SET NULL
 );
 
 -- OJT Progress Tracking (Phase 3)

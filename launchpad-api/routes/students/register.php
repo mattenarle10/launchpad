@@ -17,7 +17,8 @@ $lastName = $_POST['last_name'] ?? '';
 $course = $_POST['course'] ?? '';
 $contactNum = $_POST['contact_num'] ?? '';
 $password = $_POST['password'] ?? '';
-$companyName = $_POST['company_name'] ?? '';
+// Ignore any provided company at signup; company is attached during verification
+$companyName = '';
 
 // Validate required fields
 if (empty($email) || empty($idNumber) || empty($firstName) || empty($lastName) || empty($course) || empty($password)) {
@@ -104,10 +105,10 @@ $hashedPassword = Auth::hashPassword($password);
 $stmt = $conn->prepare("
     INSERT INTO unverified_students 
     (id_num, first_name, last_name, email, course, contact_num, password, company_name, cor)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?)
 ");
 $stmt->bind_param(
-    'sssssssss',
+    'ssssssss',
     $idNumber,
     $firstName,
     $lastName,
@@ -115,7 +116,6 @@ $stmt->bind_param(
     $course,
     $contactNum,
     $hashedPassword,
-    $companyName,
     $filename
 );
 $stmt->execute();
