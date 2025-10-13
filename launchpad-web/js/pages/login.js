@@ -4,7 +4,7 @@
  */
 
 import { AuthAPI } from '../api/index.js';
-import { showAlert } from '../components.js';
+import { showSuccess, showError } from '../utils/notifications.js';
 
 // Get login type from URL parameter (?type=cdc or ?type=company)
 const urlParams = new URLSearchParams(window.location.search);
@@ -39,7 +39,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     
     // Validation
     if (!username || !password) {
-        showAlert('Please fill in all fields', 'error');
+        showError('Please fill in all fields');
         return;
     }
     
@@ -53,7 +53,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         const response = await AuthAPI.login(username, password, loginType);
         
         if (response.success) {
-            showAlert('Login successful! Redirecting...', 'success');
+            showSuccess('Login successful! Redirecting...');
             
             // Redirect based on user type
             setTimeout(() => {
@@ -65,7 +65,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
             }, 1000);
         }
     } catch (error) {
-        showAlert(error.message || 'Login failed. Please check your credentials.', 'error');
+        showError(error.message || 'Login failed. Please check your credentials.');
         submitBtn.disabled = false;
         submitBtn.textContent = 'Login';
     }

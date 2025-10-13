@@ -165,6 +165,17 @@ try {
             exit;
         }
         
+        // /admin/companies/:id (PUT - edit company, DELETE - delete company)
+        if (count($pathParts) === 3 && $pathParts[1] === 'companies' && is_numeric($pathParts[2])) {
+            $id = $pathParts[2];
+            if ($method === 'PUT') {
+                require __DIR__ . '/../routes/admin/edit-company.php';
+            } elseif ($method === 'DELETE') {
+                require __DIR__ . '/../routes/admin/delete-company.php';
+            }
+            exit;
+        }
+        
         // /admin/ojt/progress
         if (count($pathParts) === 3 && $pathParts[1] === 'ojt' && $pathParts[2] === 'progress') {
             require __DIR__ . '/../routes/admin/get-all-ojt-progress.php';

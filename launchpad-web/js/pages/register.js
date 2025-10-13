@@ -3,7 +3,7 @@
  */
 
 import CompanyAPI from '../api/company.js';
-import { showAlert } from '../components.js';
+import { showSuccess, showError } from '../utils/notifications.js';
 
 // State
 let currentStep = 1;
@@ -57,7 +57,7 @@ function validateStep(step) {
     
     for (const input of inputs) {
         if (!input.value.trim()) {
-            showAlert(`Please fill in all required fields`, 'error');
+            showError(`Please fill in all required fields`);
             input.focus();
             return false;
         }
@@ -69,12 +69,12 @@ function validateStep(step) {
         const confirmPassword = confirmPasswordInput.value;
         
         if (password.length < 8) {
-            showAlert('Password must be at least 8 characters', 'error');
+            showError('Password must be at least 8 characters');
             return false;
         }
         
         if (password !== confirmPassword) {
-            showAlert('Passwords do not match', 'error');
+            showError('Passwords do not match');
             return false;
         }
     }
@@ -182,7 +182,7 @@ async function submitRegistration() {
             successNavigation.classList.remove('hidden');
         }
     } catch (error) {
-        showAlert(error.message || 'Registration failed. Please try again.', 'error');
+        showError(error.message || 'Registration failed. Please try again.');
         nextBtn.disabled = false;
         nextBtn.textContent = 'Submit Registration';
     }
@@ -201,7 +201,7 @@ function setupFilePreview(inputId, previewId) {
         }
         
         if (file.size > 10 * 1024 * 1024) {
-            showAlert('File too large. Maximum size is 10MB', 'error');
+            showError('File too large. Maximum size is 10MB');
             input.value = '';
             return;
         }

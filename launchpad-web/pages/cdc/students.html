@@ -99,6 +99,9 @@
                                 <option value="COMSCI">Computer Science</option>
                                 <option value="EMC">EMC</option>
                             </select>
+                            <select class="filter-dropdown" id="company-filter">
+                                <option value="">All Companies</option>
+                            </select>
                             <select class="filter-dropdown" id="status-filter">
                                 <option value="">All Status</option>
                                 <option value="ongoing">Ongoing</option>
@@ -154,6 +157,16 @@
             const { dataTable, students } = await CDCAPI.loadStudentsTable('table-wrapper', 'total-students-count');
             allStudents = students;
 
+            // Populate company filter dropdown
+            const companies = [...new Set(students.map(s => s.company_name).filter(Boolean))].sort();
+            const companyFilter = document.getElementById('company-filter');
+            companies.forEach(company => {
+                const option = document.createElement('option');
+                option.value = company;
+                option.textContent = company;
+                companyFilter.appendChild(option);
+            });
+
             // Setup search
             document.getElementById('search-input')?.addEventListener('input', (e) => {
                 dataTable.search(e.target.value);
@@ -164,6 +177,11 @@
                 applyFilters(dataTable);
             });
 
+            // Setup company filter
+            document.getElementById('company-filter')?.addEventListener('change', (e) => {
+                applyFilters(dataTable);
+            });
+
             // Setup status filter
             document.getElementById('status-filter')?.addEventListener('change', (e) => {
                 applyFilters(dataTable);
@@ -171,12 +189,17 @@
 
             function applyFilters(dataTable) {
                 const course = document.getElementById('course-filter').value;
+                const company = document.getElementById('company-filter').value;
                 const status = document.getElementById('status-filter').value;
                 
                 let filtered = allStudents;
                 
                 if (course) {
                     filtered = filtered.filter(s => s.course === course);
+                }
+                
+                if (company) {
+                    filtered = filtered.filter(s => s.company_name === company);
                 }
                 
                 if (status) {

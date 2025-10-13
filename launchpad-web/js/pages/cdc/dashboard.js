@@ -3,7 +3,7 @@
  */
 
 import { AuthAPI } from '../../api/index.js';
-import { showAlert } from '../../components.js';
+import { showSuccess, showError, showWarning } from '../../utils/notifications.js';
 import { initUserDropdown, updateDropdownUserName } from '../dropdown.js';
 
 // Check authentication
@@ -15,7 +15,7 @@ const currentUser = AuthAPI.getCurrentUser();
 
 // Check if user exists
 if (!currentUser) {
-    showAlert('Session expired. Please login again.', 'error');
+    showError('Session expired. Please login again.');
     setTimeout(() => {
         window.location.href = '../login.html?type=cdc';
     }, 1500);
@@ -37,7 +37,7 @@ initUserDropdown(
     async () => {
         try {
             await AuthAPI.logout();
-            showAlert('Logged out successfully', 'success');
+            showSuccess('Logged out successfully');
             setTimeout(() => {
                 window.location.href = '../login.html?type=cdc';
             }, 1000);
@@ -48,7 +48,7 @@ initUserDropdown(
     },
     // Profile callback (optional)
     () => {
-        showAlert('Profile page coming soon!', 'info');
+        showWarning('Profile page coming soon!');
         // TODO: Navigate to profile page
         // window.location.href = 'profile.html';
     }
@@ -71,7 +71,7 @@ async function loadDashboardStats() {
         console.log('Dashboard stats loaded');
     } catch (error) {
         console.error('Error loading dashboard stats:', error);
-        showAlert('Failed to load dashboard statistics', 'error');
+        showError('Failed to load dashboard statistics');
     }
 }
 
