@@ -182,7 +182,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
                 onPressed: _previousPage,
               )
-            : null,
+            : IconButton(
+                icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
       ),
       body: SafeArea(
         child: Column(
@@ -209,29 +212,39 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-        child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          elevation: 4,
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Form(
-              key: _formKey1,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text(
-                    'Sign Up',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Logo on top of card
+            Image.asset(
+              'lib/img/logo/launchpad.png',
+              width: 80,
+              height: 80,
+            ),
+            const SizedBox(height: 16),
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Form(
+                  key: _formKey1,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Sign Up',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
                   CustomTextField(
                     label: 'Email',
                     controller: _emailController,
@@ -261,16 +274,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   CustomDropdown(
                     label: 'Course',
                     value: _selectedCourse,
-                    items: const ['Information Technology', 'Computer Science', 'Entertainment and Multimedia Computing'],
+                    items: const ['IT', 'COMSCI', 'EMC'],
                     onChanged: (value) {
                       setState(() {
-                        if (value == 'Information Technology') {
-                          _selectedCourse = 'IT';
-                        } else if (value == 'Computer Science') {
-                          _selectedCourse = 'COMSCI';
-                        } else if (value == 'Entertainment and Multimedia Computing') {
-                          _selectedCourse = 'EMC';
-                        }
+                        _selectedCourse = value;
                       });
                     },
                     validator: (value) {
@@ -314,6 +321,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
           ),
         ),
+          ],
+        ),
       ),
     );
   }
@@ -322,29 +331,39 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-        child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          elevation: 4,
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Form(
-              key: _formKey2,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text(
-                    'Sign Up',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Logo on top of card
+            Image.asset(
+              'lib/img/logo/launchpad.png',
+              width: 80,
+              height: 80,
+            ),
+            const SizedBox(height: 16),
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Form(
+                  key: _formKey2,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Sign Up',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
                   CustomTextField(
                     label: 'First Name',
                     controller: _firstNameController,
@@ -426,6 +445,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
           ),
         ),
+          ],
+        ),
       ),
     );
   }
@@ -434,29 +455,39 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-        child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          elevation: 4,
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Form(
-              key: _formKey3,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text(
-                    'Sign Up',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Logo on top of card
+            Image.asset(
+              'lib/img/logo/launchpad.png',
+              width: 80,
+              height: 80,
+            ),
+            const SizedBox(height: 16),
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Form(
+                  key: _formKey3,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Sign Up',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
                   CustomTextField(
                     label: 'Password',
                     controller: _passwordController,
@@ -560,6 +591,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
           ),
         ),
+          ],
+        ),
       ),
     );
   }
@@ -568,38 +601,48 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-        child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          elevation: 4,
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Logo on top of card
+            Image.asset(
+              'lib/img/logo/launchpad.png',
+              width: 80,
+              height: 80,
+            ),
+            const SizedBox(height: 16),
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                      onPressed: _previousPage,
-                    ),
-                    const Expanded(
-                      child: Text(
-                        'Verify',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                          onPressed: _previousPage,
                         ),
-                      ),
+                        const Expanded(
+                          child: Text(
+                            'Verify',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 48),
+                      ],
                     ),
-                    const SizedBox(width: 48),
-                  ],
-                ),
-                const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                 CustomTextField(
                   label: 'Company Name',
                   controller: _companyNameController,
@@ -663,6 +706,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ],
             ),
           ),
+        ),
+          ],
         ),
       ),
     );

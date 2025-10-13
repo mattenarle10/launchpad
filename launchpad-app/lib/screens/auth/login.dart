@@ -80,30 +80,40 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              elevation: 4,
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Title
-                      const Text(
-                        'Login',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Logo on top of card
+                Image.asset(
+                  'lib/img/logo/launchpad.png',
+                  width: 100,
+                  height: 100,
+                ),
+                const SizedBox(height: 24),
+                Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  elevation: 4,
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Title
+                          const Text(
+                            'Login',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          const SizedBox(height: 32),
 
                       // Email field
                       CustomTextField(
@@ -212,6 +222,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
+            ),
+              ],
             ),
           ),
         ),

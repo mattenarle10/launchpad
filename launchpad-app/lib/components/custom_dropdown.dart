@@ -21,6 +21,7 @@ class CustomDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
       value: value,
+      isExpanded: true,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(
@@ -71,6 +72,7 @@ class CustomDropdown extends StatelessWidget {
               fontSize: 14,
               color: AppColors.textDark,
             ),
+            overflow: TextOverflow.ellipsis,
           ),
         );
       }).toList(),
