@@ -154,17 +154,14 @@ try {
             exit;
         }
         
-        // /admin/students/:id (PUT - edit student)
+        // /admin/students/:id (PUT - edit student, DELETE - delete student)
         if (count($pathParts) === 3 && $pathParts[1] === 'students' && is_numeric($pathParts[2])) {
             $id = $pathParts[2];
-            require __DIR__ . '/../routes/admin/edit-student.php';
-            exit;
-        }
-        
-        // /admin/students/:id (DELETE - delete student)
-        if (count($pathParts) === 3 && $pathParts[1] === 'students' && is_numeric($pathParts[2])) {
-            $id = $pathParts[2];
-            require __DIR__ . '/../routes/admin/delete-student.php';
+            if ($method === 'PUT') {
+                require __DIR__ . '/../routes/admin/edit-student.php';
+            } elseif ($method === 'DELETE') {
+                require __DIR__ . '/../routes/admin/delete-student.php';
+            }
             exit;
         }
         

@@ -599,22 +599,66 @@ const CDCAPI = {
     /**
      * Delete student
      */
-    async deleteStudentWithConfirm(student, onSuccess) {
-        if (!confirm(`Are you sure you want to delete ${student.first_name} ${student.last_name}?\n\nThis action will also delete:\n- All daily reports\n- OJT progress records\n\nThis cannot be undone!`)) {
-            return;
-        }
+    deleteStudentWithConfirm(student, onSuccess) {
+        const content = `
+            <div style="text-align: center; padding: 20px 0;">
+                <div style="color: #EF4444; margin-bottom: 16px;">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                </div>
+                <h3 style="margin: 0 0 16px 0; color: #111827;">Delete Student?</h3>
+                <p style="margin: 0 0 16px 0; color: #6B7280; line-height: 1.5;">
+                    Are you sure you want to delete <strong>${student.first_name} ${student.last_name}</strong>?
+                </p>
+                <div style="background: #FEF2F2; border-left: 4px solid #EF4444; padding: 12px; border-radius: 6px; text-align: left; margin-bottom: 16px;">
+                    <p style="margin: 0 0 8px 0; font-weight: 600; color: #991B1B; font-size: 14px;">This action will also delete:</p>
+                    <ul style="margin: 0; padding-left: 20px; color: #991B1B; font-size: 14px;">
+                        <li>All daily reports</li>
+                        <li>OJT progress records</li>
+                    </ul>
+                </div>
+                <p style="margin: 0; color: #EF4444; font-weight: 600; font-size: 14px;">This action cannot be undone!</p>
+            </div>
+        `;
 
-        try {
-            await this.deleteStudent(student.student_id);
-            showSuccess(`${student.first_name} ${student.last_name} has been deleted successfully.`);
-            
-            if (onSuccess) {
-                setTimeout(() => onSuccess(), 1000);
-            }
-        } catch (error) {
-            console.error('Error deleting student:', error);
-            showError('Failed to delete student: ' + error.message);
-        }
+        const modal = createModal('delete-student-modal', {
+            title: 'Confirm Deletion',
+            size: 'small'
+        });
+
+        const footer = `
+            <button class="btn-modal" data-modal-close>No, Cancel</button>
+            <button class="btn-modal btn-reject" id="confirm-delete-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                Yes, Delete
+            </button>
+        `;
+
+        modal.setFooter(footer);
+        modal.open(content);
+
+        setTimeout(() => {
+            document.getElementById('confirm-delete-btn')?.addEventListener('click', async () => {
+                try {
+                    await this.deleteStudent(student.student_id);
+                    modal.close();
+                    showSuccess(`${student.first_name} ${student.last_name} has been deleted successfully.`);
+                    
+                    if (onSuccess) {
+                        setTimeout(() => onSuccess(), 1000);
+                    }
+                } catch (error) {
+                    console.error('Error deleting student:', error);
+                    showError('Failed to delete student: ' + error.message);
+                }
+            });
+        }, 0);
     }
 };
 
