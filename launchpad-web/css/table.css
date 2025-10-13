@@ -159,6 +159,16 @@
     color: #991B1B;
 }
 
+.status-badge.ongoing {
+    background: #DBEAFE;
+    color: #1E40AF;
+}
+
+.status-badge.completed {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
 /* Action Buttons */
 .action-buttons {
     display: flex;

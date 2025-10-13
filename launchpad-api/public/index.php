@@ -154,6 +154,20 @@ try {
             exit;
         }
         
+        // /admin/students/:id (PUT - edit student)
+        if (count($pathParts) === 3 && $pathParts[1] === 'students' && is_numeric($pathParts[2])) {
+            $id = $pathParts[2];
+            require __DIR__ . '/../routes/admin/edit-student.php';
+            exit;
+        }
+        
+        // /admin/students/:id (DELETE - delete student)
+        if (count($pathParts) === 3 && $pathParts[1] === 'students' && is_numeric($pathParts[2])) {
+            $id = $pathParts[2];
+            require __DIR__ . '/../routes/admin/delete-student.php';
+            exit;
+        }
+        
         // /admin/ojt/progress
         if (count($pathParts) === 3 && $pathParts[1] === 'ojt' && $pathParts[2] === 'progress') {
             require __DIR__ . '/../routes/admin/get-all-ojt-progress.php';

@@ -116,23 +116,6 @@
         </main>
     </div>
 
-    <!-- View Details Modal -->
-    <div id="view-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Student Details</h2>
-                <button class="close-modal" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body" id="modal-body">
-                <!-- Content will be loaded dynamically -->
-            </div>
-            <div class="modal-footer">
-                <button class="btn-modal btn-reject" id="modal-reject-btn">Reject</button>
-                <button class="btn-modal btn-approve" id="modal-approve-btn">Approve</button>
-            </div>
-        </div>
-    </div>
-
     <script type="module">
         import { loadSidebar, loadUserInfo } from '../../js/components.js';
         import { initUserDropdown } from '../../js/pages/dropdown.js';
@@ -181,21 +164,6 @@
                     dataTable.setData(students);
                 }
             });
-
-            // Setup modal handlers
-            window.closeModal = () => {
-                document.getElementById('view-modal').style.display = 'none';
-            };
-
-            window.onclick = (event) => {
-                const modal = document.getElementById('view-modal');
-                if (event.target === modal) modal.style.display = 'none';
-            };
-
-            // Setup image viewer
-            window.viewCORImage = (imageUrl, title) => {
-                openImageViewer(imageUrl, title);
-            };
         });
     </script>
 </body>
