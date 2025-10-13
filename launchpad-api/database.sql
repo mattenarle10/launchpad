@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS unverified_students (
     course ENUM('IT', 'COMSCI', 'EMC') NOT NULL,
     contact_num VARCHAR(20),
     password VARCHAR(255) NOT NULL,
-    id_photo VARCHAR(255) NOT NULL,
+    cor VARCHAR(255) NOT NULL COMMENT 'Certificate of Registration',
     company_name VARCHAR(150) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS verified_students (
     course ENUM('IT', 'COMSCI', 'EMC') NOT NULL,
     contact_num VARCHAR(20),
     password VARCHAR(255) NOT NULL,
-    id_photo VARCHAR(255) NOT NULL,
+    cor VARCHAR(255) NOT NULL COMMENT 'Certificate of Registration',
     company_name VARCHAR(150) DEFAULT NULL,
     profile_pic VARCHAR(255) DEFAULT NULL,
     verified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

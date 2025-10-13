@@ -35,16 +35,17 @@ if (strlen($password) < PASSWORD_MIN_LENGTH) {
     Response::error('Password must be at least ' . PASSWORD_MIN_LENGTH . ' characters', 400);
 }
 
-// Handle ID photo upload
-if (!isset($_FILES['id_photo'])) {
-    Response::error('ID photo is required', 400);
+// Handle COR (Certificate of Registration) upload
+if (!isset($_FILES['cor'])) {
+    Response::error('Certificate of Registration (COR) is required', 400);
 }
 
-$file = $_FILES['id_photo'];
+$file = $_FILES['cor'];
 
-// Validate file type
-if (!in_array($file['type'], ALLOWED_IMAGE_TYPES)) {
-    Response::error('Invalid file type. Only JPEG, PNG, and WebP images allowed', 400);
+// Validate file type (allow images and PDFs)
+$allowedTypes = array_merge(ALLOWED_IMAGE_TYPES, ['application/pdf']);
+if (!in_array($file['type'], $allowedTypes)) {
+    Response::error('Invalid file type. Only JPEG, PNG, WebP images and PDF files allowed', 400);
 }
 
 // Validate file size
@@ -78,10 +79,10 @@ if ($stmt->get_result()->num_rows > 0) {
     Response::error('ID number already registered', 400);
 }
 
-// Upload ID photo
+// Upload COR
 $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-$filename = "id_" . $idNumber . "_" . time() . "." . $ext;
-$uploadDir = UPLOAD_DIR . "student_ids/";
+$filename = "cor_" . $idNumber . "_" . time() . "." . $ext;
+$uploadDir = UPLOAD_DIR . "student_cors/";
 $uploadPath = $uploadDir . $filename;
 
 // Ensure directory exists
@@ -93,7 +94,7 @@ if (!is_dir($uploadDir)) {
 
 // Move uploaded file
 if (!move_uploaded_file($file['tmp_name'], $uploadPath)) {
-    Response::error('Failed to upload ID photo. Check directory permissions.', 500);
+    Response::error('Failed to upload COR. Check directory permissions.', 500);
 }
 
 // Hash password
@@ -102,7 +103,7 @@ $hashedPassword = Auth::hashPassword($password);
 // Insert into unverified_students (pending CDC approval)
 $stmt = $conn->prepare("
     INSERT INTO unverified_students 
-    (id_num, first_name, last_name, email, course, contact_num, password, company_name, id_photo)
+    (id_num, first_name, last_name, email, course, contact_num, password, company_name, cor)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 ");
 $stmt->bind_param(

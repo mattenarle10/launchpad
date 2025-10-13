@@ -30,7 +30,7 @@ $student = $result->fetch_assoc();
 // Move to verified_students
 $stmt = $conn->prepare("
     INSERT INTO verified_students 
-    (id_num, first_name, last_name, email, contact_num, course, password, id_photo, company_name)
+    (id_num, first_name, last_name, email, contact_num, course, password, cor, company_name)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 ");
 $stmt->bind_param(
@@ -42,7 +42,7 @@ $stmt->bind_param(
     $student['contact_num'],
     $student['course'],
     $student['password'],
-    $student['id_photo'],
+    $student['cor'],
     $student['company_name']
 );
 $stmt->execute();
