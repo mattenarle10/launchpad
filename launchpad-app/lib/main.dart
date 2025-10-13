@@ -1,6 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'styles/colors.dart';
+import 'screens/landing.dart';
 
-void main() => runApp(const LaunchPadApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
+  
+  runApp(const LaunchPadApp());
+}
 
 class LaunchPadApp extends StatelessWidget {
   const LaunchPadApp({super.key});
@@ -10,25 +20,17 @@ class LaunchPadApp extends StatelessWidget {
     return MaterialApp(
       title: 'LaunchPad',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF395886)),
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
         useMaterial3: true,
+        scaffoldBackgroundColor: AppColors.background,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+        ),
       ),
-      home: const _BlankScreen(),
+      home: const LandingScreen(),
       debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-class _BlankScreen extends StatelessWidget {
-  const _BlankScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Text('LaunchPad', style: TextStyle(fontSize: 22)),
-      ),
     );
   }
 }
