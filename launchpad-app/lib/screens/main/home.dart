@@ -155,11 +155,17 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : SingleChildScrollView(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                  : RefreshIndicator(
+                      onRefresh: () async {
+                        await _loadUserData();
+                        await _loadOjtProgress();
+                      },
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                           // Welcome Section
                           const Text(
                             'Welcome back,',
@@ -331,7 +337,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           
                           // Stats Grid
                           _buildStatsGrid(),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
             ),
