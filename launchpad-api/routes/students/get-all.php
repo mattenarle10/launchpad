@@ -9,7 +9,7 @@ if ($method !== 'GET') {
     Response::error('Method not allowed', 405);
 }
 
-Auth::requireRole([ROLE_CDC, ROLE_PC]);
+Auth::requireRole([ROLE_CDC, ROLE_PC, ROLE_COMPANY]);
 
 $conn = Database::getConnection();
 $page = intval($_GET['page'] ?? 1);
