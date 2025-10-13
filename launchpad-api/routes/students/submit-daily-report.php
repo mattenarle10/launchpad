@@ -19,12 +19,12 @@ if ($user['id'] !== $studentId) {
 // Get form data
 $reportDate = $_POST['report_date'] ?? date('Y-m-d');
 $hoursRequested = floatval($_POST['hours_requested'] ?? 0);
-$description = $_POST['description'] ?? '';
-$activityType = $_POST['activity_type'] ?? '';
+$description = $_POST['description'] ?? 'Daily OJT Activities';
+$activityType = $_POST['activity_type'] ?? 'Daily Activities';
 
-// Validate required fields
+// Description is now optional, will use default if empty
 if (empty($description)) {
-    Response::error('Description is required', 400);
+    $description = 'Daily OJT Activities';
 }
 
 // Validate hours (must be greater than 0 and up to 24)

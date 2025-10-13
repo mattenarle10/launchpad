@@ -16,6 +16,7 @@ $data = json_decode(file_get_contents('php://input'), true);
 
 $action = $data['action'] ?? ''; // approve | reject
 $rejectionReason = $data['rejection_reason'] ?? '';
+$approvedHours = isset($data['approved_hours']) ? floatval($data['approved_hours']) : null;
 
 if (!in_array($action, ['approve', 'reject'])) {
     Response::error('Action must be either "approve" or "reject"', 400);
@@ -23,6 +24,12 @@ if (!in_array($action, ['approve', 'reject'])) {
 
 if ($action === 'reject' && empty($rejectionReason)) {
     Response::error('Rejection reason is required when rejecting', 400);
+}
+
+if ($action === 'approve' && $approvedHours !== null) {
+    if ($approvedHours <= 0 || $approvedHours > 24) {
+        Response::error('Approved hours must be between 0.1 and 24', 400);
+    }
 }
 
 $conn = Database::getConnection();
@@ -44,6 +51,9 @@ if ($report['status'] !== 'pending') {
 }
 
 if ($action === 'approve') {
+    // Use CDC-approved hours if provided, otherwise use student's requested hours
+    $hoursToAdd = $approvedHours !== null ? $approvedHours : $report['hours_requested'];
+    
     // Update report status
     $stmt = $conn->prepare("
         UPDATE daily_reports 
@@ -83,11 +93,11 @@ if ($action === 'approve') {
         WHERE student_id = ?
     ");
     $stmt->bind_param('dddsdi', 
-        $report['hours_requested'], 
-        $report['hours_requested'], 
-        $report['hours_requested'], 
+        $hoursToAdd, 
+        $hoursToAdd, 
+        $hoursToAdd, 
         $report['report_date'],
-        $report['hours_requested'],
+        $hoursToAdd,
         $report['student_id']
     );
     $stmt->execute();
@@ -101,7 +111,8 @@ if ($action === 'approve') {
     Response::success([
         'report_id' => $reportId,
         'action' => 'approved',
-        'hours_added' => $report['hours_requested'],
+        'hours_requested' => $report['hours_requested'],
+        'hours_added' => $hoursToAdd,
         'new_total_hours' => $progress['completed_hours'],
         'completion_percentage' => ($progress['completed_hours'] / $progress['required_hours']) * 100,
         'status' => $progress['status']

@@ -99,7 +99,9 @@ class _ReportScreenState extends State<ReportScreen> {
       final formData = FormData.fromMap({
         'report_date': dateStr,
         'hours_requested': '8', // Default 8 hours, CDC will adjust
-        'description': _descriptionController.text.trim(),
+        'description': _descriptionController.text.trim().isEmpty 
+            ? 'Daily OJT Activities' 
+            : _descriptionController.text.trim(),
         'activity_type': _activityTypeController.text.trim().isEmpty 
             ? 'Daily Activities' 
             : _activityTypeController.text.trim(),
@@ -145,16 +147,16 @@ class _ReportScreenState extends State<ReportScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF4A6491),
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF4A6491)),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Submit Daily Report',
           style: TextStyle(
-            color: Colors.white,
+            color: Color(0xFF4A6491),
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
@@ -167,31 +169,7 @@ class _ReportScreenState extends State<ReportScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Info Card
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF3B82F6)),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.info_outline, color: Color(0xFF3B82F6)),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Submit your daily OJT activities. CDC will review and approve your hours.',
-                        style: TextStyle(
-                          color: Color(0xFF1E40AF),
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 8),
 
               // Date Selector
               const Text(
@@ -238,17 +216,11 @@ class _ReportScreenState extends State<ReportScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Description
+              // Description (Optional)
               CustomTextField(
-                label: 'Description',
+                label: 'Description (Optional)',
                 controller: _descriptionController,
                 maxLines: 4,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please describe your activities';
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: 20),
 

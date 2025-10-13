@@ -1,0 +1,222 @@
+/**
+ * File Viewer Styles
+ * Universal viewer for images, PDFs, and documents
+ */
+
+.file-viewer {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.file-viewer-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+}
+
+.file-viewer-container {
+    position: relative;
+    width: 90%;
+    max-width: 1200px;
+    height: 90vh;
+    background: white;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+}
+
+.file-viewer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid #E5E7EB;
+    background: linear-gradient(135deg, #3D5A80, #2C4560);
+}
+
+.file-viewer-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-viewer-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.file-viewer-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.file-viewer-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.file-viewer-body {
+    flex: 1;
+    overflow: hidden;
+    background: #F3F4F6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Image Display */
+.file-viewer-image-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow: auto;
+}
+
+.file-viewer-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* PDF Display */
+.file-viewer-pdf {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* Unsupported File Type */
+.file-viewer-unsupported {
+    text-align: center;
+    padding: 40px;
+    color: #6B7280;
+}
+
+.file-viewer-icon {
+    margin-bottom: 20px;
+    color: #9CA3AF;
+}
+
+.file-viewer-unsupported h3 {
+    margin: 0 0 12px 0;
+    font-size: 24px;
+    color: #374151;
+}
+
+.file-viewer-unsupported p {
+    margin: 0;
+    font-size: 16px;
+    color: #6B7280;
+}
+
+.btn-download {
+    margin-top: 24px;
+    padding: 12px 24px;
+    background: #3B82F6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-download:hover {
+    background: #2563EB;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .file-viewer-container {
+        width: 95%;
+        height: 95vh;
+        border-radius: 8px;
+    }
+
+    .file-viewer-header {
+        padding: 16px;
+    }
+
+    .file-viewer-title {
+        font-size: 16px;
+    }
+
+    .file-viewer-btn {
+        width: 36px;
+        height: 36px;
+    }
+
+    .file-viewer-image-container {
+        padding: 12px;
+    }
+
+    .file-viewer-unsupported {
+        padding: 24px;
+    }
+
+    .file-viewer-unsupported h3 {
+        font-size: 20px;
+    }
+
+    .file-viewer-unsupported p {
+        font-size: 14px;
+    }
+}
