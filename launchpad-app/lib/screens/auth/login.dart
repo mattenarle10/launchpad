@@ -123,14 +123,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 32),
 
-                      // Email field
+                      // ID Number field
                       CustomTextField(
-                        label: 'Email',
+                        label: 'ID Number',
                         controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
+                        keyboardType: TextInputType.text,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your email or ID number';
+                            return 'Please enter your ID number';
                           }
                           return null;
                         },
