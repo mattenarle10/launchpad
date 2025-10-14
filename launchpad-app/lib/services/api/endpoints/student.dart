@@ -58,4 +58,10 @@ class StudentApi extends BaseApiGroup {
     final response = await get('/evaluation');
     return response as Map<String, dynamic>;
   }
+
+  /// Get student performance score from partner company
+  Future<Map<String, dynamic>> getPerformance() async {
+    final response = await get('/performance');
+    return response as Map<String, dynamic>;
+  }
 }

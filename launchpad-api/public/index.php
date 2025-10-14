@@ -64,6 +64,12 @@ try {
             exit;
         }
         
+        // /students/performance (GET - student's performance score from company)
+        if (count($pathParts) === 2 && $pathParts[1] === 'performance') {
+            require __DIR__ . '/../routes/students/get-performance.php';
+            exit;
+        }
+        
         // /students
         if (count($pathParts) === 1) {
             require __DIR__ . '/../routes/students/get-all.php';

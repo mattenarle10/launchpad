@@ -18,9 +18,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Map<String, dynamic>? _userData;
   Map<String, dynamic>? _ojtProgress;
   Map<String, dynamic>? _evaluation;
+  Map<String, dynamic>? _performance;
   bool _isLoading = true;
   bool _isLoadingProgress = false;
   bool _isLoadingEvaluation = false;
+  bool _isLoadingPerformance = false;
 
   @override
   void initState() {
@@ -28,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadUserData();
     _loadOjtProgress();
     _loadEvaluation();
+    _loadPerformance();
   }
 
   Future<void> _loadUserData() async {
@@ -99,6 +102,31 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           _isLoadingEvaluation = false;
           _evaluation = null;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadPerformance() async {
+    setState(() {
+      _isLoadingPerformance = true;
+    });
+
+    try {
+      final studentApi = StudentApi(ApiClient.I);
+      final response = await studentApi.getPerformance();
+      if (mounted) {
+        setState(() {
+          _performance = response['data'];
+          _isLoadingPerformance = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading performance: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingPerformance = false;
+          _performance = null;
         });
       }
     }
@@ -188,6 +216,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         await _loadUserData();
                         await _loadOjtProgress();
                         await _loadEvaluation();
+                        await _loadPerformance();
                       },
                       child: SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
@@ -592,6 +621,23 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Color _getPerformanceColor(String performance) {
+    switch (performance) {
+      case 'Excellent':
+        return const Color(0xFF10B981); // Green
+      case 'Good':
+        return const Color(0xFF3B82F6); // Blue
+      case 'Satisfactory':
+        return const Color(0xFFF59E0B); // Orange
+      case 'Needs Improvement':
+        return const Color(0xFFEF4444); // Red
+      case 'Poor':
+        return const Color(0xFF991B1B); // Dark Red
+      default:
+        return const Color(0xFF6B7280); // Gray
+    }
+  }
+
   Widget _buildStatsGrid() {
     return Row(
       children: [
@@ -619,9 +665,15 @@ class _HomeScreenState extends State<HomeScreen> {
           child: _buildStatCard(
             icon: Icons.star,
             title: 'Performance',
-            value: 'N/A',
-            subtitle: 'Not yet rated',
-            color: const Color(0xFFF59E0B),
+            value: _performance != null && _performance!['performance_score'] != null
+                ? _performance!['performance_score']
+                : 'N/A',
+            subtitle: _performance != null && _performance!['performance_score'] != null
+                ? 'Company Assessment'
+                : 'Not yet assessed',
+            color: _performance != null && _performance!['performance_score'] != null
+                ? _getPerformanceColor(_performance!['performance_score'])
+                : const Color(0xFFF59E0B),
           ),
         ),
       ],
