@@ -188,6 +188,13 @@ try {
             exit;
         }
         
+        // /admin/ojt/:id/hours
+        if (count($pathParts) === 4 && $pathParts[1] === 'ojt' && $pathParts[3] === 'hours') {
+            $id = $pathParts[2];
+            require __DIR__ . '/../routes/admin/update-ojt-hours.php';
+            exit;
+        }
+        
         // /admin/reports/pending
         if (count($pathParts) === 3 && $pathParts[1] === 'reports' && $pathParts[2] === 'pending') {
             require __DIR__ . '/../routes/admin/get-pending-reports.php';
