@@ -90,6 +90,16 @@ try {
         }
     }
 
+    // Route: /profile
+    if ($pathParts[0] === 'profile' && count($pathParts) === 1) {
+        if ($method === 'GET') {
+            require __DIR__ . '/../routes/profile/get-profile.php';
+        } elseif ($method === 'PUT') {
+            require __DIR__ . '/../routes/profile/update-profile.php';
+        }
+        exit;
+    }
+
     // Route: /companies
     if ($pathParts[0] === 'companies') {
         // /companies/register (POST - no auth)

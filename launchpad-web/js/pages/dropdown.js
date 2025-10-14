@@ -46,14 +46,26 @@ export function initUserDropdown(toggleId, dropdownId, onLogout, onProfile = nul
         });
     }
 
-    // Handle profile button (optional)
+    // Handle profile button
     const profileBtn = document.getElementById('profile-btn');
-    if (profileBtn && onProfile) {
+    if (profileBtn) {
         profileBtn.addEventListener('click', (e) => {
             e.preventDefault();
             dropdown.classList.remove('show');
             userMenu?.classList.remove('active');
-            onProfile();
+            
+            // Determine correct path to profile page
+            const currentPath = window.location.pathname;
+            let profilePath = '../profile.html';
+            
+            // If we're in a subdirectory like /cdc/, go up two levels
+            if (currentPath.includes('/cdc/') || currentPath.includes('/pc/')) {
+                profilePath = '../profile.html';
+            } else if (currentPath.includes('/pages/')) {
+                profilePath = 'profile.html';
+            }
+            
+            window.location.href = profilePath;
         });
     }
 
