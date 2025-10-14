@@ -84,5 +84,51 @@ while ($row = $stmt->fetch_assoc()) {
     $stats['top_performers'][] = $row;
 }
 
+// Evaluation statistics
+$evaluationStats = $conn->query("
+    SELECT 
+        COUNT(CASE WHEN evaluation_rank IS NOT NULL THEN 1 END) as evaluated_count,
+        ROUND(AVG(evaluation_rank), 2) as average_rank,
+        COUNT(CASE WHEN evaluation_rank >= 80 THEN 1 END) as excellent_count,
+        COUNT(CASE WHEN evaluation_rank >= 60 AND evaluation_rank < 80 THEN 1 END) as good_count,
+        COUNT(CASE WHEN evaluation_rank < 60 THEN 1 END) as needs_improvement_count
+    FROM verified_students
+")->fetch_assoc();
+
+$stats['evaluation'] = [
+    'evaluated_count' => intval($evaluationStats['evaluated_count']),
+    'average_rank' => floatval($evaluationStats['average_rank'] ?? 0),
+    'excellent_count' => intval($evaluationStats['excellent_count']),
+    'good_count' => intval($evaluationStats['good_count']),
+    'needs_improvement_count' => intval($evaluationStats['needs_improvement_count'])
+];
+
+// Performance score distribution
+$performanceResult = $conn->query("
+    SELECT performance_score, COUNT(*) as count
+    FROM verified_students
+    WHERE performance_score IS NOT NULL
+    GROUP BY performance_score
+");
+
+$performanceBreakdown = [
+    'Excellent' => 0,
+    'Good' => 0,
+    'Satisfactory' => 0,
+    'Needs Improvement' => 0,
+    'Poor' => 0
+];
+
+while ($row = $performanceResult->fetch_assoc()) {
+    $performanceBreakdown[$row['performance_score']] = intval($row['count']);
+}
+
+$performanceAssessed = array_sum($performanceBreakdown);
+
+$stats['performance'] = [
+    'assessed_count' => $performanceAssessed,
+    'breakdown' => $performanceBreakdown
+];
+
 Response::success($stats);
 

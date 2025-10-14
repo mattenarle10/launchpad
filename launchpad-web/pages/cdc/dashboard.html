@@ -118,40 +118,52 @@
 
                 <!-- Performance Cards -->
                 <div class="stats-grid">
-                    <!-- Students Performance -->
+                    <!-- Evaluation Rankings -->
                     <div class="card info-card">
-                        <h3 class="card-title">Students Performance</h3>
+                        <h3 class="card-title">Evaluation Rankings</h3>
                         <ul class="info-list">
                             <li class="info-item">
-                                <span class="info-label">Information Technology</span>
-                                <span class="info-badge good">Good</span>
+                                <span class="info-label">Average Score</span>
+                                <span class="info-badge" id="cdc-avg-evaluation">-</span>
                             </li>
                             <li class="info-item">
-                                <span class="info-label">Computer Science</span>
-                                <span class="info-badge bad">Bad</span>
+                                <span class="info-label">Excellent (≥80)</span>
+                                <span class="info-badge" id="cdc-excellent-count">0</span>
                             </li>
                             <li class="info-item">
-                                <span class="info-label">Entertainment and Multimedia</span>
-                                <span class="info-badge good">Good</span>
+                                <span class="info-label">Good (60-79)</span>
+                                <span class="info-badge" id="cdc-good-count">0</span>
+                            </li>
+                            <li class="info-item">
+                                <span class="info-label">Needs Improvement (<60)</span>
+                                <span class="info-badge" id="cdc-needs-improvement-count">0</span>
                             </li>
                         </ul>
                     </div>
 
-                    <!-- Students Evaluations -->
+                    <!-- Performance Assessment -->
                     <div class="card info-card">
-                        <h3 class="card-title">Students Evaluations</h3>
+                        <h3 class="card-title">Performance Assessment</h3>
                         <ul class="info-list">
                             <li class="info-item">
-                                <span class="info-label">Information Technology</span>
-                                <span class="info-badge">93.21</span>
+                                <span class="info-label">Excellent</span>
+                                <span class="info-badge" id="cdc-perf-excellent">0</span>
                             </li>
                             <li class="info-item">
-                                <span class="info-label">Computer Science</span>
-                                <span class="info-badge">39.13</span>
+                                <span class="info-label">Good</span>
+                                <span class="info-badge" id="cdc-perf-good">0</span>
                             </li>
                             <li class="info-item">
-                                <span class="info-label">Entertainment and Multimedia</span>
-                                <span class="info-badge">82.72</span>
+                                <span class="info-label">Satisfactory</span>
+                                <span class="info-badge" id="cdc-perf-satisfactory">0</span>
+                            </li>
+                            <li class="info-item">
+                                <span class="info-label">Needs Improvement</span>
+                                <span class="info-badge" id="cdc-perf-needs-improvement">0</span>
+                            </li>
+                            <li class="info-item">
+                                <span class="info-label">Poor</span>
+                                <span class="info-badge" id="cdc-perf-poor">0</span>
                             </li>
                         </ul>
                     </div>
@@ -219,6 +231,22 @@
                 if (legendTexts[0]) legendTexts[0].textContent = `IT - ${it}`;
                 if (legendTexts[1]) legendTexts[1].textContent = `CS - ${cs}`;
                 if (legendTexts[2]) legendTexts[2].textContent = `EMC - ${emc}`;
+                
+                // Update evaluation stats
+                const evaluation = s.evaluation || {};
+                setText('cdc-avg-evaluation', evaluation.average_rank > 0 ? `${evaluation.average_rank}/100` : '-');
+                setText('cdc-excellent-count', evaluation.excellent_count ?? 0);
+                setText('cdc-good-count', evaluation.good_count ?? 0);
+                setText('cdc-needs-improvement-count', evaluation.needs_improvement_count ?? 0);
+                
+                // Update performance stats
+                const performance = s.performance || {};
+                const perfBreakdown = performance.breakdown || {};
+                setText('cdc-perf-excellent', perfBreakdown.Excellent ?? 0);
+                setText('cdc-perf-good', perfBreakdown.Good ?? 0);
+                setText('cdc-perf-satisfactory', perfBreakdown.Satisfactory ?? 0);
+                setText('cdc-perf-needs-improvement', perfBreakdown['Needs Improvement'] ?? 0);
+                setText('cdc-perf-poor', perfBreakdown.Poor ?? 0);
             } catch (e) {
                 console.error('Failed to load dashboard stats:', e);
             }
