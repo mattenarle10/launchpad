@@ -227,6 +227,12 @@ try {
             exit;
         }
         
+        // /admin/ojt/sync-status
+        if (count($pathParts) === 3 && $pathParts[1] === 'ojt' && $pathParts[2] === 'sync-status') {
+            require __DIR__ . '/../routes/admin/sync-ojt-status.php';
+            exit;
+        }
+        
         // /admin/reports/pending
         if (count($pathParts) === 3 && $pathParts[1] === 'reports' && $pathParts[2] === 'pending') {
             require __DIR__ . '/../routes/admin/get-pending-reports.php';
