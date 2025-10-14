@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/api/client.dart';
 import '../screens/landing.dart';
+import '../screens/main/report.dart';
+import '../screens/main/about.dart';
 
 class MenuOverlay extends StatelessWidget {
   const MenuOverlay({super.key});
@@ -59,7 +61,10 @@ class MenuOverlay extends StatelessWidget {
                 Icons.info_outline,
                 () {
                   Navigator.pop(context);
-                  // TODO: Navigate to About page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AboutScreen()),
+                  );
                 },
               ),
               const SizedBox(height: 12),
@@ -69,7 +74,10 @@ class MenuOverlay extends StatelessWidget {
                 Icons.description_outlined,
                 () {
                   Navigator.pop(context);
-                  // TODO: Navigate to Report page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ReportScreen()),
+                  );
                 },
               ),
               const SizedBox(height: 12),
