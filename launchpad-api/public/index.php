@@ -322,6 +322,41 @@ try {
         }
     }
 
+    // Route: /notifications
+    if ($pathParts[0] === 'notifications') {
+        // /notifications/student (GET - student's notifications)
+        if (count($pathParts) === 2 && $pathParts[1] === 'student') {
+            require __DIR__ . '/../routes/notifications/get-student-notifications.php';
+            exit;
+        }
+        
+        // /notifications/:id/read (PUT - mark as read)
+        if (count($pathParts) === 3 && $pathParts[2] === 'read') {
+            $id = $pathParts[1];
+            require __DIR__ . '/../routes/notifications/mark-read.php';
+            exit;
+        }
+        
+        // /notifications/:id (DELETE - delete notification)
+        if (count($pathParts) === 2 && is_numeric($pathParts[1])) {
+            $id = $pathParts[1];
+            if ($method === 'DELETE') {
+                require __DIR__ . '/../routes/notifications/delete.php';
+            }
+            exit;
+        }
+        
+        // /notifications (GET - all notifications, POST - create)
+        if (count($pathParts) === 1) {
+            if ($method === 'GET') {
+                require __DIR__ . '/../routes/notifications/get-all.php';
+            } elseif ($method === 'POST') {
+                require __DIR__ . '/../routes/notifications/create.php';
+            }
+            exit;
+        }
+    }
+
     // 404 Not Found
     Response::error('Endpoint not found: ' . $path, 404);
 

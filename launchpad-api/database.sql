@@ -146,3 +146,24 @@ VALUES (
     '$2y$10$3euPcmQFCiblsZFlK4NzZOuohxdNf9Y1yLCEKVkfRNjSQTKKW8lmu',
     'cdc'
 );
+-- Notifications Table
+CREATE TABLE IF NOT EXISTS notifications (
+    notification_id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    recipient_type ENUM('all', 'specific') DEFAULT 'all',
+    created_by INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (created_by) REFERENCES cdc_users(id) ON DELETE CASCADE
+);
+
+-- Notification Recipients (for specific student notifications)
+CREATE TABLE IF NOT EXISTS notification_recipients (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    notification_id INT NOT NULL,
+    student_id INT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    read_at TIMESTAMP NULL,
+    FOREIGN KEY (notification_id) REFERENCES notifications(notification_id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES verified_students(student_id) ON DELETE CASCADE
+);
