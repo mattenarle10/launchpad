@@ -331,7 +331,7 @@ try {
         }
         
         // /notifications/:id/read (PUT - mark as read)
-        if (count($pathParts) === 3 && $pathParts[2] === 'read') {
+        if (count($pathParts) === 3 && is_numeric($pathParts[1]) && $pathParts[2] === 'read') {
             $id = $pathParts[1];
             require __DIR__ . '/../routes/notifications/mark-read.php';
             exit;
@@ -340,9 +340,7 @@ try {
         // /notifications/:id (DELETE - delete notification)
         if (count($pathParts) === 2 && is_numeric($pathParts[1])) {
             $id = $pathParts[1];
-            if ($method === 'DELETE') {
-                require __DIR__ . '/../routes/notifications/delete.php';
-            }
+            require __DIR__ . '/../routes/notifications/delete.php';
             exit;
         }
         

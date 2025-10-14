@@ -47,7 +47,7 @@ try {
     ");
     $stmt->bind_param('sssi', $title, $message, $recipientType, $cdcUserId);
     $stmt->execute();
-    $notificationId = $conn->insert_id();
+    $notificationId = $conn->insert_id;
 
     // If sending to specific students, insert recipients
     if ($recipientType === 'specific') {

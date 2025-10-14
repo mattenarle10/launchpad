@@ -90,5 +90,16 @@ class Auth
     {
         return password_verify($password, $hash);
     }
-}
 
+    public static function getUserId(): ?int
+    {
+        $payload = self::verify();
+        return $payload ? ($payload['id'] ?? null) : null;
+    }
+
+    public static function getRole(): ?string
+    {
+        $payload = self::verify();
+        return $payload ? ($payload['role'] ?? null) : null;
+    }
+}
