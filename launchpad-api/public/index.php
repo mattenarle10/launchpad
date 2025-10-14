@@ -130,6 +130,13 @@ try {
             exit;
         }
         
+        // /companies/students/:id/evaluation (PUT - update student evaluation)
+        if (count($pathParts) === 4 && $pathParts[1] === 'students' && $pathParts[3] === 'evaluation') {
+            $id = $pathParts[2];
+            require __DIR__ . '/../routes/companies/update-student-evaluation.php';
+            exit;
+        }
+        
         // /companies
         if (count($pathParts) === 1) {
             require __DIR__ . '/../routes/companies/get-all.php';

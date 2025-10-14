@@ -76,8 +76,10 @@ CREATE TABLE IF NOT EXISTS verified_students (
     company_name VARCHAR(150) DEFAULT NULL,
     company_id INT DEFAULT NULL,
     profile_pic VARCHAR(255) DEFAULT NULL,
+    evaluation_rank INT DEFAULT NULL COMMENT 'Company evaluation rank (0-100)',
     verified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (company_id) REFERENCES verified_companies(company_id) ON DELETE SET NULL
+    FOREIGN KEY (company_id) REFERENCES verified_companies(company_id) ON DELETE SET NULL,
+    CHECK (evaluation_rank IS NULL OR (evaluation_rank >= 0 AND evaluation_rank <= 100))
 );
 
 -- OJT Progress Tracking (Phase 3)
