@@ -275,6 +275,15 @@ try {
             require __DIR__ . '/../routes/admin/review-report.php';
             exit;
         }
+        
+        // /admin/jobs/:id (DELETE - CDC deletes any job)
+        if (count($pathParts) === 3 && $pathParts[1] === 'jobs' && is_numeric($pathParts[2])) {
+            $id = $pathParts[2];
+            if ($method === 'DELETE') {
+                require __DIR__ . '/../routes/admin/delete-job.php';
+            }
+            exit;
+        }
     }
 
     // Route: /jobs

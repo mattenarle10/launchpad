@@ -171,30 +171,9 @@
                     <!-- Recent Job Postings -->
                     <div class="card list-card">
                         <h3 class="card-title">Recent Job Postings</h3>
-                        <div class="info-list">
-                            <div class="list-item">
-                                <div class="list-avatar">G</div>
-                                <div class="list-info">
-                                    <h4 class="list-name">End-user Support</h4>
-                                    <p class="list-meta">₱ 300k - ₱ 360k per year</p>
-                                    <div class="tags">
-                                        <span class="tag">Tagalog</span>
-                                        <span class="tag">Helpdesk</span>
-                                        <span class="tag">On-Site</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="list-item">
-                                <div class="list-avatar">🍎</div>
-                                <div class="list-info">
-                                    <h4 class="list-name">End-user Support</h4>
-                                    <p class="list-meta">₱ 320k - ₱ 390k per year</p>
-                                    <div class="tags">
-                                        <span class="tag">Makati</span>
-                                        <span class="tag">IT Support</span>
-                                        <span class="tag">On-Site</span>
-                                    </div>
-                                </div>
+                        <div class="info-list" id="recent-jobs-list">
+                            <div class="empty-state" style="padding: 20px;">
+                                <p style="color: rgba(255,255,255,0.7);">Loading job postings...</p>
                             </div>
                         </div>
                     </div>
@@ -207,6 +186,7 @@
         import { loadSidebar, loadUserInfo } from '../../js/components.js';
         import { initUserDropdown } from '../../js/pages/dropdown.js';
         import CDCAPI from '../../js/api/cdc.js';
+        import client from '../../js/api/client.js';
         import { getSidebarMode } from '../../js/utils/sidebar-helper.js';
 
         function setText(id, value) {
@@ -252,6 +232,38 @@
             }
         }
 
+        async function loadRecentJobs() {
+            try {
+                const res = await client.get('/jobs');
+                const jobs = res.data || [];
+                const recentJobs = jobs.slice(0, 3); // Get latest 5 jobs
+                
+                const jobsList = document.getElementById('recent-jobs-list');
+                if (recentJobs.length === 0) {
+                    jobsList.innerHTML = '<div class="empty-state" style="padding: 20px;"><p style="color: rgba(255,255,255,0.7);">No job postings yet</p></div>';
+                    return;
+                }
+                
+                jobsList.innerHTML = recentJobs.map(job => `
+                    <div class="list-item">
+                        <div class="list-avatar">${job.company_name.charAt(0)}</div>
+                        <div class="list-info">
+                            <h4 class="list-name">${job.title}</h4>
+                            <p class="list-meta">${job.company_name}</p>
+                            <div class="tags">
+                                <span class="tag">${job.job_type}</span>
+                                ${job.location ? `<span class="tag">${job.location}</span>` : ''}
+                                ${job.salary_range ? `<span class="tag">${job.salary_range}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error('Failed to load recent jobs:', e);
+                document.getElementById('recent-jobs-list').innerHTML = '<div class="empty-state" style="padding: 20px;"><p style="color: rgba(255,255,255,0.7);">Failed to load jobs</p></div>';
+            }
+        }
+
         // Load components on page load
         document.addEventListener('DOMContentLoaded', async () => {
             await loadSidebar('dashboard', getSidebarMode());
@@ -273,8 +285,11 @@
                 }
             );
 
-            // Load real stats
+            // Load dashboard stats
             loadDashboardStats();
+            
+            // Load recent job postings
+            loadRecentJobs();
         });
     </script>
 </body>
