@@ -117,6 +117,24 @@ CREATE TABLE IF NOT EXISTS daily_reports (
     INDEX idx_status (status)
 );
 
+-- Job Opportunities posted by partner companies
+CREATE TABLE IF NOT EXISTS job_opportunities (
+    job_id INT AUTO_INCREMENT PRIMARY KEY,
+    company_id INT NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    description TEXT NOT NULL,
+    requirements TEXT,
+    location VARCHAR(200),
+    job_type ENUM('Full-time', 'Part-time', 'Contract', 'Internship') DEFAULT 'Full-time',
+    salary_range VARCHAR(100),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (company_id) REFERENCES verified_companies(company_id) ON DELETE CASCADE,
+    INDEX idx_company_active (company_id, is_active),
+    INDEX idx_active (is_active)
+);
+
 -- Insert default CDC admin account (Anthony Gallego)
 -- Default password: admin123 
 INSERT INTO cdc_users (username, email, first_name, last_name, password, role)

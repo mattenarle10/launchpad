@@ -116,8 +116,6 @@ try {
     if ($pathParts[0] === 'profile' && count($pathParts) === 2 && $pathParts[1] === 'logo') {
         if ($method === 'POST') {
             require __DIR__ . '/../routes/profile/upload-logo.php';
-        } else {
-            Response::error('Method not allowed', 405);
         }
         exit;
     }
@@ -275,6 +273,36 @@ try {
         if (count($pathParts) === 4 && $pathParts[1] === 'reports' && $pathParts[3] === 'review') {
             $id = $pathParts[2];
             require __DIR__ . '/../routes/admin/review-report.php';
+            exit;
+        }
+    }
+
+    // Route: /jobs
+    if ($pathParts[0] === 'jobs') {
+        // /jobs/company (GET - company's own jobs)
+        if (count($pathParts) === 2 && $pathParts[1] === 'company') {
+            require __DIR__ . '/../routes/jobs/get-company-jobs.php';
+            exit;
+        }
+        
+        // /jobs (GET - all active jobs, POST - create job)
+        if (count($pathParts) === 1) {
+            if ($method === 'GET') {
+                require __DIR__ . '/../routes/jobs/get-all-jobs.php';
+            } elseif ($method === 'POST') {
+                require __DIR__ . '/../routes/jobs/create-job.php';
+            }
+            exit;
+        }
+        
+        // /jobs/:id (PUT - update, DELETE - delete)
+        if (count($pathParts) === 2 && is_numeric($pathParts[1])) {
+            $id = $pathParts[1];
+            if ($method === 'PUT') {
+                require __DIR__ . '/../routes/jobs/update-job.php';
+            } elseif ($method === 'DELETE') {
+                require __DIR__ . '/../routes/jobs/delete-job.php';
+            }
             exit;
         }
     }
