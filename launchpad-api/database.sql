@@ -146,4 +146,3 @@ VALUES (
     '$2y$10$3euPcmQFCiblsZFlK4NzZOuohxdNf9Y1yLCEKVkfRNjSQTKKW8lmu',
     'cdc'
 );
-
