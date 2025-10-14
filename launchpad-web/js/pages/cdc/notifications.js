@@ -14,6 +14,7 @@ import { createModal } from '../../utils/modal.js';
 let allNotifications = [];
 let dataTable = null;
 let allStudents = [];
+let currentModal = null;
 
 async function loadNotificationsTable() {
     const tableWrapper = document.getElementById('table-wrapper');
@@ -131,12 +132,16 @@ function viewNotification(notification) {
         </div>
     `;
     
-    const modal = createModal('notification-details-modal', {
+    if (currentModal) {
+        currentModal.destroy();
+    }
+    
+    currentModal = createModal('notification-details-modal', {
         title: notification.title,
         size: 'large'
     });
     
-    modal.open(content);
+    currentModal.open(content);
 }
 
 async function deleteNotification(notificationId, title) {
@@ -226,7 +231,11 @@ async function openSendNotificationModal() {
         </div>
     `;
     
-    const modal = createModal('send-notification-modal', {
+    if (currentModal) {
+        currentModal.destroy();
+    }
+    
+    currentModal = createModal('send-notification-modal', {
         title: 'Send Notification',
         size: 'large'
     });
@@ -242,24 +251,54 @@ async function openSendNotificationModal() {
         </button>
     `;
     
-    modal.setFooter(footer);
-    modal.open(content);
+    currentModal.setFooter(footer);
+    currentModal.open(content);
     
-    // Setup recipient type change handler
+    // Setup event handlers after modal is opened
     setTimeout(() => {
-        document.getElementById('recipient-type')?.addEventListener('change', (e) => {
-            const studentsSelector = document.getElementById('students-selector');
-            if (e.target.value === 'specific') {
-                studentsSelector.style.display = 'block';
-            } else {
-                studentsSelector.style.display = 'none';
-            }
-        });
+        // Recipient type change handler
+        const recipientTypeSelect = document.getElementById('recipient-type');
+        const studentsSelector = document.getElementById('students-selector');
+        
+        if (recipientTypeSelect) {
+            recipientTypeSelect.addEventListener('change', (e) => {
+                if (studentsSelector) {
+                    studentsSelector.style.display = e.target.value === 'specific' ? 'block' : 'none';
+                }
+            });
+        }
 
-        document.getElementById('send-notif-btn')?.addEventListener('click', async () => {
-            await sendNotification();
+        // Send notification button handler
+        const sendBtn = document.getElementById('send-notif-btn');
+        if (sendBtn) {
+            sendBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                
+                // Disable button and show loading state
+                sendBtn.disabled = true;
+                const originalContent = sendBtn.innerHTML;
+                sendBtn.innerHTML = '<span>Sending...</span>';
+                
+                try {
+                    await sendNotification();
+                } catch (error) {
+                    // Re-enable button on error
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = originalContent;
+                }
+            });
+        }
+        
+        // Setup close button handlers
+        const closeButtons = document.querySelectorAll('[data-modal-close]');
+        closeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (currentModal) {
+                    currentModal.close();
+                }
+            });
         });
-    }, 0);
+    }, 100);
 }
 
 async function sendNotification() {
@@ -291,9 +330,10 @@ async function sendNotification() {
         await client.post('/notifications', data);
         showSuccess('Notification sent successfully!');
         
-        // Close modal
-        const modal = document.querySelector('.modal');
-        if (modal) modal.remove();
+        // Close modal properly
+        if (currentModal) {
+            currentModal.close();
+        }
 
         // Reload table
         setTimeout(() => loadNotificationsTable(), 500);
