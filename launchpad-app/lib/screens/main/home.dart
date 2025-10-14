@@ -17,14 +17,17 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 1; // Home is default
   Map<String, dynamic>? _userData;
   Map<String, dynamic>? _ojtProgress;
+  Map<String, dynamic>? _evaluation;
   bool _isLoading = true;
   bool _isLoadingProgress = false;
+  bool _isLoadingEvaluation = false;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
     _loadOjtProgress();
+    _loadEvaluation();
   }
 
   Future<void> _loadUserData() async {
@@ -71,6 +74,31 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           _isLoadingProgress = false;
           _ojtProgress = null; // Set to null so it shows "Not Started"
+        });
+      }
+    }
+  }
+
+  Future<void> _loadEvaluation() async {
+    setState(() {
+      _isLoadingEvaluation = true;
+    });
+
+    try {
+      final studentApi = StudentApi(ApiClient.I);
+      final response = await studentApi.getEvaluation();
+      if (mounted) {
+        setState(() {
+          _evaluation = response['data'];
+          _isLoadingEvaluation = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading evaluation: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingEvaluation = false;
+          _evaluation = null;
         });
       }
     }
@@ -159,6 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       onRefresh: () async {
                         await _loadUserData();
                         await _loadOjtProgress();
+                        await _loadEvaluation();
                       },
                       child: SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
@@ -570,9 +599,19 @@ class _HomeScreenState extends State<HomeScreen> {
           child: _buildStatCard(
             icon: Icons.assessment,
             title: 'Evaluation',
-            value: 'N/A',
-            subtitle: 'Not yet evaluated',
-            color: const Color(0xFF3B82F6),
+            value: _evaluation != null && _evaluation!['evaluation_rank'] != null 
+                ? '${_evaluation!['evaluation_rank']}/100'
+                : 'N/A',
+            subtitle: _evaluation != null && _evaluation!['evaluation_rank'] != null
+                ? 'Company Evaluation'
+                : 'Not yet evaluated',
+            color: _evaluation != null && _evaluation!['evaluation_rank'] != null
+                ? (_evaluation!['evaluation_rank'] >= 80 
+                    ? const Color(0xFF10B981) 
+                    : _evaluation!['evaluation_rank'] >= 60
+                        ? const Color(0xFFF59E0B)
+                        : const Color(0xFFEF4444))
+                : const Color(0xFF3B82F6),
           ),
         ),
         const SizedBox(width: 12),

@@ -52,4 +52,10 @@ class StudentApi extends BaseApiGroup {
     final response = await post('/$studentId/reports/daily', formData);
     return response as Map<String, dynamic>;
   }
+
+  /// Get student evaluation from partner company
+  Future<Map<String, dynamic>> getEvaluation() async {
+    final response = await get('/evaluation');
+    return response as Map<String, dynamic>;
+  }
 }

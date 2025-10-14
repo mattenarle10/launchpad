@@ -58,6 +58,12 @@ try {
             exit;
         }
         
+        // /students/evaluation (GET - student's evaluation from company)
+        if (count($pathParts) === 2 && $pathParts[1] === 'evaluation') {
+            require __DIR__ . '/../routes/students/get-evaluation.php';
+            exit;
+        }
+        
         // /students
         if (count($pathParts) === 1) {
             require __DIR__ . '/../routes/students/get-all.php';
