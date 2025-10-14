@@ -181,7 +181,7 @@
             <header class="page-header">
                 <div class="user-info">
                     <div class="user-avatar">
-                        <img id="header-avatar" class="avatar-img" src="../images/logo/cdc-avatar.png" alt="User Avatar" width="60" height="60" style="display:block;">
+                        <img id="header-avatar" class="avatar-img" src="/LaunchPad/launchpad-web/images/logo/cdc-avatar.png" alt="User Avatar" width="60" height="60" style="display:block;">
                     </div>
                     <div class="user-details">
                         <h1 id="header-name">Loading...</h1>
@@ -192,7 +192,7 @@
                     <div class="user-menu">
                         <button class="user-menu-toggle" id="user-menu-toggle">
                             <div class="user-badge">
-                                <img id="badge-avatar" class="avatar-img" src="../images/logo/cdc-avatar.png" alt="User Avatar" width="40" height="40" style="display:block;">
+                                <img id="badge-avatar" class="avatar-img" src="/LaunchPad/launchpad-web/images/logo/cdc-avatar.png" alt="User Avatar" width="40" height="40" style="display:block;">
                             </div>
                             <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
                                 <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -201,7 +201,7 @@
                         <div class="user-dropdown" id="user-dropdown">
                             <div class="dropdown-header">
                                 <div class="dropdown-avatar">
-                                    <img id="dropdown-avatar" class="avatar-img" src="../images/logo/cdc-avatar.png" alt="User Avatar" width="50" height="50" style="display:block;">
+                                    <img id="dropdown-avatar" class="avatar-img" src="/LaunchPad/launchpad-web/images/logo/cdc-avatar.png" alt="User Avatar" width="50" height="50" style="display:block;">
                                 </div>
                                 <h3 id="dropdown-user-name">Loading...</h3>
                             </div>
@@ -268,46 +268,42 @@
                             <input type="text" class="form-input" id="company-address">
                         </div>
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Industry</label>
-                                <input type="text" class="form-input" id="company-industry">
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Company Size</label>
-                                <input type="text" class="form-input" id="company-size" placeholder="e.g., 50-100 employees">
-                            </div>
-                        </div>
-
                         <div class="form-group">
                             <label class="form-label">Website</label>
-                            <input type="url" class="form-input" id="company-website" placeholder="https://example.com">
+                            <input type="text" class="form-input" id="company-website" placeholder="Website or page link">
                         </div>
 
-                        <div class="form-group">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-input form-textarea" id="company-description"></textarea>
-                        </div>
                     </div>
 
                     <div class="form-section">
                         <h2 class="section-title">Contact Information</h2>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Contact Person *</label>
-                            <input type="text" class="form-input" id="contact-person" required>
-                        </div>
-
                         <div class="form-row">
                             <div class="form-group">
-                                <label class="form-label">Contact Email *</label>
-                                <input type="email" class="form-input" id="contact-email" required>
+                                <label class="form-label">Contact Email</label>
+                                <input type="email" class="form-input" id="contact-email">
                             </div>
-
                             <div class="form-group">
                                 <label class="form-label">Contact Phone</label>
                                 <input type="tel" class="form-input" id="contact-phone">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2 class="section-title">Company Logo</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Current Logo</label>
+                                <div style="display:flex; align-items:center; gap:12px;">
+                                    <img id="company-logo-preview" src="/LaunchPad/launchpad-web/images/logo/launchpad.png" alt="Company Logo" width="72" height="72" class="avatar-img" style="border:1px solid #E5E7EB;">
+                                    <span id="company-logo-filename" style="color:#6B7280; font-size:13px;"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Upload New Logo</label>
+                                <input type="file" id="company-logo-file" accept="image/*" class="form-input" style="padding:10px;">
+                                <button type="button" class="btn btn-save" id="upload-logo-btn" style="margin-top:10px;">Upload Logo</button>
+                                <p style="margin-top:8px; color:#6B7280; font-size:12px;">PNG/JPG, max ~2MB recommended.</p>
                             </div>
                         </div>
                     </div>

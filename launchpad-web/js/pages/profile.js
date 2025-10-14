@@ -7,6 +7,7 @@ import { loadSidebar } from '../components.js';
 import { initUserDropdown } from './dropdown.js';
 import client from '../api/client.js';
 import { showSuccess, showError } from '../utils/notifications.js';
+import { getSidebarMode } from '../utils/sidebar-helper.js';
 
 let profileData = null;
 
@@ -18,8 +19,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // Load sidebar (no active page since profile is not in sidebar)
-    await loadSidebar();
+    // Load sidebar (no active page). Use 'pc' sidebar for partner companies
+    await loadSidebar(undefined, getSidebarMode());
 
     // Initialize dropdown
     initUserDropdown(
@@ -36,6 +37,51 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Setup form submission
     document.getElementById('profile-form')?.addEventListener('submit', handleSubmit);
+
+    // Logo upload handlers (company only)
+    const fileInput = document.getElementById('company-logo-file');
+    const fileNameEl = document.getElementById('company-logo-filename');
+    const previewEl = document.getElementById('company-logo-preview');
+    const uploadBtn = document.getElementById('upload-logo-btn');
+
+    if (fileInput) {
+        fileInput.addEventListener('change', () => {
+            const f = fileInput.files?.[0];
+            if (!f) return;
+            fileNameEl && (fileNameEl.textContent = f.name);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if (previewEl && typeof e.target?.result === 'string') previewEl.src = e.target.result;
+            };
+            reader.readAsDataURL(f);
+        });
+    }
+
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', async () => {
+            const f = fileInput?.files?.[0];
+            if (!f) {
+                showError('Please choose a logo image first');
+                return;
+            }
+            const fd = new FormData();
+            fd.append('logo', f);
+            try {
+                const res = await client.post('/profile/logo', fd);
+                const file = res.data?.company_logo;
+                if (file) {
+                    const absolute = `${window.location.origin}/LaunchPad/launchpad-api/uploads/company_logos/${file}`;
+                    if (previewEl) previewEl.src = absolute;
+                    showSuccess('Company logo updated');
+                } else {
+                    showSuccess('Logo uploaded');
+                }
+            } catch (err) {
+                console.error('Logo upload failed:', err);
+                showError('Failed to upload logo: ' + err.message);
+            }
+        });
+    }
 });
 
 async function loadProfile() {
@@ -64,8 +110,8 @@ function updateHeader(profile) {
     let roleText = 'Loading...';
 
     // Choose avatar image based on role
-    // Note: profile page lives under /pages/, so images base is ../images/
-    const imgBase = '../images/logo/';
+    // Use absolute base to avoid relative path issues
+    const imgBase = '/LaunchPad/launchpad-web/images/logo/';
     const avatarFile = profile.role === 'cdc'
         ? 'cdc-avatar.png'
         : (profile.role === 'company' ? 'launchpad.png' : 'pc.png');
@@ -100,6 +146,10 @@ function showCDCForm(profile) {
     document.getElementById('cdc-form').style.display = 'block';
     document.getElementById('company-form').style.display = 'none';
 
+    // Enable CDC form fields, disable company fields
+    toggleFormInputs('cdc-form', true);
+    toggleFormInputs('company-form', false);
+
     document.getElementById('cdc-username').value = profile.username || '';
     document.getElementById('cdc-email').value = profile.email || '';
 }
@@ -108,16 +158,41 @@ function showCompanyForm(profile) {
     document.getElementById('cdc-form').style.display = 'none';
     document.getElementById('company-form').style.display = 'block';
 
+    // Enable company form fields, disable CDC fields
+    toggleFormInputs('company-form', true);
+    toggleFormInputs('cdc-form', false);
+
     document.getElementById('company-username').value = profile.username || '';
     document.getElementById('company-name').value = profile.company_name || '';
     document.getElementById('company-address').value = profile.company_address || '';
-    document.getElementById('company-industry').value = profile.industry || '';
-    document.getElementById('company-size').value = profile.company_size || '';
     document.getElementById('company-website').value = profile.company_website || '';
-    document.getElementById('company-description').value = profile.description || '';
-    document.getElementById('contact-person').value = profile.contact_person || '';
     document.getElementById('contact-email').value = profile.contact_email || '';
     document.getElementById('contact-phone').value = profile.contact_phone || '';
+
+    // Set logo preview if present
+    const previewEl = document.getElementById('company-logo-preview');
+    const fileNameEl = document.getElementById('company-logo-filename');
+    if (profile.company_logo && previewEl) {
+        const absolute = `${window.location.origin}/LaunchPad/launchpad-api/uploads/company_logos/${profile.company_logo}`;
+        previewEl.src = absolute;
+        if (fileNameEl) fileNameEl.textContent = profile.company_logo;
+    }
+}
+
+// Disable/enable inputs inside a form container to prevent HTML5 validation on hidden forms
+function toggleFormInputs(containerId, enabled) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const controls = container.querySelectorAll('input, select, textarea, button');
+    controls.forEach(ctrl => {
+        if (enabled) {
+            ctrl.removeAttribute('disabled');
+        } else {
+            ctrl.setAttribute('disabled', 'disabled');
+            // Also remove required to avoid validation errors
+            ctrl.removeAttribute('required');
+        }
+    });
 }
 
 async function handleSubmit(e) {
@@ -139,12 +214,8 @@ async function handleSubmit(e) {
                 company_name: document.getElementById('company-name').value.trim(),
                 company_address: document.getElementById('company-address').value.trim(),
                 company_website: document.getElementById('company-website').value.trim(),
-                contact_person: document.getElementById('contact-person').value.trim(),
                 contact_email: document.getElementById('contact-email').value.trim(),
-                contact_phone: document.getElementById('contact-phone').value.trim(),
-                industry: document.getElementById('company-industry').value.trim(),
-                company_size: document.getElementById('company-size').value.trim(),
-                description: document.getElementById('company-description').value.trim()
+                contact_phone: document.getElementById('contact-phone').value.trim()
             };
         }
 

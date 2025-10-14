@@ -195,6 +195,7 @@
         import { loadSidebar, loadUserInfo } from '../../js/components.js';
         import { initUserDropdown } from '../../js/pages/dropdown.js';
         import CDCAPI from '../../js/api/cdc.js';
+        import { getSidebarMode } from '../../js/utils/sidebar-helper.js';
 
         function setText(id, value) {
             const el = document.getElementById(id);
@@ -225,7 +226,7 @@
 
         // Load components on page load
         document.addEventListener('DOMContentLoaded', async () => {
-            await loadSidebar('dashboard');
+            await loadSidebar('dashboard', getSidebarMode());
             loadUserInfo();
             
             // Initialize dropdown

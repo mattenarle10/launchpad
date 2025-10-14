@@ -126,6 +126,7 @@
         import { initUserDropdown } from '../../js/pages/dropdown.js';
         import CDCAPI from '../../js/api/cdc.js';
         import client from '../../js/api/client.js';
+        import { getSidebarMode } from '../../js/utils/sidebar-helper.js';
         import { showError } from '../../js/utils/notifications.js';
 
         let allStudents = [];
@@ -139,7 +140,7 @@
             }
 
             // Load components
-            await loadSidebar('students');
+            await loadSidebar('students', getSidebarMode());
             loadUserInfo();
             
             // Initialize dropdown

@@ -30,34 +30,43 @@ if ($role === ROLE_CDC) {
     Response::success($profile);
     
 } elseif ($role === ROLE_COMPANY) {
-    // Get company profile
+    // Get company profile (match verified_companies schema)
     $stmt = $conn->prepare("
         SELECT 
             company_id,
             username,
             company_name,
-            company_address,
-            company_website,
-            contact_person,
-            contact_email,
-            contact_phone,
-            industry,
-            company_size,
-            description,
-            verified_at,
-            created_at
+            address,
+            website,
+            email,
+            contact_num,
+            company_logo,
+            verified_at
         FROM verified_companies 
         WHERE company_id = ?
     ");
     $stmt->bind_param('i', $userId);
     $stmt->execute();
-    $profile = $stmt->get_result()->fetch_assoc();
+    $row = $stmt->get_result()->fetch_assoc();
     
-    if (!$profile) {
+    if (!$row) {
         Response::error('Profile not found', 404);
     }
     
-    $profile['role'] = 'company';
+    // Normalize keys for frontend
+    $profile = [
+        'role' => 'company',
+        'company_id' => intval($row['company_id']),
+        'username' => $row['username'],
+        'company_name' => $row['company_name'],
+        'company_address' => $row['address'],
+        'company_website' => $row['website'],
+        'contact_email' => $row['email'],
+        'contact_phone' => $row['contact_num'],
+        'company_logo' => $row['company_logo'],
+        'verified_at' => $row['verified_at'],
+    ];
+    
     Response::success($profile);
     
 } else {

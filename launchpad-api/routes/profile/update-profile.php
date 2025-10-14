@@ -39,63 +39,61 @@ if ($role === ROLE_CDC) {
     Response::success(['message' => 'Profile updated successfully']);
     
 } elseif ($role === ROLE_COMPANY) {
-    // Update company profile
-    $companyName = $data['company_name'] ?? null;
-    $companyAddress = $data['company_address'] ?? null;
-    $companyWebsite = $data['company_website'] ?? null;
-    $contactPerson = $data['contact_person'] ?? null;
-    $contactEmail = $data['contact_email'] ?? null;
-    $contactPhone = $data['contact_phone'] ?? null;
-    $industry = $data['industry'] ?? null;
-    $companySize = $data['company_size'] ?? null;
-    $description = $data['description'] ?? null;
-    
-    // Validate required fields
-    if (!$companyName || !$contactPerson || !$contactEmail) {
-        Response::error('Company name, contact person, and contact email are required', 400);
+    // Update company profile (verified_companies schema)
+    // Map incoming fields to DB columns
+    $updates = [];
+    $params = [];
+    $types = '';
+
+    if (isset($data['company_name'])) {
+        $updates[] = 'company_name = ?';
+        $params[] = $data['company_name'];
+        $types .= 's';
     }
-    
-    if (!filter_var($contactEmail, FILTER_VALIDATE_EMAIL)) {
-        Response::error('Valid contact email is required', 400);
+    if (isset($data['company_address'])) {
+        $updates[] = 'address = ?';
+        $params[] = $data['company_address'];
+        $types .= 's';
     }
-    
-    // Check if email is already taken by another company
-    $stmt = $conn->prepare("SELECT company_id FROM verified_companies WHERE contact_email = ? AND company_id != ?");
-    $stmt->bind_param('si', $contactEmail, $userId);
+    if (isset($data['company_website'])) {
+        $updates[] = 'website = ?';
+        $params[] = $data['company_website'];
+        $types .= 's';
+    }
+    if (isset($data['contact_email'])) {
+        $email = $data['contact_email'];
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            Response::error('Valid contact email is required', 400);
+        }
+        // Check if email already used by another company
+        $stmt = $conn->prepare("SELECT company_id FROM verified_companies WHERE email = ? AND company_id != ?");
+        $stmt->bind_param('si', $email, $userId);
+        $stmt->execute();
+        if ($stmt->get_result()->num_rows > 0) {
+            Response::error('Email already in use', 400);
+        }
+        $updates[] = 'email = ?';
+        $params[] = $email;
+        $types .= 's';
+    }
+    if (isset($data['contact_phone'])) {
+        $updates[] = 'contact_num = ?';
+        $params[] = $data['contact_phone'];
+        $types .= 's';
+    }
+
+    if (empty($updates)) {
+        Response::success(['message' => 'No changes to update']);
+    }
+
+    $sql = 'UPDATE verified_companies SET ' . implode(', ', $updates) . ' WHERE company_id = ?';
+    $params[] = $userId;
+    $types .= 'i';
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param($types, ...$params);
     $stmt->execute();
-    if ($stmt->get_result()->num_rows > 0) {
-        Response::error('Contact email already in use', 400);
-    }
-    
-    $stmt = $conn->prepare("
-        UPDATE verified_companies 
-        SET 
-            company_name = ?,
-            company_address = ?,
-            company_website = ?,
-            contact_person = ?,
-            contact_email = ?,
-            contact_phone = ?,
-            industry = ?,
-            company_size = ?,
-            description = ?
-        WHERE company_id = ?
-    ");
-    $stmt->bind_param(
-        'sssssssssi',
-        $companyName,
-        $companyAddress,
-        $companyWebsite,
-        $contactPerson,
-        $contactEmail,
-        $contactPhone,
-        $industry,
-        $companySize,
-        $description,
-        $userId
-    );
-    $stmt->execute();
-    
+
     Response::success(['message' => 'Profile updated successfully']);
     
 } else {

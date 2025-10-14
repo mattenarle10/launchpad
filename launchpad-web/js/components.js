@@ -4,7 +4,7 @@
  */
 
 // Load Sidebar Component
-export async function loadSidebar(activePage) {
+export async function loadSidebar(activePage, mode) {
     const sidebarPlaceholder = document.getElementById('sidebar-placeholder');
     if (!sidebarPlaceholder) return;
 
@@ -23,15 +23,17 @@ export async function loadSidebar(activePage) {
 
         // Determine correct path to sidebar based on current location
         const currentPath = window.location.pathname;
-        let sidebarPath = 'sidebar.html';
+        // Choose sidebar file based on mode (cdc default, pc for partner company)
+        const sidebarFile = mode === 'pc' ? 'pc-sidebar.html' : 'sidebar.html';
+        let sidebarPath = sidebarFile;
         
         // If we're in a subdirectory like /cdc/ or /pc/, go up one level
         if (currentPath.includes('/cdc/') || currentPath.includes('/pc/')) {
-            sidebarPath = '../sidebar.html';
+            sidebarPath = `../${sidebarFile}`;
         }
         
-        // Try using cached sidebar to render instantly
-        const cacheKey = 'sidebar_html_cache_v1';
+        // Try using cached sidebar to render instantly (per sidebar file)
+        const cacheKey = `sidebar_html_cache_v1:${sidebarFile}`;
         const cached = sessionStorage.getItem(cacheKey);
 
         // Reduce flash only when we do not have cached HTML ready
@@ -68,13 +70,25 @@ export async function loadSidebar(activePage) {
         const preloadA = new Image(); preloadA.src = launchpadLogo;
         const preloadB = new Image(); preloadB.src = cdcLogo;
 
-        // Fix navigation links
+        // Fix navigation links based on mode and location
         const navItems = sidebarPlaceholder.querySelectorAll('.nav-item');
         navItems.forEach(item => {
             const href = item.getAttribute('href');
-            // If we're in /pages/, links should go to cdc/
-            if (!isInSubdirectory && href && !href.startsWith('http')) {
-                item.setAttribute('href', 'cdc/' + href);
+            if (!href || href.startsWith('http')) return;
+            
+            // Determine the correct subdirectory based on mode
+            const targetDir = mode === 'pc' ? 'pc' : 'cdc';
+            
+            // If we're in /pages/ (not in a subdirectory), prefix with the target directory
+            if (!isInSubdirectory) {
+                item.setAttribute('href', `${targetDir}/${href}`);
+            } else {
+                // If we're in a subdirectory but it's the wrong one, fix it
+                const currentDir = currentPath.includes('/pc/') ? 'pc' : 'cdc';
+                if (currentDir !== targetDir) {
+                    // Replace current directory with target directory
+                    item.setAttribute('href', `../${targetDir}/${href}`);
+                }
             }
             
             // Set active page

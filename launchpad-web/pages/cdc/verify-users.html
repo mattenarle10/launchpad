@@ -167,6 +167,7 @@
         import { initUserDropdown } from '../../js/pages/dropdown.js';
         import CDCAPI from '../../js/api/cdc.js';
         import CompanyAPI from '../../js/api/company.js';
+        import { getSidebarMode } from '../../js/utils/sidebar-helper.js';
         import client from '../../js/api/client.js';
         import { showError } from '../../js/utils/notifications.js';
         import { openImageViewer } from '../../js/utils/image-viewer.js';
@@ -185,7 +186,7 @@
             }
 
             // Load components
-            await loadSidebar('verify-users');
+            await loadSidebar('verify-users', getSidebarMode());
             loadUserInfo();
             
             // Initialize dropdown

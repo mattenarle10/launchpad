@@ -172,10 +172,41 @@
     </div>
 
     <script type="module">
-        import { loadPCSidebar, loadUserInfo } from '../../js/pc-components.js';
+        import { loadSidebar, loadUserInfo } from '../../js/components.js';
         import { initUserDropdown } from '../../js/pages/dropdown.js';
         import client from '../../js/api/client.js';
         import { showError } from '../../js/utils/notifications.js';
+        import { getSidebarMode } from '../../js/utils/sidebar-helper.js';
+
+        async function loadDashboardStats() {
+            try {
+                const res = await client.get('/companies/dashboard/stats');
+                const s = res.data || {};
+                
+                // Update stat cards
+                document.getElementById('active-students-count').textContent = s.active_students ?? 0;
+                document.getElementById('completed-students-count').textContent = s.completed_students ?? 0;
+                document.getElementById('job-postings-count').textContent = s.job_postings ?? 0;
+                
+                // Update chart center (total students)
+                document.getElementById('total-students-chart').textContent = s.total_students ?? 0;
+                
+                // Update course breakdown
+                const breakdown = s.course_breakdown || {};
+                const it = breakdown.IT || 0;
+                const cs = breakdown.COMSCI || breakdown.CS || 0;
+                const emc = breakdown.EMC || 0;
+                document.getElementById('it-count').textContent = `IT - ${it}`;
+                document.getElementById('cs-count').textContent = `CS - ${cs}`;
+                document.getElementById('emc-count').textContent = `EMC - ${emc}`;
+                
+                // Update reports today
+                document.getElementById('reports-today').textContent = s.reports_today ?? 0;
+            } catch (e) {
+                console.error('Failed to load dashboard stats:', e);
+                showError('Failed to load dashboard statistics');
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', async () => {
             // Check authentication
@@ -186,7 +217,7 @@
             }
 
             // Load components
-            await loadPCSidebar('dashboard');
+            await loadSidebar('dashboard', getSidebarMode());
             loadUserInfo();
             
             // Initialize dropdown
@@ -200,16 +231,8 @@
                 () => console.log('View profile')
             );
 
-            // TODO: Load real dashboard data from API
-            // For now, using placeholder values
-            document.getElementById('active-students-count').textContent = '12';
-            document.getElementById('completed-students-count').textContent = '28';
-            document.getElementById('job-postings-count').textContent = '3';
-            document.getElementById('total-students-chart').textContent = '40';
-            document.getElementById('it-count').textContent = 'IT - 18';
-            document.getElementById('cs-count').textContent = 'CS - 15';
-            document.getElementById('emc-count').textContent = 'EMC - 7';
-            document.getElementById('reports-today').textContent = '8';
+            // Load real dashboard data from API
+            await loadDashboardStats();
         });
     </script>
 </body>

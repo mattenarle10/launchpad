@@ -100,11 +100,33 @@ try {
         exit;
     }
 
+    // Route: /profile/logo (POST - upload company logo)
+    if ($pathParts[0] === 'profile' && count($pathParts) === 2 && $pathParts[1] === 'logo') {
+        if ($method === 'POST') {
+            require __DIR__ . '/../routes/profile/upload-logo.php';
+        } else {
+            Response::error('Method not allowed', 405);
+        }
+        exit;
+    }
+
     // Route: /companies
     if ($pathParts[0] === 'companies') {
         // /companies/register (POST - no auth)
         if (count($pathParts) === 2 && $pathParts[1] === 'register') {
             require __DIR__ . '/../routes/companies/register.php';
+            exit;
+        }
+        
+        // /companies/dashboard/stats (GET - company dashboard stats)
+        if (count($pathParts) === 3 && $pathParts[1] === 'dashboard' && $pathParts[2] === 'stats') {
+            require __DIR__ . '/../routes/companies/get-dashboard-stats.php';
+            exit;
+        }
+        
+        // /companies/students (GET - company's assigned students)
+        if (count($pathParts) === 2 && $pathParts[1] === 'students') {
+            require __DIR__ . '/../routes/companies/get-students.php';
             exit;
         }
         

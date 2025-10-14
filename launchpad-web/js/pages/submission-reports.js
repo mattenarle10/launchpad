@@ -7,6 +7,7 @@ import { loadSidebar, loadUserInfo } from '../components.js';
 import { initUserDropdown } from './dropdown.js';
 import ReportAPI from '../api/report.js';
 import client from '../api/client.js';
+import { getSidebarMode } from '../utils/sidebar-helper.js';
 import DataTable from './table.js';
 import { showSuccess, showError, showWarning } from '../utils/notifications.js';
 import { createModal } from '../utils/modal.js';
@@ -27,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Load components
-    await loadSidebar('submission-reports');
+    await loadSidebar('submission-reports', getSidebarMode());
     loadUserInfo();
     
     // Initialize dropdown

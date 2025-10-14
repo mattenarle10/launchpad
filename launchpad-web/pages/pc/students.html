@@ -119,13 +119,79 @@
     </div>
 
     <script type="module">
-        import { loadPCSidebar, loadUserInfo } from '../../js/pc-components.js';
+        import { loadSidebar, loadUserInfo } from '../../js/components.js';
         import { initUserDropdown } from '../../js/pages/dropdown.js';
-        import StudentAPI from '../../js/api/student.js';
         import client from '../../js/api/client.js';
         import { showError } from '../../js/utils/notifications.js';
+        import { getSidebarMode } from '../../js/utils/sidebar-helper.js';
+        import DataTable from '../../js/pages/table.js';
 
         let allStudents = [];
+        let dataTable = null;
+
+        async function loadStudentsTable() {
+            const tableWrapper = document.getElementById('table-wrapper');
+            tableWrapper.innerHTML = '<div class="loading"><p>Loading students...</p></div>';
+
+            try {
+                const res = await client.get('/companies/students');
+                allStudents = res.data || [];
+
+                // Update total count
+                const totalCount = document.getElementById('total-students-count');
+                if (totalCount) totalCount.textContent = allStudents.length;
+
+                // Create DataTable
+                dataTable = new DataTable({
+                    containerId: 'table-wrapper',
+                    columns: [
+                        { key: 'id_num', label: 'ID Number', sortable: true },
+                        { 
+                            key: 'first_name', 
+                            label: 'Name', 
+                            sortable: true,
+                            format: (value, row) => `${row.first_name} ${row.last_name}`
+                        },
+                        { key: 'email', label: 'Email', sortable: true },
+                        { 
+                            key: 'course', 
+                            label: 'Course', 
+                            sortable: true,
+                            format: (value) => `<span class="course-badge ${value.toLowerCase()}">${value}</span>`
+                        },
+                        { 
+                            key: 'ojt_status', 
+                            label: 'OJT Status', 
+                            sortable: true,
+                            format: (value) => {
+                                const statusClass = value === 'completed' ? 'completed' : value === 'in_progress' ? 'ongoing' : 'pending';
+                                const statusText = value === 'not_started' ? 'Not Started' : value.replace('_', ' ').toUpperCase();
+                                return `<span class="status-badge ${statusClass}">${statusText}</span>`;
+                            }
+                        },
+                        { 
+                            key: 'completion_percentage', 
+                            label: 'Progress', 
+                            sortable: true,
+                            format: (value, row) => `${row.completed_hours || 0} / ${row.required_hours || 0} hrs (${value}%)`
+                        }
+                    ],
+                    data: allStudents,
+                    pageSize: 10,
+                    emptyMessage: 'No students assigned to your company yet'
+                });
+
+            } catch (error) {
+                console.error('Error loading students:', error);
+                tableWrapper.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-text">Error loading students</div>
+                        <div class="empty-state-subtext">${error.message}</div>
+                    </div>
+                `;
+                showError('Failed to load students: ' + error.message);
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', async () => {
             // Check authentication
@@ -136,7 +202,7 @@
             }
 
             // Load components
-            await loadPCSidebar('students');
+            await loadSidebar('students', getSidebarMode());
             loadUserInfo();
             
             // Initialize dropdown
@@ -150,9 +216,8 @@
                 () => console.log('View profile')
             );
             
-            // Load students table using Student API
-            const { dataTable, students } = await StudentAPI.loadPCStudentsTable('table-wrapper', 'total-students-count');
-            allStudents = students;
+            // Load students table for this company
+            await loadStudentsTable();
 
             // Setup search
             document.getElementById('search-input')?.addEventListener('input', (e) => {

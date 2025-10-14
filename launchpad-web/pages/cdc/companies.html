@@ -111,6 +111,7 @@
         import { initUserDropdown } from '../../js/pages/dropdown.js';
         import client from '../../js/api/client.js';
         import CompanyAPI from '../../js/api/company.js';
+        import { getSidebarMode } from '../../js/utils/sidebar-helper.js';
         import { showError } from '../../js/utils/notifications.js';
 
         // Check authentication
@@ -120,7 +121,7 @@
         }
 
         // Load sidebar and user info
-        await loadSidebar('companies');
+        await loadSidebar('companies', getSidebarMode());
         loadUserInfo();
 
         // Initialize dropdown
