@@ -7,7 +7,7 @@ import '../../components/custom_text_field.dart';
 import '../../components/custom_button.dart';
 import '../../components/toast.dart';
 import '../../services/api/client.dart';
-import '../../services/api/endpoints/student.dart';
+import '../../services/api/endpoints/report.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -85,6 +85,13 @@ class _ReportScreenState extends State<ReportScreen> {
       return;
     }
 
+    // Validate report date
+    final dateError = ReportApi.validateReportDate(_selectedDate);
+    if (dateError != null) {
+      Toast.error(context, dateError);
+      return;
+    }
+
     setState(() => _isSubmitting = true);
 
     try {
@@ -93,26 +100,16 @@ class _ReportScreenState extends State<ReportScreen> {
         throw Exception('User not found');
       }
 
-      // Format date as YYYY-MM-DD
-      final dateStr = '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
-
-      final formData = FormData.fromMap({
-        'report_date': dateStr,
-        'hours_requested': '8', // Default 8 hours, CDC will adjust
-        'description': _descriptionController.text.trim().isEmpty 
-            ? 'Daily OJT Activities' 
-            : _descriptionController.text.trim(),
-        'activity_type': _activityTypeController.text.trim().isEmpty 
-            ? 'Daily Activities' 
-            : _activityTypeController.text.trim(),
-        'report_file': await MultipartFile.fromFile(
-          _reportFile!.path,
-          filename: _reportFileName,
-        ),
-      });
-
-      final studentApi = StudentApi(ApiClient.I);
-      await studentApi.submitDailyReport(user['student_id'], formData);
+      final reportApi = ReportApi(ApiClient.I);
+      await reportApi.submitDailyReport(
+        studentId: user['student_id'],
+        reportDate: _selectedDate,
+        description: _descriptionController.text,
+        activityType: _activityTypeController.text,
+        reportFile: _reportFile!,
+        fileName: _reportFileName!,
+        hoursRequested: 8.0,
+      );
 
       if (!mounted) return;
 
