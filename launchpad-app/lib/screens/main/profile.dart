@@ -77,6 +77,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
         contactNum: _contactController.text.trim(),
       );
 
+      // Update cached user data and persist to SharedPreferences
+      final currentUser = await ApiClient.I.getCurrentUser();
+      if (currentUser != null) {
+        // Update the user object
+        currentUser['first_name'] = _firstNameController.text.trim();
+        currentUser['last_name'] = _lastNameController.text.trim();
+        currentUser['email'] = _emailController.text.trim();
+        currentUser['contact_num'] = _contactController.text.trim();
+        
+        // Persist the updated user data
+        await ApiClient.I.updateUser(currentUser);
+      }
+
       if (mounted) {
         Toast.success(context, 'Profile updated successfully!');
         Navigator.pop(context);

@@ -53,4 +53,10 @@ class AuthStore {
     final t = await getToken();
     return t != null && t.isNotEmpty;
   }
+
+  Future<void> updateUser(Map<String, dynamic> user) async {
+    _user = user;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_userKey, jsonEncode(user));
+  }
 }

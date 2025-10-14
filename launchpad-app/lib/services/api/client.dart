@@ -30,6 +30,7 @@ class ApiClient {
   Future<void> clearAuth() => _auth.clearAuth();
   Future<bool> isAuthenticated() => _auth.isAuthenticated();
   Future<Map<String, dynamic>?> getCurrentUser() => _auth.getUser();
+  Future<void> updateUser(Map<String, dynamic> user) => _auth.updateUser(user);
 
   Future<dynamic> request(
     String endpoint, {

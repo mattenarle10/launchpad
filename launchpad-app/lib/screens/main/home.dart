@@ -38,7 +38,8 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final user = await ApiClient.I.getCurrentUser();
       setState(() {
-        _userData = user;
+        // Create a new map to trigger state update
+        _userData = user != null ? Map<String, dynamic>.from(user) : null;
         _isLoading = false;
       });
     } catch (e) {
@@ -165,13 +166,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   // User Profile Button
                   GestureDetector(
-                    onTap: () {
-                      Navigator.push(
+                    onTap: () async {
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const ProfileScreen(),
                         ),
                       );
+                      // Reload user data after returning from profile
+                      _loadUserData();
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
