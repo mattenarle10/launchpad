@@ -77,6 +77,7 @@ CREATE TABLE IF NOT EXISTS verified_students (
     company_id INT DEFAULT NULL,
     profile_pic VARCHAR(255) DEFAULT NULL,
     evaluation_rank INT DEFAULT NULL COMMENT 'Company evaluation rank (0-100)',
+    performance_score ENUM('Excellent', 'Good', 'Satisfactory', 'Needs Improvement', 'Poor') DEFAULT NULL COMMENT 'Company performance assessment',
     verified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (company_id) REFERENCES verified_companies(company_id) ON DELETE SET NULL,
     CHECK (evaluation_rank IS NULL OR (evaluation_rank >= 0 AND evaluation_rank <= 100))

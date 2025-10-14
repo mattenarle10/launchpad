@@ -119,31 +119,52 @@
 
                 <!-- Performance Cards -->
                 <div class="stats-grid">
-                    <!-- Top Performing Students -->
-                    <div class="card list-card">
-                        <h3 class="card-title">Top Performing Students</h3>
-                        <div class="info-list" id="top-students-list">
-                            <div class="empty-state" style="padding: 20px;">
-                                <p style="color: rgba(255,255,255,0.7);">No student data available yet</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Average Performance -->
+                    <!-- Evaluation Stats -->
                     <div class="card info-card">
-                        <h3 class="card-title">Average Performance by Course</h3>
+                        <h3 class="card-title">Evaluation Rankings</h3>
                         <ul class="info-list">
                             <li class="info-item">
-                                <span class="info-label">Information Technology</span>
-                                <span class="info-badge" id="it-avg">-</span>
+                                <span class="info-label">Average Score</span>
+                                <span class="info-badge" id="avg-evaluation">-</span>
                             </li>
                             <li class="info-item">
-                                <span class="info-label">Computer Science</span>
-                                <span class="info-badge" id="cs-avg">-</span>
+                                <span class="info-label">Excellent (≥80)</span>
+                                <span class="info-badge" id="excellent-count">0</span>
                             </li>
                             <li class="info-item">
-                                <span class="info-label">Entertainment and Multimedia</span>
-                                <span class="info-badge" id="emc-avg">-</span>
+                                <span class="info-label">Good (60-79)</span>
+                                <span class="info-badge" id="good-count">0</span>
+                            </li>
+                            <li class="info-item">
+                                <span class="info-label">Needs Improvement (<60)</span>
+                                <span class="info-badge" id="needs-improvement-count">0</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Performance Score Distribution -->
+                    <div class="card info-card">
+                        <h3 class="card-title">Performance Assessment</h3>
+                        <ul class="info-list">
+                            <li class="info-item">
+                                <span class="info-label">Excellent</span>
+                                <span class="info-badge" id="perf-excellent">0</span>
+                            </li>
+                            <li class="info-item">
+                                <span class="info-label">Good</span>
+                                <span class="info-badge" id="perf-good">0</span>
+                            </li>
+                            <li class="info-item">
+                                <span class="info-label">Satisfactory</span>
+                                <span class="info-badge" id="perf-satisfactory">0</span>
+                            </li>
+                            <li class="info-item">
+                                <span class="info-label">Needs Improvement</span>
+                                <span class="info-badge" id="perf-needs-improvement">0</span>
+                            </li>
+                            <li class="info-item">
+                                <span class="info-label">Poor</span>
+                                <span class="info-badge" id="perf-poor">0</span>
                             </li>
                         </ul>
                     </div>
@@ -153,7 +174,7 @@
                         <h3 class="card-title">Recent Activity</h3>
                         <ul class="info-list" id="recent-activity">
                             <li class="info-item">
-                                <span class="info-label">Daily Reports Submitted</span>
+                                <span class="info-label">Daily Reports Today</span>
                                 <span class="info-badge" id="reports-today">0</span>
                             </li>
                             <li class="info-item">
@@ -161,8 +182,8 @@
                                 <span class="info-badge" id="evaluated-count">0</span>
                             </li>
                             <li class="info-item">
-                                <span class="info-label">Pending Evaluations</span>
-                                <span class="info-badge" id="pending-evaluations">0</span>
+                                <span class="info-label">Students Assessed</span>
+                                <span class="info-badge" id="assessed-count">0</span>
                             </li>
                         </ul>
                     </div>
@@ -202,6 +223,24 @@
                 
                 // Update reports today
                 document.getElementById('reports-today').textContent = s.reports_today ?? 0;
+                
+                // Update evaluation stats
+                const evaluation = s.evaluation || {};
+                document.getElementById('avg-evaluation').textContent = evaluation.average_rank > 0 ? `${evaluation.average_rank}/100` : '-';
+                document.getElementById('excellent-count').textContent = evaluation.excellent_count ?? 0;
+                document.getElementById('good-count').textContent = evaluation.good_count ?? 0;
+                document.getElementById('needs-improvement-count').textContent = evaluation.needs_improvement_count ?? 0;
+                document.getElementById('evaluated-count').textContent = evaluation.evaluated_count ?? 0;
+                
+                // Update performance stats
+                const perf = s.performance || {};
+                const perfBreakdown = perf.breakdown || {};
+                document.getElementById('perf-excellent').textContent = perfBreakdown.Excellent ?? 0;
+                document.getElementById('perf-good').textContent = perfBreakdown.Good ?? 0;
+                document.getElementById('perf-satisfactory').textContent = perfBreakdown.Satisfactory ?? 0;
+                document.getElementById('perf-needs-improvement').textContent = perfBreakdown['Needs Improvement'] ?? 0;
+                document.getElementById('perf-poor').textContent = perfBreakdown.Poor ?? 0;
+                document.getElementById('assessed-count').textContent = perf.assessed_count ?? 0;
             } catch (e) {
                 console.error('Failed to load dashboard stats:', e);
                 showError('Failed to load dashboard statistics');

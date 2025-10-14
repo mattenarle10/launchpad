@@ -82,6 +82,40 @@ $reportsToday = intval($conn->query("
 // For now, set to 0 as placeholder
 $jobPostings = 0;
 
+// Get evaluation statistics
+$evaluationStats = $conn->query("
+    SELECT 
+        COUNT(CASE WHEN evaluation_rank IS NOT NULL THEN 1 END) as evaluated_count,
+        ROUND(AVG(evaluation_rank), 2) as average_rank,
+        COUNT(CASE WHEN evaluation_rank >= 80 THEN 1 END) as excellent_count,
+        COUNT(CASE WHEN evaluation_rank >= 60 AND evaluation_rank < 80 THEN 1 END) as good_count,
+        COUNT(CASE WHEN evaluation_rank < 60 THEN 1 END) as needs_improvement_count
+    FROM verified_students
+    WHERE company_id = $companyId
+")->fetch_assoc();
+
+// Get performance score distribution
+$performanceResult = $conn->query("
+    SELECT performance_score, COUNT(*) as count
+    FROM verified_students
+    WHERE company_id = $companyId AND performance_score IS NOT NULL
+    GROUP BY performance_score
+");
+
+$performanceBreakdown = [
+    'Excellent' => 0,
+    'Good' => 0,
+    'Satisfactory' => 0,
+    'Needs Improvement' => 0,
+    'Poor' => 0
+];
+
+while ($row = $performanceResult->fetch_assoc()) {
+    $performanceBreakdown[$row['performance_score']] = intval($row['count']);
+}
+
+$performanceAssessed = array_sum($performanceBreakdown);
+
 // Assemble stats
 $stats = [
     'total_students' => $totalStudents,
@@ -92,7 +126,18 @@ $stats = [
     'course_breakdown' => $courseBreakdown,
     'pending_reports' => $pendingReports,
     'reports_today' => $reportsToday,
-    'job_postings' => $jobPostings
+    'job_postings' => $jobPostings,
+    'evaluation' => [
+        'evaluated_count' => intval($evaluationStats['evaluated_count']),
+        'average_rank' => floatval($evaluationStats['average_rank'] ?? 0),
+        'excellent_count' => intval($evaluationStats['excellent_count']),
+        'good_count' => intval($evaluationStats['good_count']),
+        'needs_improvement_count' => intval($evaluationStats['needs_improvement_count'])
+    ],
+    'performance' => [
+        'assessed_count' => $performanceAssessed,
+        'breakdown' => $performanceBreakdown
+    ]
 ];
 
 Response::success($stats);
