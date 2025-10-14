@@ -28,8 +28,8 @@ class StudentApi extends BaseApiGroup {
     return response as Map<String, dynamic>;
   }
 
-  /// Get student profile by ID
-  Future<Map<String, dynamic>> getProfile(int studentId) async {
+  /// Get student details by ID (for CDC/admin use)
+  Future<Map<String, dynamic>> getStudentById(int studentId) async {
     final response = await get('/$studentId');
     return response as Map<String, dynamic>;
   }
@@ -62,6 +62,28 @@ class StudentApi extends BaseApiGroup {
   /// Get student performance score from partner company
   Future<Map<String, dynamic>> getPerformance() async {
     final response = await get('/performance');
+    return response as Map<String, dynamic>;
+  }
+
+  /// Get student profile
+  Future<Map<String, dynamic>> getProfile() async {
+    final response = await client.get('/profile');
+    return response as Map<String, dynamic>;
+  }
+
+  /// Update student profile
+  Future<Map<String, dynamic>> updateProfile({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String contactNum,
+  }) async {
+    final response = await client.put('/profile', {
+      'first_name': firstName,
+      'last_name': lastName,
+      'email': email,
+      'contact_num': contactNum,
+    });
     return response as Map<String, dynamic>;
   }
 }

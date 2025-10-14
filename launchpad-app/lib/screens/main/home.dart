@@ -5,6 +5,7 @@ import '../../components/menu.dart';
 import '../../services/api/client.dart';
 import '../../services/api/endpoints/student.dart';
 import 'report.dart';
+import 'profile.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -165,7 +166,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   // User Profile Button
                   GestureDetector(
                     onTap: () {
-                      // TODO: Show user profile
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ProfileScreen(),
+                        ),
+                      );
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(

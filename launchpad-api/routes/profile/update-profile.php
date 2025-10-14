@@ -96,6 +96,58 @@ if ($role === ROLE_CDC) {
 
     Response::success(['message' => 'Profile updated successfully']);
     
+} elseif ($role === ROLE_STUDENT) {
+    // Update student profile
+    $updates = [];
+    $params = [];
+    $types = '';
+
+    if (isset($data['first_name'])) {
+        $updates[] = 'first_name = ?';
+        $params[] = $data['first_name'];
+        $types .= 's';
+    }
+    if (isset($data['last_name'])) {
+        $updates[] = 'last_name = ?';
+        $params[] = $data['last_name'];
+        $types .= 's';
+    }
+    if (isset($data['email'])) {
+        $email = $data['email'];
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            Response::error('Valid email is required', 400);
+        }
+        // Check if email already used by another student
+        $stmt = $conn->prepare("SELECT student_id FROM verified_students WHERE email = ? AND student_id != ?");
+        $stmt->bind_param('si', $email, $userId);
+        $stmt->execute();
+        if ($stmt->get_result()->num_rows > 0) {
+            Response::error('Email already in use', 400);
+        }
+        $updates[] = 'email = ?';
+        $params[] = $email;
+        $types .= 's';
+    }
+    if (isset($data['contact_num'])) {
+        $updates[] = 'contact_num = ?';
+        $params[] = $data['contact_num'];
+        $types .= 's';
+    }
+
+    if (empty($updates)) {
+        Response::success(['message' => 'No changes to update']);
+    }
+
+    $sql = 'UPDATE verified_students SET ' . implode(', ', $updates) . ' WHERE student_id = ?';
+    $params[] = $userId;
+    $types .= 'i';
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+
+    Response::success(['message' => 'Profile updated successfully']);
+    
 } else {
     Response::error('Invalid user role', 400);
 }
