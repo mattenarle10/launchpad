@@ -6,6 +6,8 @@ import '../../services/api/client.dart';
 import '../../services/api/endpoints/student.dart';
 import 'report.dart';
 import 'profile.dart';
+import 'jobs.dart';
+import 'notifications.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,6 +18,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 1; // Home is default
+  final PageController _pageController = PageController(initialPage: 1);
   Map<String, dynamic>? _userData;
   Map<String, dynamic>? _ojtProgress;
   Map<String, dynamic>? _evaluation;
@@ -32,6 +35,12 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadOjtProgress();
     _loadEvaluation();
     _loadPerformance();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadUserData() async {
@@ -138,7 +147,34 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        children: [
+          const JobsScreen(),
+          _buildHomePage(),
+          const NotificationsScreen(),
+        ],
+      ),
+      bottomNavigationBar: FloatingBottomNav(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          _pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildHomePage() {
+    return SafeArea(
         child: Column(
           children: [
             // Custom Header
@@ -411,23 +447,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: FloatingBottomNav(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-          // TODO: Handle navigation to different pages
-          if (index == 0) {
-            // Jobs page
-          } else if (index == 1) {
-            // Home page (current)
-          } else if (index == 2) {
-            // Notifications page
-          }
-        },
-      ),
     );
   }
 
