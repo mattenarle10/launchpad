@@ -38,14 +38,19 @@ $allowedFields = [
     'email' => 's',
     'course' => 's',
     'contact_num' => 's',
-    'company_name' => 's'
+    'company_id' => 'i'
 ];
 
 foreach ($allowedFields as $field => $type) {
     if (isset($input[$field])) {
-        $updates[] = "$field = ?";
-        $params[] = $input[$field];
-        $types .= $type;
+        // Handle company_id - allow NULL for unassignment
+        if ($field === 'company_id' && $input[$field] === '') {
+            $updates[] = "$field = NULL";
+        } else {
+            $updates[] = "$field = ?";
+            $params[] = $input[$field];
+            $types .= $type;
+        }
     }
 }
 

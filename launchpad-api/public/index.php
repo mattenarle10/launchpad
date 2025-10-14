@@ -284,6 +284,12 @@ try {
             }
             exit;
         }
+        
+        // /admin/companies (GET - CDC gets all companies)
+        if (count($pathParts) === 2 && $pathParts[1] === 'companies') {
+            require __DIR__ . '/../routes/admin/get-companies.php';
+            exit;
+        }
     }
 
     // Route: /jobs

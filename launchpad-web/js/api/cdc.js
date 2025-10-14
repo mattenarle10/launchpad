@@ -588,7 +588,16 @@ const CDCAPI = {
     /**
      * Edit student
      */
-    editStudent(student, onSuccess) {
+    async editStudent(student, onSuccess) {
+        // Load companies for dropdown
+        let companies = [];
+        try {
+            const res = await client.get('/admin/companies');
+            companies = res.data?.data || [];
+        } catch (error) {
+            console.error('Error loading companies:', error);
+        }
+
         const content = `
             <form id="edit-student-form" class="modal-form">
                 <div class="form-row">
@@ -623,8 +632,15 @@ const CDCAPI = {
                 </div>
                 
                 <div class="form-group">
-                    <label for="company_name">Company</label>
-                    <input type="text" id="company_name" name="company_name" value="${student.company_name || ''}" placeholder="Company Name">
+                    <label for="company_id">Assign to Company</label>
+                    <select id="company_id" name="company_id">
+                        <option value="">-- No Company Assigned --</option>
+                        ${companies.map(company => `
+                            <option value="${company.company_id}" ${student.company_id === company.company_id ? 'selected' : ''}>
+                                ${company.company_name}
+                            </option>
+                        `).join('')}
+                    </select>
                 </div>
             </form>
         `;
