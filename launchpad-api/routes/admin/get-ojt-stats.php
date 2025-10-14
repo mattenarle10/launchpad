@@ -16,6 +16,7 @@ $conn = Database::getConnection();
 // Overall stats
 $stats = [
     'total_students' => $conn->query("SELECT COUNT(*) as count FROM verified_students")->fetch_assoc()['count'],
+    'total_companies' => $conn->query("SELECT COUNT(*) as count FROM verified_companies")->fetch_assoc()['count'],
     'students_with_progress' => $conn->query("SELECT COUNT(*) as count FROM ojt_progress")->fetch_assoc()['count'],
     'total_hours_completed' => floatval($conn->query("SELECT COALESCE(SUM(completed_hours), 0) as total FROM ojt_progress")->fetch_assoc()['total']),
     'average_completion_percentage' => round(floatval($conn->query("
@@ -45,6 +46,24 @@ $stats['recent_approved_reports'] = intval($conn->query("
     WHERE status = 'approved' 
     AND reviewed_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
 ")->fetch_assoc()['count']);
+
+// Unverified users (students + companies)
+$unverifiedStudents = intval($conn->query("SELECT COUNT(*) as count FROM unverified_students")->fetch_assoc()['count']);
+$unverifiedCompanies = intval($conn->query("SELECT COUNT(*) as count FROM unverified_companies")->fetch_assoc()['count']);
+$stats['unverified_users'] = $unverifiedStudents + $unverifiedCompanies;
+
+// Course breakdown for OJT students (those with progress)
+$courseResult = $conn->query("
+    SELECT s.course, COUNT(*) as count
+    FROM ojt_progress p
+    JOIN verified_students s ON p.student_id = s.student_id
+    GROUP BY s.course
+");
+$courseBreakdown = [];
+while ($row = $courseResult->fetch_assoc()) {
+    $courseBreakdown[$row['course']] = intval($row['count']);
+}
+$stats['course_breakdown'] = $courseBreakdown;
 
 // Top performers (students with most hours)
 $stmt = $conn->query("

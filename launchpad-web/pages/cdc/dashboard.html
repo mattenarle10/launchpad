@@ -73,21 +73,21 @@
                     <!-- Total Students -->
                     <div class="card stat-card">
                         <h3 class="card-title">Total Users (Students)</h3>
-                        <div class="stat-number">300</div>
+                        <div class="stat-number" id="stat-total-students">0</div>
                         <p class="stat-label">Verified Students</p>
                     </div>
 
                     <!-- Total Companies -->
                     <div class="card stat-card">
                         <h3 class="card-title">Total Users (Companies)</h3>
-                        <div class="stat-number">5</div>
+                        <div class="stat-number" id="stat-total-companies">0</div>
                         <p class="stat-label">Partner Companies</p>
                     </div>
 
                     <!-- Unverified Users -->
                     <div class="card stat-card">
                         <h3 class="card-title">Unverified Users</h3>
-                        <div class="stat-number">42</div>
+                        <div class="stat-number" id="stat-unverified-users">0</div>
                         <p class="stat-label">Pending Verification</p>
                     </div>
 
@@ -96,7 +96,7 @@
                         <h3 class="card-title">OJT Students</h3>
                         <div class="chart-container">
                             <div class="chart-placeholder">
-                                <div class="chart-center">300</div>
+                                <div class="chart-center" id="ojt-chart-center">0</div>
                             </div>
                         </div>
                         <div class="chart-legend">
@@ -194,6 +194,34 @@
     <script type="module">
         import { loadSidebar, loadUserInfo } from '../../js/components.js';
         import { initUserDropdown } from '../../js/pages/dropdown.js';
+        import CDCAPI from '../../js/api/cdc.js';
+
+        function setText(id, value) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        }
+
+        async function loadDashboardStats() {
+            try {
+                const res = await CDCAPI.getOJTStats();
+                const s = res.data || {};
+                setText('stat-total-students', s.total_students ?? 0);
+                setText('stat-total-companies', s.total_companies ?? 0);
+                setText('stat-unverified-users', s.unverified_users ?? 0);
+                setText('ojt-chart-center', s.students_with_progress ?? 0);
+                // Update course legend from backend breakdown
+                const breakdown = s.course_breakdown || {};
+                const it = breakdown.IT || 0;
+                const cs = breakdown.COMSCI || breakdown.CS || 0;
+                const emc = breakdown.EMC || 0;
+                const legendTexts = document.querySelectorAll('.chart-legend .legend-item .legend-text');
+                if (legendTexts[0]) legendTexts[0].textContent = `IT - ${it}`;
+                if (legendTexts[1]) legendTexts[1].textContent = `CS - ${cs}`;
+                if (legendTexts[2]) legendTexts[2].textContent = `EMC - ${emc}`;
+            } catch (e) {
+                console.error('Failed to load dashboard stats:', e);
+            }
+        }
 
         // Load components on page load
         document.addEventListener('DOMContentLoaded', async () => {
@@ -212,9 +240,12 @@
                 },
                 () => {
                     // Profile handler
-                    console.log('View profile');
+                    window.location.href = '../profile.html';
                 }
             );
+
+            // Load real stats
+            loadDashboardStats();
         });
     </script>
 </body>
