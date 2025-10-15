@@ -224,7 +224,7 @@ const CompanyAPI = {
                     <line x1="15" y1="9" x2="9" y2="15"></line>
                     <line x1="9" y1="9" x2="15" y2="15"></line>
                 </svg>
-                Reject
+                Decline
             </button>
             <button class="btn-modal btn-approve" id="approve-company-btn">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
