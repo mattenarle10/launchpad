@@ -82,9 +82,30 @@ async function loadJobsTable() {
     }
 }
 
+// Predefined tech specialization tags
+const TECH_TAGS = [
+    'UI/UX Design',
+    'Web Development',
+    'Mobile Development',
+    'Backend Development',
+    'Frontend Development',
+    'Full Stack',
+    'DevOps',
+    'Data Science',
+    'Machine Learning',
+    'Cybersecurity',
+    'Cloud Computing',
+    'Database Administration',
+    'QA/Testing',
+    'Game Development',
+    'Embedded Systems',
+    'Network Engineering'
+];
+
 function openJobModal(job = null) {
     editingJobId = job ? job.job_id : null;
     const isEdit = !!job;
+    const selectedTags = job?.tags ? job.tags.split(',').map(t => t.trim()) : [];
     
     const content = `
         <div style="padding: 10px 0;">
@@ -177,6 +198,21 @@ function openJobModal(job = null) {
                 >
             </div>
 
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                    Tech Specializations
+                </label>
+                <div id="tags-container" style="display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; border: 2px solid #E5E7EB; border-radius: 8px; min-height: 50px;">
+                    ${TECH_TAGS.map(tag => `
+                        <label style="display: inline-flex; align-items: center; padding: 6px 12px; background: ${selectedTags.includes(tag) ? '#3B82F6' : '#F3F4F6'}; color: ${selectedTags.includes(tag) ? 'white' : '#374151'}; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s;" class="tag-option" data-tag="${tag}">
+                            <input type="checkbox" value="${tag}" ${selectedTags.includes(tag) ? 'checked' : ''} style="margin-right: 6px;">
+                            ${tag}
+                        </label>
+                    `).join('')}
+                </div>
+                <p style="font-size: 12px; color: #6B7280; margin-top: 6px;">Select all that apply to help students find relevant opportunities</p>
+            </div>
+
             ${isEdit ? `
             <div class="form-group" style="margin-bottom: 16px;">
                 <label style="display: flex; align-items: center; cursor: pointer;">
@@ -213,10 +249,24 @@ function openJobModal(job = null) {
     modal.setFooter(footer);
     modal.open(content);
     
-    // Set up save button handler
+    // Set up save button handler and tag interactions
     setTimeout(() => {
         document.getElementById('save-job-btn')?.addEventListener('click', async () => {
             await saveJob();
+        });
+        
+        // Handle tag checkbox styling
+        document.querySelectorAll('.tag-option').forEach(label => {
+            const checkbox = label.querySelector('input[type="checkbox"]');
+            checkbox.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    label.style.background = '#3B82F6';
+                    label.style.color = 'white';
+                } else {
+                    label.style.background = '#F3F4F6';
+                    label.style.color = '#374151';
+                }
+            });
         });
     }, 0);
 }
@@ -229,6 +279,11 @@ async function saveJob() {
     const location = document.getElementById('job-location').value.trim();
     const salaryRange = document.getElementById('job-salary').value.trim();
     const isActive = document.getElementById('job-active')?.checked ?? true;
+    
+    // Get selected tags
+    const selectedTags = Array.from(document.querySelectorAll('#tags-container input[type="checkbox"]:checked'))
+        .map(cb => cb.value);
+    const tagsString = selectedTags.length > 0 ? selectedTags.join(', ') : null;
 
     if (!title || !description) {
         showError('Title and description are required');
@@ -242,7 +297,8 @@ async function saveJob() {
             requirements: requirements || null,
             job_type: jobType,
             location: location || null,
-            salary_range: salaryRange || null
+            salary_range: salaryRange || null,
+            tags: tagsString
         };
 
         if (editingJobId) {

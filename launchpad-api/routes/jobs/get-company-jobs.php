@@ -44,6 +44,7 @@ while ($row = $result->fetch_assoc()) {
         'location' => $row['location'],
         'job_type' => $row['job_type'],
         'salary_range' => $row['salary_range'],
+        'tags' => $row['tags'],
         'is_active' => (bool)$row['is_active'],
         'created_at' => $row['created_at'],
         'updated_at' => $row['updated_at']

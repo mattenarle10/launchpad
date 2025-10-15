@@ -30,6 +30,7 @@ $requirements = $data['requirements'] ?? null;
 $location = $data['location'] ?? null;
 $jobType = $data['job_type'] ?? 'Full-time';
 $salaryRange = $data['salary_range'] ?? null;
+$tags = $data['tags'] ?? null;
 
 // Validate job type
 $validJobTypes = ['Full-time', 'Part-time', 'Contract', 'Internship'];
@@ -39,11 +40,11 @@ if (!in_array($jobType, $validJobTypes)) {
 
 // Insert job opportunity
 $stmt = $conn->prepare("
-    INSERT INTO job_opportunities (company_id, title, description, requirements, location, job_type, salary_range)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO job_opportunities (company_id, title, description, requirements, location, job_type, salary_range, tags)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 ");
 
-$stmt->bind_param('issssss', $companyId, $title, $description, $requirements, $location, $jobType, $salaryRange);
+$stmt->bind_param('isssssss', $companyId, $title, $description, $requirements, $location, $jobType, $salaryRange, $tags);
 $stmt->execute();
 
 $jobId = $conn->insert_id;

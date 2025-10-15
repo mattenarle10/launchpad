@@ -78,6 +78,11 @@ if (isset($data['is_active'])) {
     $params[] = $data['is_active'] ? 1 : 0;
     $types .= 'i';
 }
+if (isset($data['tags'])) {
+    $updates[] = 'tags = ?';
+    $params[] = $data['tags'];
+    $types .= 's';
+}
 
 if (empty($updates)) {
     Response::success(['message' => 'No changes to update']);
