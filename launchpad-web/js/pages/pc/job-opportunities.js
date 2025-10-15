@@ -14,6 +14,7 @@ import { createModal } from '../../utils/modal.js';
 let allJobs = [];
 let dataTable = null;
 let editingJobId = null;
+let allTags = new Set();
 
 async function loadJobsTable() {
     const tableWrapper = document.getElementById('table-wrapper');
@@ -22,6 +23,26 @@ async function loadJobsTable() {
     try {
         const res = await client.get('/jobs/company');
         allJobs = res.data || [];
+        
+        // Extract all unique tags
+        allTags.clear();
+        allJobs.forEach(job => {
+            if (job.tags) {
+                job.tags.split(',').forEach(tag => allTags.add(tag.trim()));
+            }
+        });
+        
+        // Populate tag filter dropdown
+        const tagFilter = document.getElementById('tag-filter');
+        if (tagFilter) {
+            tagFilter.innerHTML = '<option value="">All Specializations</option>';
+            Array.from(allTags).sort().forEach(tag => {
+                const option = document.createElement('option');
+                option.value = tag;
+                option.textContent = tag;
+                tagFilter.appendChild(option);
+            });
+        }
 
         // Create DataTable
         dataTable = new DataTable({
@@ -29,13 +50,24 @@ async function loadJobsTable() {
             columns: [
                 { key: 'title', label: 'Job Title', sortable: true },
                 { 
+                    key: 'tags', 
+                    label: 'Specializations', 
+                    sortable: false,
+                    format: (value) => {
+                        if (!value) return '<span style="color: #9CA3AF; font-size: 13px;">No tags</span>';
+                        const tags = value.split(',').map(t => t.trim());
+                        return tags.slice(0, 2).map(tag => 
+                            `<span class="course-badge" style="font-size: 11px; padding: 3px 8px; margin-right: 4px;">${tag}</span>`
+                        ).join('') + (tags.length > 2 ? `<span style="color: #6B7280; font-size: 11px;">+${tags.length - 2}</span>` : '');
+                    }
+                },
+                { 
                     key: 'job_type', 
                     label: 'Type', 
                     sortable: true,
                     format: (value) => `<span class="course-badge">${value}</span>`
                 },
                 { key: 'location', label: 'Location', sortable: true },
-                { key: 'salary_range', label: 'Salary Range', sortable: true },
                 { 
                     key: 'is_active', 
                     label: 'Status', 
@@ -366,5 +398,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Setup add job button
     document.getElementById('add-job-btn')?.addEventListener('click', () => {
         openJobModal();
+    });
+    
+    // Setup tag filter
+    document.getElementById('tag-filter')?.addEventListener('change', (e) => {
+        const selectedTag = e.target.value;
+        if (selectedTag) {
+            const filtered = allJobs.filter(job => 
+                job.tags && job.tags.split(',').map(t => t.trim()).includes(selectedTag)
+            );
+            dataTable.setData(filtered);
+        } else {
+            dataTable.setData(allJobs);
+        }
     });
 });
