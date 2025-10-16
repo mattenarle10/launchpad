@@ -132,6 +132,29 @@ class _JobsScreenState extends State<JobsScreen> {
                     if (job['salary_range'] != null)
                       const SizedBox(height: 20),
                     
+                    // Tech Specializations
+                    if (job['tags'] != null && job['tags'].toString().isNotEmpty) ..[
+                      const Text(
+                        'Tech Specializations',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF3D5A7E),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: job['tags']
+                            .toString()
+                            .split(',')
+                            .map((tag) => _buildTagChip(tag.trim()))
+                            .toList(),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                    
                     // Description
                     const Text(
                       'Description',
@@ -347,13 +370,23 @@ class _JobsScreenState extends State<JobsScreen> {
                       job['location'],
                       const Color(0xFF10B981),
                     ),
-                  if (job['salary_range'] != null)
-                    _buildChip(
-                      job['salary_range'],
-                      const Color(0xFFF59E0B),
-                    ),
                 ],
               ),
+              
+              // Tech Specializations Tags
+              if (job['tags'] != null && job['tags'].toString().isNotEmpty) ..[
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: job['tags']
+                      .toString()
+                      .split(',')
+                      .take(3)
+                      .map((tag) => _buildTagChip(tag.trim()))
+                      .toList(),
+                ),
+              ],
             ],
           ),
         ),
@@ -374,6 +407,28 @@ class _JobsScreenState extends State<JobsScreen> {
           fontSize: 12,
           fontWeight: FontWeight.w500,
           color: color,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTagChip(String tag) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: const Color(0xFF8B5CF6).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: const Color(0xFF8B5CF6).withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        tag,
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF8B5CF6),
         ),
       ),
     );
