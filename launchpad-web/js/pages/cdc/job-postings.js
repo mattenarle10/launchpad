@@ -21,6 +21,9 @@ async function loadJobsTable() {
 
     try {
         const res = await client.get('/jobs');
+        
+        console.log('Jobs API Response:', res); // Debug log
+        
         allJobs = res.data || [];
         
         // Extract all unique tags
