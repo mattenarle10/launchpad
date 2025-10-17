@@ -45,15 +45,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Future<void> _markAsRead(int notificationId, int recipientId) async {
     try {
-      await _notificationsApi.markAsRead(recipientId);
-      // Reload notifications to update read status
-      _loadNotifications();
+      // API expects notification_id in the URL
+      await _notificationsApi.markAsRead(notificationId);
+      // Update local state immediately for better UX
+      setState(() {
+        final index = _notifications.indexWhere((n) => n['recipient_id'] == recipientId);
+        if (index != -1) {
+          _notifications[index]['is_read'] = true;
+        }
+      });
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to mark as read: $e')),
-        );
-      }
+      print('Error marking notification as read: $e');
+      // Silently fail - not critical if mark as read fails
     }
   }
 
@@ -212,9 +215,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       ),
       child: InkWell(
         onTap: () {
-          if (!isRead && recipientId != null) {
+          // Mark as read when tapped
+          if (!isRead && notificationId != null && recipientId != null) {
             _markAsRead(notificationId, recipientId);
           }
+          // Show details
           _showNotificationDetails(notification);
         },
         borderRadius: BorderRadius.circular(12),
