@@ -13,12 +13,23 @@ class JobsScreen extends StatefulWidget {
 
 class _JobsScreenState extends State<JobsScreen> {
   List<dynamic> _jobs = [];
+  List<dynamic> _filteredJobs = [];
   bool _isLoading = true;
+  String _searchQuery = '';
+  String? _selectedTag;
+  Set<String> _allTags = {};
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _loadJobs();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadJobs() async {
@@ -31,7 +42,9 @@ class _JobsScreenState extends State<JobsScreen> {
       if (mounted) {
         setState(() {
           _jobs = jobs;
+          _filteredJobs = jobs;
           _isLoading = false;
+          _extractTags();
         });
       }
     } catch (e) {
@@ -41,6 +54,41 @@ class _JobsScreenState extends State<JobsScreen> {
         Toast.error(context, 'Failed to load job opportunities');
       }
     }
+  }
+
+  void _extractTags() {
+    _allTags.clear();
+    for (var job in _jobs) {
+      if (job['tags'] != null && job['tags'].toString().isNotEmpty) {
+        final tags = job['tags'].toString().split(',');
+        for (var tag in tags) {
+          _allTags.add(tag.trim());
+        }
+      }
+    }
+  }
+
+  void _filterJobs() {
+    setState(() {
+      _filteredJobs = _jobs.where((job) {
+        // Search filter
+        final matchesSearch = _searchQuery.isEmpty ||
+            job['title'].toString().toLowerCase().contains(_searchQuery.toLowerCase()) ||
+            job['company_name'].toString().toLowerCase().contains(_searchQuery.toLowerCase()) ||
+            (job['location']?.toString().toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
+
+        // Tag filter
+        final matchesTag = _selectedTag == null ||
+            (job['tags'] != null &&
+                job['tags']
+                    .toString()
+                    .split(',')
+                    .map((t) => t.trim())
+                    .contains(_selectedTag));
+
+        return matchesSearch && matchesTag;
+      }).toList();
+    });
   }
 
   void _showJobDetails(Map<String, dynamic> job) {
@@ -133,7 +181,7 @@ class _JobsScreenState extends State<JobsScreen> {
                       const SizedBox(height: 20),
                     
                     // Tech Specializations
-                    if (job['tags'] != null && job['tags'].toString().isNotEmpty) ..[
+                    if (job['tags'] != null && job['tags'].toString().isNotEmpty) ...[
                       const Text(
                         'Tech Specializations',
                         style: TextStyle(
@@ -245,24 +293,228 @@ class _JobsScreenState extends State<JobsScreen> {
             // Header
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Job Opportunities',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF3D5A7E),
+                  Row(
+                    children: [
+                      const Text(
+                        'Job Opportunities',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF3D5A7E),
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.refresh,
+                          color: Color(0xFF4A6491),
+                        ),
+                        onPressed: _loadJobs,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  // Search Bar
+                  TextField(
+                    controller: _searchController,
+                    onChanged: (value) {
+                      setState(() => _searchQuery = value);
+                      _filterJobs();
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Search jobs, companies, locations...',
+                      prefixIcon: const Icon(Icons.search, color: Color(0xFF6B7280)),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, color: Color(0xFF6B7280)),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() => _searchQuery = '');
+                                _filterJobs();
+                              },
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFF4A6491), width: 2),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     ),
                   ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.refresh,
-                      color: Color(0xFF4A6491),
+                  const SizedBox(height: 12),
+                  
+                  // Tag Filter Dropdown
+                  if (_allTags.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey[300]!),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String?>(
+                          value: _selectedTag,
+                          isExpanded: true,
+                          hint: Row(
+                            children: [
+                              Icon(
+                                Icons.filter_list,
+                                color: const Color(0xFF8B5CF6),
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Filter by Specialization',
+                                style: TextStyle(
+                                  color: Color(0xFF6B7280),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          icon: Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: const Color(0xFF4A6491),
+                            size: 24,
+                          ),
+                          dropdownColor: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          elevation: 8,
+                          style: const TextStyle(
+                            color: Color(0xFF374151),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          selectedItemBuilder: (BuildContext context) {
+                            return [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.filter_list,
+                                    color: const Color(0xFF8B5CF6),
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'All Specializations',
+                                    style: TextStyle(
+                                      color: Color(0xFF374151),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              ..._allTags.map((tag) => Row(
+                                    children: [
+                                      Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFF8B5CF6),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          tag,
+                                          style: const TextStyle(
+                                            color: Color(0xFF374151),
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  )),
+                            ];
+                          },
+                          items: [
+                            DropdownMenuItem<String?>(
+                              value: null,
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.clear_all,
+                                    color: const Color(0xFF6B7280),
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'All Specializations',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            ..._allTags.map((tag) => DropdownMenuItem<String?>(
+                                  value: tag,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 4),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(6),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: const Icon(
+                                            Icons.tag,
+                                            color: Color(0xFF8B5CF6),
+                                            size: 14,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Text(
+                                            tag,
+                                            style: const TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )),
+                          ],
+                          onChanged: (value) {
+                            setState(() => _selectedTag = value);
+                            _filterJobs();
+                          },
+                        ),
+                      ),
                     ),
-                    onPressed: _loadJobs,
-                  ),
                 ],
               ),
             ),
@@ -271,7 +523,7 @@ class _JobsScreenState extends State<JobsScreen> {
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : _jobs.isEmpty
+                  : _filteredJobs.isEmpty
                       ? Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -283,12 +535,28 @@ class _JobsScreenState extends State<JobsScreen> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                'No job opportunities available',
+                                _jobs.isEmpty
+                                    ? 'No job opportunities available'
+                                    : 'No jobs match your search',
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Colors.grey[600],
                                 ),
                               ),
+                              if (_jobs.isNotEmpty && _filteredJobs.isEmpty) ...[
+                                const SizedBox(height: 8),
+                                TextButton(
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() {
+                                      _searchQuery = '';
+                                      _selectedTag = null;
+                                    });
+                                    _filterJobs();
+                                  },
+                                  child: const Text('Clear Filters'),
+                                ),
+                              ],
                             ],
                           ),
                         )
@@ -296,9 +564,9 @@ class _JobsScreenState extends State<JobsScreen> {
                           onRefresh: _loadJobs,
                           child: ListView.builder(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
-                            itemCount: _jobs.length,
+                            itemCount: _filteredJobs.length,
                             itemBuilder: (context, index) {
-                              final job = _jobs[index];
+                              final job = _filteredJobs[index];
                               return _buildJobCard(job);
                             },
                           ),
@@ -374,7 +642,7 @@ class _JobsScreenState extends State<JobsScreen> {
               ),
               
               // Tech Specializations Tags
-              if (job['tags'] != null && job['tags'].toString().isNotEmpty) ..[
+              if (job['tags'] != null && job['tags'].toString().isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 6,
