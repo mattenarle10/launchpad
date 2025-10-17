@@ -43,6 +43,27 @@ $result = $stmt->get_result();
 $notifications = [];
 
 while ($row = $result->fetch_assoc()) {
+    // Get student names for specific notifications
+    if ($row['recipient_type'] === 'specific') {
+        $recipientStmt = $conn->prepare("
+            SELECT CONCAT(s.first_name, ' ', s.last_name) as student_name
+            FROM notification_recipients nr
+            JOIN verified_students s ON nr.student_id = s.student_id
+            WHERE nr.notification_id = ?
+            ORDER BY s.first_name, s.last_name
+        ");
+        $recipientStmt->bind_param('i', $row['notification_id']);
+        $recipientStmt->execute();
+        $recipientResult = $recipientStmt->get_result();
+        
+        $recipientNames = [];
+        while ($recipientRow = $recipientResult->fetch_assoc()) {
+            $recipientNames[] = $recipientRow['student_name'];
+        }
+        
+        $row['recipient_names'] = $recipientNames;
+    }
+    
     $notifications[] = $row;
 }
 

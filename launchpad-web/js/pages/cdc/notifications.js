@@ -43,6 +43,12 @@ async function loadNotificationsTable() {
                         if (value === 'all') {
                             return `<span class="course-badge">All Students (${row.recipients_count})</span>`;
                         } else {
+                            // Show student names if available
+                            if (row.recipient_names && row.recipient_names.length > 0) {
+                                const names = row.recipient_names.slice(0, 3).join(', ');
+                                const remaining = row.recipient_names.length > 3 ? ` +${row.recipient_names.length - 3} more` : '';
+                                return `<span class="course-badge" style="background: #F59E0B;" title="${row.recipient_names.join(', ')}">${names}${remaining}</span>`;
+                            }
                             return `<span class="course-badge" style="background: #F59E0B;">${row.recipients_count} Students</span>`;
                         }
                     }
@@ -107,6 +113,17 @@ function viewNotification(notification) {
                     }
                 </span>
             </div>
+            
+            ${notification.recipient_type === 'specific' && notification.recipient_names && notification.recipient_names.length > 0 ? `
+            <div class="detail-row" style="margin-bottom: 16px;">
+                <span class="detail-label" style="font-weight: 600; color: #6B7280;">Student Names:</span>
+                <span class="detail-value">
+                    <div style="max-height: 150px; overflow-y: auto; padding: 8px; background: #F3F4F6; border-radius: 6px;">
+                        ${notification.recipient_names.map(name => `<div style="padding: 4px 0; color: #374151;">• ${name}</div>`).join('')}
+                    </div>
+                </span>
+            </div>
+            ` : ''}
             
             ${notification.recipient_type === 'specific' ? `
             <div class="detail-row" style="margin-bottom: 16px;">
