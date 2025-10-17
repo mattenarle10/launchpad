@@ -75,6 +75,12 @@
                         <h3 class="card-title">Total Users (Students)</h3>
                         <div class="stat-number" id="stat-total-students">0</div>
                         <p class="stat-label">Verified Students</p>
+                        <div class="stat-insight" id="students-insight">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6"/>
+                            </svg>
+                            <span>Loading insight...</span>
+                        </div>
                     </div>
 
                     <!-- Total Companies -->
@@ -82,6 +88,12 @@
                         <h3 class="card-title">Total Users (Companies)</h3>
                         <div class="stat-number" id="stat-total-companies">0</div>
                         <p class="stat-label">Partner Companies</p>
+                        <div class="stat-insight" id="companies-insight">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6"/>
+                            </svg>
+                            <span>Loading insight...</span>
+                        </div>
                     </div>
 
                     <!-- Unverified Users -->
@@ -89,6 +101,12 @@
                         <h3 class="card-title">Unverified Users</h3>
                         <div class="stat-number" id="stat-unverified-users">0</div>
                         <p class="stat-label">Pending Verification</p>
+                        <div class="stat-insight" id="unverified-insight">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6"/>
+                            </svg>
+                            <span>Loading insight...</span>
+                        </div>
                     </div>
 
                     <!-- OJT Students Chart -->
@@ -112,6 +130,12 @@
                                 <span class="legend-color emc"></span>
                                 <span class="legend-text">EMC - 60</span>
                             </div>
+                        </div>
+                        <div class="stat-insight" id="cdc-ojt-insight" style="margin-top: 12px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6"/>
+                            </svg>
+                            <span>Loading insight...</span>
                         </div>
                     </div>
                 </div>
@@ -139,6 +163,12 @@
                                 <span class="info-badge" id="cdc-needs-improvement-count">0</span>
                             </li>
                         </ul>
+                        <div class="stat-insight" id="cdc-evaluation-insight" style="margin-top: 12px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6"/>
+                            </svg>
+                            <span>Loading insight...</span>
+                        </div>
                     </div>
 
                     <!-- Performance Assessment -->
@@ -166,6 +196,12 @@
                                 <span class="info-badge" id="cdc-perf-poor">0</span>
                             </li>
                         </ul>
+                        <div class="stat-insight" id="cdc-performance-insight" style="margin-top: 12px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6"/>
+                            </svg>
+                            <span>Loading insight...</span>
+                        </div>
                     </div>
 
                     <!-- Recent Job Postings -->
@@ -175,6 +211,12 @@
                             <div class="empty-state" style="padding: 20px;">
                                 <p style="color: rgba(255,255,255,0.7);">Loading job postings...</p>
                             </div>
+                        </div>
+                        <div class="stat-insight" id="cdc-jobs-insight" style="margin-top: 12px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6"/>
+                            </svg>
+                            <span>Loading insight...</span>
                         </div>
                     </div>
                 </div>
@@ -211,13 +253,67 @@
             if (el) el.textContent = value;
         }
 
+        function updateCDCInsight(elementId, count, type) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            let message = '';
+            let icon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+            </svg>`;
+            
+            if (type === 'students') {
+                if (count === 0) {
+                    message = 'No verified students yet. Start verifying registrations!';
+                } else if (count < 10) {
+                    message = `${count} students verified. Keep growing the LaunchPad community!`;
+                } else if (count < 50) {
+                    message = `${count} students are part of LaunchPad. Great progress!`;
+                } else {
+                    message = `Excellent! ${count} students are using LaunchPad for their OJT.`;
+                }
+            } else if (type === 'companies') {
+                if (count === 0) {
+                    message = 'No partner companies yet. Reach out to potential partners!';
+                } else if (count === 1) {
+                    message = 'You have 1 partner company. Keep building partnerships!';
+                } else if (count < 5) {
+                    message = `${count} companies are partnered. Expand your network!`;
+                } else {
+                    message = `${count} partner companies provide opportunities for students.`;
+                }
+            } else if (type === 'unverified') {
+                if (count === 0) {
+                    message = 'All registrations are verified. Great job staying on top!';
+                } else if (count === 1) {
+                    message = '1 user awaiting verification. Review it soon!';
+                } else if (count < 5) {
+                    message = `${count} users pending verification. Review them when you can.`;
+                } else {
+                    message = `${count} pending verifications. Consider reviewing them soon!`;
+                }
+            }
+            
+            element.innerHTML = `${icon}<span>${message}</span>`;
+        }
+
         async function loadDashboardStats() {
             try {
                 const res = await CDCAPI.getOJTStats();
                 const s = res.data || {};
-                setText('stat-total-students', s.total_students ?? 0);
-                setText('stat-total-companies', s.total_companies ?? 0);
-                setText('stat-unverified-users', s.unverified_users ?? 0);
+                
+                const totalStudents = s.total_students ?? 0;
+                const totalCompanies = s.total_companies ?? 0;
+                const unverifiedUsers = s.unverified_users ?? 0;
+                
+                setText('stat-total-students', totalStudents);
+                setText('stat-total-companies', totalCompanies);
+                setText('stat-unverified-users', unverifiedUsers);
+                
+                // Update insights
+                updateCDCInsight('students-insight', totalStudents, 'students');
+                updateCDCInsight('companies-insight', totalCompanies, 'companies');
+                updateCDCInsight('unverified-insight', unverifiedUsers, 'unverified');
                 setText('ojt-chart-center', s.students_with_progress ?? 0);
                 // Update course legend from backend breakdown
                 const breakdown = s.course_breakdown || {};

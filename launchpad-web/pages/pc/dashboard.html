@@ -76,6 +76,12 @@
                         <h3 class="card-title">Active Students</h3>
                         <div class="stat-number" id="active-students-count">0</div>
                         <p class="stat-label">Currently Interning</p>
+                        <div class="stat-insight" id="active-students-insight">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6"/>
+                            </svg>
+                            <span>Loading insight...</span>
+                        </div>
                     </div>
 
                     <!-- Completed Interns -->
@@ -83,6 +89,12 @@
                         <h3 class="card-title">Completed Interns</h3>
                         <div class="stat-number" id="completed-students-count">0</div>
                         <p class="stat-label">Successfully Completed</p>
+                        <div class="stat-insight" id="completed-students-insight">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6"/>
+                            </svg>
+                            <span>Loading insight...</span>
+                        </div>
                     </div>
 
                     <!-- Job Postings -->
@@ -90,6 +102,12 @@
                         <h3 class="card-title">Job Postings</h3>
                         <div class="stat-number" id="job-postings-count">0</div>
                         <p class="stat-label">Active Opportunities</p>
+                        <div class="stat-insight" id="job-postings-insight">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6"/>
+                            </svg>
+                            <span>Loading insight...</span>
+                        </div>
                     </div>
 
                     <!-- Students by Course Chart -->
@@ -113,6 +131,12 @@
                                 <span class="legend-color emc"></span>
                                 <span class="legend-text" id="emc-count">EMC - 0</span>
                             </div>
+                        </div>
+                        <div class="stat-insight" id="course-insight" style="margin-top: 12px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6"/>
+                            </svg>
+                            <span>Loading insight...</span>
                         </div>
                     </div>
                 </div>
@@ -140,6 +164,12 @@
                                 <span class="info-badge" id="needs-improvement-count">0</span>
                             </li>
                         </ul>
+                        <div class="stat-insight" id="evaluation-insight" style="margin-top: 12px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6"/>
+                            </svg>
+                            <span>Loading insight...</span>
+                        </div>
                     </div>
 
                     <!-- Performance Score Distribution -->
@@ -167,6 +197,12 @@
                                 <span class="info-badge" id="perf-poor">0</span>
                             </li>
                         </ul>
+                        <div class="stat-insight" id="performance-insight" style="margin-top: 12px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6"/>
+                            </svg>
+                            <span>Loading insight...</span>
+                        </div>
                     </div>
 
                     <!-- Recent Activity -->
@@ -186,6 +222,12 @@
                                 <span class="info-badge" id="assessed-count">0</span>
                             </li>
                         </ul>
+                        <div class="stat-insight" id="activity-insight" style="margin-top: 12px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6"/>
+                            </svg>
+                            <span>Loading insight...</span>
+                        </div>
                     </div>
                 </div>
 
@@ -217,15 +259,105 @@
         import { showError } from '../../js/utils/notifications.js';
         import { getSidebarMode } from '../../js/utils/sidebar-helper.js';
 
+        function updateInsight(elementId, data, type) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            let message = '';
+            let icon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+            </svg>`;
+            
+            if (type === 'active') {
+                const count = data;
+                if (count === 0) {
+                    message = 'No active interns yet. Post a job opportunity to attract students!';
+                } else if (count === 1) {
+                    message = 'Great start! One intern is currently learning with your team.';
+                } else if (count < 5) {
+                    message = `${count} interns are gaining valuable experience at your company.`;
+                } else {
+                    message = `Excellent! ${count} students are actively interning with you.`;
+                }
+            } else if (type === 'completed') {
+                const count = data;
+                if (count === 0) {
+                    message = 'No completed internships yet. Keep nurturing your current interns!';
+                } else if (count === 1) {
+                    message = 'Congratulations on your first completed internship!';
+                } else {
+                    message = `${count} students have successfully completed their OJT with you.`;
+                }
+            } else if (type === 'jobs') {
+                const count = data;
+                if (count === 0) {
+                    message = 'Post your first job opportunity to attract talented students!';
+                } else if (count === 1) {
+                    message = 'You have 1 active opportunity. Consider posting more to reach more students.';
+                } else {
+                    message = `${count} opportunities available. Great way to attract top talent!`;
+                }
+            } else if (type === 'course') {
+                const {it, cs, emc, total} = data;
+                const max = Math.max(it, cs, emc);
+                const maxCourse = it === max ? 'IT' : cs === max ? 'Computer Science' : 'EMC';
+                if (total === 0) {
+                    message = 'No students yet. Start accepting interns!';
+                } else {
+                    message = `${maxCourse} has the most students (${max}). Diverse skill sets strengthen your team!`;
+                }
+            } else if (type === 'evaluation') {
+                const {avg, excellent, total} = data;
+                if (total === 0) {
+                    message = 'No evaluations submitted yet. Evaluate your interns to track progress!';
+                } else if (avg >= 85) {
+                    message = `Outstanding! Average score of ${avg}/100 shows excellent intern performance.`;
+                } else if (avg >= 70) {
+                    message = `Good progress with ${avg}/100 average. ${excellent || 0} students rated excellent!`;
+                } else {
+                    message = `Average score is ${avg}/100. Consider providing more mentorship support.`;
+                }
+            } else if (type === 'performance') {
+                const {excellent, total} = data;
+                if (total === 0) {
+                    message = 'No performance assessments yet. Assess your interns regularly!';
+                } else if (excellent > total / 2) {
+                    message = `Excellent! ${excellent} out of ${total} interns performing at top level.`;
+                } else {
+                    message = `${total} interns assessed. Keep providing feedback to improve performance.`;
+                }
+            } else if (type === 'activity') {
+                const {reports, evaluated, assessed} = data;
+                if (reports === 0 && evaluated === 0) {
+                    message = 'No activity today. Check in with your interns!';
+                } else if (reports > 0) {
+                    message = `${reports} daily reports submitted today. Active engagement from interns!`;
+                } else {
+                    message = `${evaluated || 0} evaluations and ${assessed || 0} assessments completed.`;
+                }
+            }
+            
+            element.innerHTML = `${icon}<span>${message}</span>`;
+        }
+
         async function loadDashboardStats() {
             try {
                 const res = await client.get('/companies/dashboard/stats');
                 const s = res.data || {};
                 
                 // Update stat cards
-                document.getElementById('active-students-count').textContent = s.active_students ?? 0;
-                document.getElementById('completed-students-count').textContent = s.completed_students ?? 0;
-                document.getElementById('job-postings-count').textContent = s.job_postings ?? 0;
+                const activeStudents = s.active_students ?? 0;
+                const completedStudents = s.completed_students ?? 0;
+                const jobPostings = s.job_postings ?? 0;
+                
+                document.getElementById('active-students-count').textContent = activeStudents;
+                document.getElementById('completed-students-count').textContent = completedStudents;
+                document.getElementById('job-postings-count').textContent = jobPostings;
+                
+                // Update insights
+                updateInsight('active-students-insight', activeStudents, 'active');
+                updateInsight('completed-students-insight', completedStudents, 'completed');
+                updateInsight('job-postings-insight', jobPostings, 'jobs');
                 
                 // Update chart center (total students)
                 document.getElementById('total-students-chart').textContent = s.total_students ?? 0;
@@ -238,17 +370,21 @@
                 document.getElementById('it-count').textContent = `IT - ${it}`;
                 document.getElementById('cs-count').textContent = `CS - ${cs}`;
                 document.getElementById('emc-count').textContent = `EMC - ${emc}`;
+                updateInsight('course-insight', {it, cs, emc, total: s.total_students}, 'course');
                 
                 // Update reports today
-                document.getElementById('reports-today').textContent = s.reports_today ?? 0;
+                const reportsToday = s.reports_today ?? 0;
+                document.getElementById('reports-today').textContent = reportsToday;
                 
                 // Update evaluation stats
                 const evaluation = s.evaluation || {};
-                document.getElementById('avg-evaluation').textContent = evaluation.average_rank > 0 ? `${evaluation.average_rank}/100` : '-';
+                const avgRank = evaluation.average_rank || 0;
+                document.getElementById('avg-evaluation').textContent = avgRank > 0 ? `${avgRank}/100` : '-';
                 document.getElementById('excellent-count').textContent = evaluation.excellent_count ?? 0;
                 document.getElementById('good-count').textContent = evaluation.good_count ?? 0;
                 document.getElementById('needs-improvement-count').textContent = evaluation.needs_improvement_count ?? 0;
                 document.getElementById('evaluated-count').textContent = evaluation.evaluated_count ?? 0;
+                updateInsight('evaluation-insight', {avg: avgRank, excellent: evaluation.excellent_count, total: evaluation.evaluated_count}, 'evaluation');
                 
                 // Update performance stats
                 const perf = s.performance || {};
@@ -259,6 +395,8 @@
                 document.getElementById('perf-needs-improvement').textContent = perfBreakdown['Needs Improvement'] ?? 0;
                 document.getElementById('perf-poor').textContent = perfBreakdown.Poor ?? 0;
                 document.getElementById('assessed-count').textContent = perf.assessed_count ?? 0;
+                updateInsight('performance-insight', {excellent: perfBreakdown.Excellent, total: perf.assessed_count}, 'performance');
+                updateInsight('activity-insight', {reports: reportsToday, evaluated: evaluation.evaluated_count, assessed: perf.assessed_count}, 'activity');
             } catch (e) {
                 console.error('Failed to load dashboard stats:', e);
                 showError('Failed to load dashboard statistics');
