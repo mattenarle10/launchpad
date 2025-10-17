@@ -694,7 +694,6 @@ const CDCAPI = {
         });
 
         const footer = `
-            <button class="btn-modal" data-modal-close>Cancel</button>
             <button class="btn-modal btn-approve" id="save-student-btn">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
                     <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
@@ -709,6 +708,12 @@ const CDCAPI = {
         modal.open(content);
 
         setTimeout(() => {
+            // Cancel button handler
+            document.querySelector('[data-modal-close]')?.addEventListener('click', () => {
+                modal.close();
+            });
+            
+            // Save button handler
             document.getElementById('save-student-btn')?.addEventListener('click', async () => {
                 const form = document.getElementById('edit-student-form');
                 const formData = new FormData(form);
@@ -733,7 +738,7 @@ const CDCAPI = {
                     showError('Failed to update student: ' + error.message);
                 }
             });
-        }, 0);
+        }, 100);
     },
 
     /**
