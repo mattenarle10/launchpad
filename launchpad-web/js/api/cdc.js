@@ -536,6 +536,10 @@ const CDCAPI = {
      * Show student details in modal (for verified students)
      */
     viewStudentDetailsModal(student) {
+        const evaluationRank = student.evaluation_rank || 0;
+        const performanceScore = student.performance_score || 'Not Assessed';
+        const hasEvaluation = evaluationRank > 0;
+        
         const content = `
             <div class="detail-row">
                 <span class="detail-label">ID Number:</span>
@@ -565,6 +569,45 @@ const CDCAPI = {
                 <span class="detail-label">Verified:</span>
                 <span class="detail-value">${this.formatDate(student.verified_at)}</span>
             </div>
+            
+            <!-- Evaluation Scores Section -->
+            <div style="border-top: 2px solid #E5E7EB; margin: 20px 0; padding-top: 20px;">
+                <h4 style="font-weight: 600; color: #3D5A7E; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                    </svg>
+                    Performance Evaluation
+                </h4>
+                ${hasEvaluation ? `
+                    <div style="background: linear-gradient(135deg, #3D5A7E 0%, #4A6491 100%); padding: 20px; border-radius: 12px; color: white; margin-bottom: 16px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Average Score</div>
+                            <div style="font-size: 48px; font-weight: 700; margin-bottom: 8px;">${evaluationRank}</div>
+                            <div style="font-size: 18px; font-weight: 600; background: rgba(255,255,255,0.2); padding: 6px 16px; border-radius: 20px; display: inline-block;">
+                                ${performanceScore}
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background: #F3F4F6; padding: 12px; border-radius: 8px; font-size: 13px; color: #6B7280;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            <span>Score is automatically calculated from company evaluations</span>
+                        </div>
+                    </div>
+                ` : `
+                    <div style="text-align: center; padding: 30px; background: #F9FAFB; border-radius: 8px; color: #9CA3AF;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom: 12px; opacity: 0.5;">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                        </svg>
+                        <p style="margin: 0; font-size: 14px;">No evaluations yet</p>
+                    </div>
+                `}
+            </div>
+            
             <div class="detail-row">
                 <span class="detail-label">OJT Status:</span>
                 <span class="detail-value">
