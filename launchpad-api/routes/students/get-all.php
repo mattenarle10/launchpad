@@ -23,6 +23,7 @@ $stmt = $conn->prepare("
     SELECT 
         s.student_id, s.id_num, s.first_name, s.last_name, s.email, 
         s.course, s.contact_num, s.company_name, s.profile_pic, s.verified_at,
+        s.evaluation_rank, s.performance_score,
         o.required_hours, o.completed_hours, o.status as ojt_status
     FROM verified_students s
     LEFT JOIN ojt_progress o ON s.student_id = o.student_id

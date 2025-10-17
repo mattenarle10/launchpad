@@ -178,6 +178,23 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Top Performers Section (All Companies) -->
+                <div class="stats-grid" style="margin-top: 20px;">
+                    <div class="card" style="grid-column: span 3; background: linear-gradient(135deg, #3D5A7E 0%, #4A6491 100%); color: white; padding: 24px;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                            </svg>
+                            <h3 style="font-size: 20px; font-weight: 700; margin: 0;">Top Performing Students (All Companies)</h3>
+                        </div>
+                        <div id="cdc-top-students-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+                            <div style="text-align: center; padding: 40px; opacity: 0.7;">
+                                <p>Loading top performers...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -264,6 +281,71 @@
             }
         }
 
+        async function loadTopStudents() {
+            try {
+                const res = await client.get('/students');
+                const students = res.data || [];
+                
+                // Filter and sort by evaluation_rank (all companies)
+                const rankedStudents = students
+                    .filter(s => s.evaluation_rank != null && s.evaluation_rank > 0)
+                    .sort((a, b) => b.evaluation_rank - a.evaluation_rank)
+                    .slice(0, 5); // Top 5
+                
+                const topList = document.getElementById('cdc-top-students-list');
+                
+                if (rankedStudents.length === 0) {
+                    topList.innerHTML = `
+                        <div style="text-align: center; padding: 40px; opacity: 0.7; grid-column: 1 / -1;">
+                            <p>No evaluated students yet</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                topList.innerHTML = rankedStudents.map((student, index) => {
+                    const rank = index + 1;
+                    const isTop3 = rank <= 3;
+                    const rankBg = isTop3 ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.85)';
+                    const rankTextColor = isTop3 ? '#3D5A7E' : '#4A6491';
+                    
+                    return `
+                        <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; border: 2px solid rgba(255,255,255,0.25); position: relative; overflow: hidden;">
+                            <div style="position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; background: ${rankBg}; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; color: ${rankTextColor}; box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
+                                ${rank}
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <div style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">${student.first_name} ${student.last_name}</div>
+                                <div style="font-size: 13px; opacity: 0.9;">${student.id_num} • ${student.course}</div>
+                                <div style="font-size: 12px; opacity: 0.8; margin-top: 4px; background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 12px; display: inline-block;">
+                                    ${student.company_name || 'No Company'}
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.25);">
+                                <div>
+                                    <div style="font-size: 11px; opacity: 0.85; margin-bottom: 4px; letter-spacing: 0.5px;">SCORE</div>
+                                    <div style="font-size: 32px; font-weight: 700; line-height: 1;">${student.evaluation_rank}</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 11px; opacity: 0.85; margin-bottom: 4px; letter-spacing: 0.5px;">PERFORMANCE</div>
+                                    <div style="font-size: 13px; font-weight: 600; background: rgba(255,255,255,0.25); padding: 6px 12px; border-radius: 20px;">
+                                        ${student.performance_score || 'N/A'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                console.error('Failed to load top students:', e);
+                document.getElementById('cdc-top-students-list').innerHTML = `
+                    <div style="text-align: center; padding: 40px; opacity: 0.7; grid-column: 1 / -1;">
+                        <p>Failed to load top students</p>
+                    </div>
+                `;
+            }
+        }
+
         // Load components on page load
         document.addEventListener('DOMContentLoaded', async () => {
             await loadSidebar('dashboard', getSidebarMode());
@@ -290,6 +372,9 @@
             
             // Load recent job postings
             loadRecentJobs();
+            
+            // Load top students from all companies
+            loadTopStudents();
         });
     </script>
 </body>
