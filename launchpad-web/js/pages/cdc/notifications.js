@@ -162,11 +162,22 @@ async function deleteNotification(notificationId, title) {
 async function openSendNotificationModal() {
     // Load students for dropdown
     try {
-        const res = await client.get('/students?pageSize=1000');
-        allStudents = res.data?.data || [];
+        const res = await client.get('/students?page=1&pageSize=1000');
+        
+        console.log('API Response:', res); // Debug full response
+        
+        // Try different response structures
+        allStudents = res.data?.data || res.data || [];
+        
+        console.log('Loaded students:', allStudents.length, allStudents); // Debug log
+        
+        if (allStudents.length === 0) {
+            showError('No students found in the system');
+            return;
+        }
     } catch (error) {
         console.error('Error loading students:', error);
-        showError('Failed to load students');
+        showError('Failed to load students: ' + error.message);
         return;
     }
 
@@ -219,11 +230,35 @@ async function openSendNotificationModal() {
                 <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
                     Select Students <span style="color: #EF4444;">*</span>
                 </label>
-                <div style="max-height: 200px; overflow-y: auto; border: 2px solid #E5E7EB; border-radius: 8px; padding: 12px;">
+                
+                <!-- Search Input -->
+                <div style="margin-bottom: 12px;">
+                    <input 
+                        type="text" 
+                        id="student-search" 
+                        class="form-input" 
+                        placeholder="Search students by name or ID..."
+                        style="width: 100%; padding: 10px 12px; border: 2px solid #E5E7EB; border-radius: 8px; font-size: 14px;"
+                    >
+                </div>
+                
+                <!-- Select All Checkbox -->
+                <div style="margin-bottom: 12px; padding: 10px; background: #F3F4F6; border-radius: 6px;">
+                    <label style="display: flex; align-items: center; cursor: pointer; font-weight: 600; color: #3D5A7E;">
+                        <input type="checkbox" id="select-all-students" style="margin-right: 8px; width: 16px; height: 16px;">
+                        Select All (<span id="selected-count">0</span>/<span id="total-count">${allStudents.length}</span>)
+                    </label>
+                </div>
+                
+                <!-- Students List -->
+                <div id="students-list" style="max-height: 300px; overflow-y: auto; border: 2px solid #E5E7EB; border-radius: 8px; padding: 12px;">
                     ${allStudents.map(student => `
-                        <label style="display: block; padding: 8px; cursor: pointer; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='transparent'">
-                            <input type="checkbox" class="student-checkbox" value="${student.student_id}" style="margin-right: 8px;">
-                            ${student.first_name} ${student.last_name} (${student.id_num})
+                        <label class="student-item" data-name="${student.first_name} ${student.last_name}" data-id="${student.id_num}" style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 6px; transition: background 0.2s; margin-bottom: 4px;" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='transparent'">
+                            <input type="checkbox" class="student-checkbox" value="${student.student_id}" style="margin-right: 12px; width: 16px; height: 16px;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; color: #374151;">${student.first_name} ${student.last_name}</div>
+                                <div style="font-size: 12px; color: #6B7280;">${student.id_num} • ${student.course}</div>
+                            </div>
                         </label>
                     `).join('')}
                 </div>
@@ -266,6 +301,61 @@ async function openSendNotificationModal() {
                     studentsSelector.style.display = e.target.value === 'specific' ? 'block' : 'none';
                 }
             });
+        }
+        
+        // Student search handler
+        const searchInput = document.getElementById('student-search');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                const studentItems = document.querySelectorAll('.student-item');
+                
+                studentItems.forEach(item => {
+                    const name = item.getAttribute('data-name').toLowerCase();
+                    const id = item.getAttribute('data-id').toLowerCase();
+                    
+                    if (name.includes(query) || id.includes(query)) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+                
+                updateSelectedCount();
+            });
+        }
+        
+        // Select all handler
+        const selectAllCheckbox = document.getElementById('select-all-students');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', (e) => {
+                const studentCheckboxes = document.querySelectorAll('.student-checkbox');
+                const visibleCheckboxes = Array.from(studentCheckboxes).filter(cb => {
+                    const item = cb.closest('.student-item');
+                    return item && item.style.display !== 'none';
+                });
+                
+                visibleCheckboxes.forEach(checkbox => {
+                    checkbox.checked = e.target.checked;
+                });
+                
+                updateSelectedCount();
+            });
+        }
+        
+        // Individual checkbox change handler
+        const studentCheckboxes = document.querySelectorAll('.student-checkbox');
+        studentCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateSelectedCount);
+        });
+        
+        // Function to update selected count
+        function updateSelectedCount() {
+            const checkedCount = document.querySelectorAll('.student-checkbox:checked').length;
+            const selectedCountSpan = document.getElementById('selected-count');
+            if (selectedCountSpan) {
+                selectedCountSpan.textContent = checkedCount;
+            }
         }
 
         // Send notification button handler
