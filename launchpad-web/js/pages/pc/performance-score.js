@@ -51,6 +51,18 @@ async function loadStudentsTable() {
                     }
                 },
                 { 
+                    key: 'evaluation_rank', 
+                    label: 'Avg Score', 
+                    sortable: true,
+                    format: (value) => {
+                        if (value === null || value === undefined) {
+                            return '<span style="color: #9CA3AF;">Not Evaluated</span>';
+                        }
+                        const color = value >= 80 ? '#10B981' : value >= 60 ? '#F59E0B' : '#EF4444';
+                        return `<span style="color: ${color}; font-weight: 600;">${value}/100</span>`;
+                    }
+                },
+                { 
                     key: 'performance_score', 
                     label: 'Performance', 
                     sortable: true,
@@ -72,8 +84,8 @@ async function loadStudentsTable() {
             ],
             actions: [
                 {
-                    type: 'assess',
-                    label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>Assess',
+                    type: 'view',
+                    label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>View Details',
                     onClick: (row) => openPerformanceModal(row)
                 }
             ],
@@ -94,106 +106,187 @@ async function loadStudentsTable() {
     }
 }
 
-function openPerformanceModal(student) {
-    const currentScore = student.performance_score || '';
-    const scores = ['Excellent', 'Good', 'Satisfactory', 'Needs Improvement', 'Poor'];
+async function openPerformanceModal(student) {
+    // Fetch evaluation history
+    let evalData = null;
+    try {
+        const res = await client.get(`/companies/students/${student.student_id}/evaluations`);
+        evalData = res.data;
+    } catch (e) {
+        console.error('Error fetching evaluation data:', e);
+    }
+    
+    const evaluationRank = student.evaluation_rank || 0;
+    const performanceScore = student.performance_score || 'Not Assessed';
+    const evaluations = evalData?.evaluations || [];
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+    const monthName = new Date().toLocaleString('default', { month: 'long' });
+    
+    // Get current month's evaluations
+    const firstHalfEval = evalData?.first_half_evaluation;
+    const secondHalfEval = evalData?.second_half_evaluation;
+    const evaluationsThisMonth = evalData?.evaluations_this_month || 0;
     
     const content = `
         <div style="padding: 10px 0;">
-            <div class="detail-row" style="margin-bottom: 20px;">
+            <div class="detail-row" style="margin-bottom: 16px;">
                 <span class="detail-label">Student:</span>
                 <span class="detail-value">${student.first_name} ${student.last_name}</span>
             </div>
-            <div class="detail-row" style="margin-bottom: 20px;">
+            <div class="detail-row" style="margin-bottom: 16px;">
                 <span class="detail-label">ID Number:</span>
                 <span class="detail-value">${student.id_num}</span>
             </div>
-            <div class="detail-row" style="margin-bottom: 20px;">
+            <div class="detail-row" style="margin-bottom: 16px;">
                 <span class="detail-label">Course:</span>
                 <span class="detail-value"><span class="course-badge ${student.course.toLowerCase()}">${student.course}</span></span>
             </div>
-            <div class="detail-row" style="margin-bottom: 20px;">
-                <span class="detail-label">OJT Progress:</span>
-                <span class="detail-value">${student.completed_hours || 0} / ${student.required_hours || 0} hrs (${student.completion_percentage || 0}%)</span>
+            
+            <!-- Performance Summary -->
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; margin: 20px 0; color: white;">
+                <div style="text-align: center;">
+                    <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">Overall Performance Score</div>
+                    <div style="font-size: 48px; font-weight: 700; margin-bottom: 8px;">${evaluationRank}/100</div>
+                    <div style="font-size: 20px; font-weight: 600; background: rgba(255,255,255,0.2); padding: 8px 20px; border-radius: 20px; display: inline-block;">
+                        ${performanceScore}
+                    </div>
+                </div>
             </div>
             
-            <div style="border-top: 2px solid #E5E7EB; padding-top: 20px; margin-top: 20px;">
-                <div class="form-group">
-                    <label for="performance-score" style="display: block; margin-bottom: 10px; font-weight: 600; color: #374151; font-size: 14px;">
-                        Performance Assessment <span style="color: #EF4444;">*</span>
-                    </label>
-                    <select 
-                        id="performance-score" 
-                        class="form-input custom-select" 
-                        style="width: 100%; padding: 12px; border: 2px solid #E5E7EB; border-radius: 8px; font-size: 16px;"
-                        required
-                    >
-                        <option value="">-- Select Performance Level --</option>
-                        ${scores.map(score => `<option value="${score}" ${score === currentScore ? 'selected' : ''}>${score}</option>`).join('')}
-                    </select>
-                    <p style="margin-top: 8px; color: #6B7280; font-size: 13px;">
-                        ⭐ Select the performance level that best describes the student's work quality
+            <!-- Current Month Evaluations -->
+            <div style="background: #F3F4F6; padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A6491" stroke-width="2">
+                            <line x1="12" y1="1" x2="12" y2="23"></line>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        </svg>
+                        <span style="font-weight: 600; color: #3D5A7E; font-size: 15px;">${monthName} ${currentYear} Evaluations</span>
+                    </div>
+                    <span style="font-weight: 700; color: ${evaluationsThisMonth === 2 ? '#10B981' : '#F59E0B'}; font-size: 16px;">${evaluationsThisMonth}/2</span>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div style="background: white; padding: 14px; border-radius: 8px; border: 2px solid ${firstHalfEval ? '#10B981' : '#E5E7EB'};">
+                        <div style="font-size: 11px; color: #6B7280; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">1st-15th</div>
+                        ${firstHalfEval ? `
+                            <div style="font-weight: 700; color: #10B981; font-size: 28px; margin-bottom: 4px;">${firstHalfEval.score}</div>
+                            <div style="font-size: 12px; color: #374151; font-weight: 600;">${firstHalfEval.category}</div>
+                        ` : `
+                            <div style="font-weight: 600; color: #9CA3AF; font-size: 14px; padding: 10px 0;">Not Evaluated</div>
+                        `}
+                    </div>
+                    
+                    <div style="background: white; padding: 14px; border-radius: 8px; border: 2px solid ${secondHalfEval ? '#10B981' : '#E5E7EB'};">
+                        <div style="font-size: 11px; color: #6B7280; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">16th-End</div>
+                        ${secondHalfEval ? `
+                            <div style="font-weight: 700; color: #10B981; font-size: 28px; margin-bottom: 4px;">${secondHalfEval.score}</div>
+                            <div style="font-size: 12px; color: #374151; font-weight: 600;">${secondHalfEval.category}</div>
+                        ` : `
+                            <div style="font-weight: 600; color: #9CA3AF; font-size: 14px; padding: 10px 0;">Not Evaluated</div>
+                        `}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Grading Criteria -->
+            <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #E5E7EB;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A6491" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <span style="font-weight: 600; color: #3D5A7E; font-size: 14px;">Grading Criteria (Automatic)</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px;">
+                    <div style="padding: 10px 12px; background: white; border-radius: 6px; border-left: 4px solid #10B981; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                        <strong style="color: #374151;">81-100:</strong> <span style="color: #10B981;">Excellent</span>
+                    </div>
+                    <div style="padding: 10px 12px; background: white; border-radius: 6px; border-left: 4px solid #3B82F6; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                        <strong style="color: #374151;">61-80:</strong> <span style="color: #3B82F6;">Good</span>
+                    </div>
+                    <div style="padding: 10px 12px; background: white; border-radius: 6px; border-left: 4px solid #F59E0B; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                        <strong style="color: #374151;">41-60:</strong> <span style="color: #F59E0B;">Satisfactory</span>
+                    </div>
+                    <div style="padding: 10px 12px; background: white; border-radius: 6px; border-left: 4px solid #EF4444; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                        <strong style="color: #374151;">21-40:</strong> <span style="color: #EF4444;">Needs Improvement</span>
+                    </div>
+                    <div style="padding: 10px 12px; background: white; border-radius: 6px; border-left: 4px solid #991B1B; grid-column: span 2; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                        <strong style="color: #374151;">0-20:</strong> <span style="color: #991B1B;">Poor</span>
+                    </div>
+                </div>
+                <div style="margin-top: 12px; padding: 10px; background: #EFF6FF; border-radius: 6px; border-left: 3px solid #4A6491;">
+                    <p style="font-size: 12px; color: #3D5A7E; margin: 0;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        Performance score is automatically calculated from evaluation scores
                     </p>
                 </div>
+            </div>
+            
+            <!-- Evaluation History -->
+            <div style="border-top: 2px solid #E5E7EB; padding-top: 20px; margin-top: 20px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A6491" stroke-width="2">
+                        <path d="M3 3v18h18"></path>
+                        <path d="M18 17V9"></path>
+                        <path d="M13 17V5"></path>
+                        <path d="M8 17v-3"></path>
+                    </svg>
+                    <h3 style="font-size: 16px; font-weight: 600; color: #3D5A7E; margin: 0;">Evaluation History</h3>
+                </div>
+                ${evaluations.length > 0 ? `
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        ${evaluations.map(evaluation => {
+                            const date = new Date(evaluation.evaluated_at);
+                            const monthYear = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+                            const period = evaluation.evaluation_period === 'first_half' ? '1st-15th' : '16th-End';
+                            const color = evaluation.evaluation_score >= 80 ? '#10B981' : evaluation.evaluation_score >= 60 ? '#F59E0B' : '#EF4444';
+                            return `
+                                <div style="background: white; padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid ${color};">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <div>
+                                            <div style="font-weight: 600; color: #374151;">${monthYear} - ${period}</div>
+                                            <div style="font-size: 12px; color: #6B7280; margin-top: 2px;">${evaluation.category}</div>
+                                        </div>
+                                        <div style="font-size: 24px; font-weight: 700; color: ${color};">${evaluation.evaluation_score}</div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                ` : `
+                    <div style="text-align: center; padding: 20px; color: #9CA3AF;">
+                        <p>No evaluations yet</p>
+                    </div>
+                `}
             </div>
         </div>
     `;
     
     const modal = createModal('performance-modal', {
-        title: `Assess ${student.first_name} ${student.last_name}`,
+        title: `Performance Details - ${student.first_name} ${student.last_name}`,
         size: 'medium'
     });
     
     const footer = `
-        <button class="btn-modal" data-modal-close>Cancel</button>
-        <button class="btn-modal btn-approve" id="save-performance-btn">
+        <button class="btn-modal btn-approve" data-modal-close>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                <polyline points="7 3 7 8 15 8"></polyline>
+                <path d="M5 13l4 4L19 7"></path>
             </svg>
-            Save Assessment
+            Close
         </button>
     `;
     
     modal.setFooter(footer);
     modal.open(content);
-    
-    // Set up save button handler
-    setTimeout(() => {
-        const scoreSelect = document.getElementById('performance-score');
-        
-        document.getElementById('save-performance-btn')?.addEventListener('click', async () => {
-            const score = scoreSelect.value;
-            
-            if (!score) {
-                showError('Please select a performance level');
-                scoreSelect.classList.add('error');
-                scoreSelect.focus();
-                return;
-            }
-            
-            scoreSelect.classList.remove('error');
-            
-            try {
-                await client.put(`/companies/students/${student.student_id}/performance`, {
-                    performance_score: score
-                });
-                
-                modal.close();
-                showSuccess(`${student.first_name} ${student.last_name} assessed as "${score}"`);
-                
-                // Reload table
-                setTimeout(() => loadStudentsTable(), 1000);
-            } catch (error) {
-                console.error('Error saving performance:', error);
-                showError('Failed to save performance: ' + error.message);
-            }
-        });
-        
-        // Focus on select
-        scoreSelect.focus();
-    }, 0);
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

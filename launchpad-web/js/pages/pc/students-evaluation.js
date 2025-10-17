@@ -143,30 +143,38 @@ async function openEvaluationModal(student) {
                 <span class="detail-value"><span class="course-badge ${student.course.toLowerCase()}">${student.course}</span></span>
             </div>
             
-            <div style="background: #F3F4F6; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+            <div style="background: #F3F4F6; padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #E5E7EB;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <span style="font-weight: 600; color: #374151;">📊 Evaluation Progress - ${monthName}</span>
-                    <span style="font-weight: 700; color: ${evaluationsThisMonth === 2 ? '#10B981' : '#F59E0B'}; font-size: 18px;">${evaluationsThisMonth}/2</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A6491" stroke-width="2">
+                            <path d="M3 3v18h18"></path>
+                            <path d="M18 17V9"></path>
+                            <path d="M13 17V5"></path>
+                            <path d="M8 17v-3"></path>
+                        </svg>
+                        <span style="font-weight: 600; color: #3D5A7E; font-size: 14px;">${monthName} Evaluations</span>
+                    </div>
+                    <span style="font-weight: 700; color: ${evaluationsThisMonth === 2 ? '#10B981' : '#F59E0B'}; font-size: 16px;">${evaluationsThisMonth}/2</span>
                 </div>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
-                    <div style="background: white; padding: 12px; border-radius: 6px; border: 2px solid ${firstHalfEval ? '#10B981' : '#E5E7EB'};">
-                        <div style="font-size: 12px; color: #6B7280; margin-bottom: 4px;">1st-15th</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;">
+                    <div style="background: white; padding: 12px; border-radius: 6px; border: 2px solid ${firstHalfEval ? '#4A6491' : '#E5E7EB'}; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                        <div style="font-size: 11px; color: #6B7280; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">1st-15th</div>
                         ${firstHalfEval ? `
-                            <div style="font-weight: 700; color: #10B981; font-size: 16px;">${firstHalfEval.score}/100</div>
+                            <div style="font-weight: 700; color: #4A6491; font-size: 20px; margin-bottom: 2px;">${firstHalfEval.score}</div>
                             <div style="font-size: 11px; color: #6B7280;">${firstHalfEval.category}</div>
                         ` : `
-                            <div style="font-weight: 600; color: #9CA3AF; font-size: 14px;">Not Evaluated</div>
+                            <div style="font-weight: 600; color: #9CA3AF; font-size: 13px;">Not Evaluated</div>
                         `}
                     </div>
                     
-                    <div style="background: white; padding: 12px; border-radius: 6px; border: 2px solid ${secondHalfEval ? '#10B981' : '#E5E7EB'};">
-                        <div style="font-size: 12px; color: #6B7280; margin-bottom: 4px;">16th-End</div>
+                    <div style="background: white; padding: 12px; border-radius: 6px; border: 2px solid ${secondHalfEval ? '#4A6491' : '#E5E7EB'}; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                        <div style="font-size: 11px; color: #6B7280; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">16th-End</div>
                         ${secondHalfEval ? `
-                            <div style="font-weight: 700; color: #10B981; font-size: 16px;">${secondHalfEval.score}/100</div>
+                            <div style="font-weight: 700; color: #4A6491; font-size: 20px; margin-bottom: 2px;">${secondHalfEval.score}</div>
                             <div style="font-size: 11px; color: #6B7280;">${secondHalfEval.category}</div>
                         ` : `
-                            <div style="font-weight: 600; color: #9CA3AF; font-size: 14px;">Not Evaluated</div>
+                            <div style="font-weight: 600; color: #9CA3AF; font-size: 13px;">Not Evaluated</div>
                         `}
                     </div>
                 </div>
@@ -174,13 +182,13 @@ async function openEvaluationModal(student) {
             
             <div style="border-top: 2px solid #E5E7EB; padding-top: 20px; margin-top: 20px;">
                 <div class="form-group" style="margin-bottom: 16px;">
-                    <label for="evaluation-period" style="display: block; margin-bottom: 10px; font-weight: 600; color: #374151; font-size: 14px;">
+                    <label for="evaluation-period" style="display: block; margin-bottom: 10px; font-weight: 600; color: #3D5A7E; font-size: 14px;">
                         Evaluation Period <span style="color: #EF4444;">*</span>
                     </label>
                     <select 
                         id="evaluation-period" 
                         class="form-input"
-                        style="width: 100%; padding: 12px; border: 2px solid #E5E7EB; border-radius: 8px; font-size: 16px;"
+                        style="width: 100%; padding: 12px; border: 2px solid #E5E7EB; border-radius: 8px; font-size: 15px; color: #374151;"
                         required
                     >
                         <option value="first_half" ${!secondHalfEval && firstHalfEval ? 'selected' : ''}>1st-15th of ${monthName}</option>
@@ -189,7 +197,7 @@ async function openEvaluationModal(student) {
                 </div>
                 
                 <div class="form-group">
-                    <label for="evaluation-score" style="display: block; margin-bottom: 10px; font-weight: 600; color: #374151; font-size: 14px;">
+                    <label for="evaluation-score" style="display: block; margin-bottom: 10px; font-weight: 600; color: #3D5A7E; font-size: 14px;">
                         Evaluation Score (0-100) <span style="color: #EF4444;">*</span>
                     </label>
                     <input 
@@ -204,9 +212,17 @@ async function openEvaluationModal(student) {
                         style="width: 100%; padding: 12px; border: 2px solid #E5E7EB; border-radius: 8px; font-size: 16px;"
                         required
                     >
-                    <div style="margin-top: 12px; padding: 12px; background: #EFF6FF; border-radius: 6px; font-size: 12px; color: #1E40AF;">
-                        <strong>📋 Grading Scale:</strong><br>
-                        81-100: Excellent | 61-80: Good | 41-60: Enough | 21-40: Poor | 0-20: Very Poor
+                    <div style="margin-top: 12px; padding: 10px 12px; background: #EFF6FF; border-radius: 6px; border-left: 3px solid #4A6491;">
+                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4A6491" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <strong style="font-size: 12px; color: #3D5A7E;">Grading Scale</strong>
+                        </div>
+                        <div style="font-size: 11px; color: #4A6491; line-height: 1.6;">
+                            81-100: Excellent | 61-80: Good | 41-60: Enough | 21-40: Poor | 0-20: Very Poor
+                        </div>
                     </div>
                 </div>
             </div>
