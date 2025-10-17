@@ -36,9 +36,27 @@ if ($result->num_rows === 0) {
     Response::error('Student not found or not assigned to your company', 404);
 }
 
-// Update evaluation rank in verified_students table
-$stmt = $conn->prepare("UPDATE verified_students SET evaluation_rank = ? WHERE student_id = ?");
-$stmt->bind_param('ii', $evaluationRank, $studentId);
+// Calculate performance_score category based on evaluation_rank
+$performanceScore = '';
+if ($evaluationRank >= 81) {
+    $performanceScore = 'Excellent';
+} elseif ($evaluationRank >= 61) {
+    $performanceScore = 'Good';
+} elseif ($evaluationRank >= 41) {
+    $performanceScore = 'Satisfactory';
+} elseif ($evaluationRank >= 21) {
+    $performanceScore = 'Needs Improvement';
+} else {
+    $performanceScore = 'Poor';
+}
+
+// Update both evaluation_rank and performance_score in verified_students table
+$stmt = $conn->prepare("
+    UPDATE verified_students 
+    SET evaluation_rank = ?, performance_score = ? 
+    WHERE student_id = ?
+");
+$stmt->bind_param('isi', $evaluationRank, $performanceScore, $studentId);
 $stmt->execute();
 
 // Get updated student info
@@ -48,7 +66,8 @@ $stmt = $conn->prepare("
         s.id_num,
         s.first_name,
         s.last_name,
-        s.evaluation_rank
+        s.evaluation_rank,
+        s.performance_score
     FROM verified_students s
     WHERE s.student_id = ?
 ");

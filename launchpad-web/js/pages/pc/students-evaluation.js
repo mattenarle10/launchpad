@@ -21,6 +21,21 @@ async function loadStudentsTable() {
     try {
         const res = await client.get('/companies/students');
         allStudents = res.data || [];
+        
+        // Fetch evaluation counts for each student
+        const currentMonth = new Date().getMonth() + 1;
+        const currentYear = new Date().getFullYear();
+        
+        for (let student of allStudents) {
+            try {
+                const evalRes = await client.get(`/companies/students/${student.student_id}/evaluations`);
+                student.evaluations_this_month = evalRes.data.evaluations_this_month || 0;
+                student.current_evaluation = evalRes.data.current_evaluation;
+            } catch (e) {
+                student.evaluations_this_month = 0;
+                student.current_evaluation = null;
+            }
+        }
 
         // Create DataTable
         dataTable = new DataTable({
@@ -52,7 +67,7 @@ async function loadStudentsTable() {
                 },
                 { 
                     key: 'evaluation_rank', 
-                    label: 'Evaluation', 
+                    label: 'Avg Score', 
                     sortable: true,
                     format: (value) => {
                         if (value === null || value === undefined) {
@@ -60,6 +75,16 @@ async function loadStudentsTable() {
                         }
                         const color = value >= 80 ? '#10B981' : value >= 60 ? '#F59E0B' : '#EF4444';
                         return `<span style="color: ${color}; font-weight: 600;">${value}/100</span>`;
+                    }
+                },
+                { 
+                    key: 'evaluations_this_month', 
+                    label: 'This Month', 
+                    sortable: false,
+                    format: (value) => {
+                        const count = value || 0;
+                        const color = count === 2 ? '#10B981' : count === 1 ? '#F59E0B' : '#9CA3AF';
+                        return `<span style="color: ${color}; font-weight: 600;">${count}/2 Evaluations</span>`;
                     }
                 }
             ],
@@ -87,48 +112,75 @@ async function loadStudentsTable() {
     }
 }
 
-function openEvaluationModal(student) {
-    const currentRank = student.evaluation_rank ?? '';
+async function openEvaluationModal(student) {
+    // Fetch current evaluation data
+    let evalData = null;
+    try {
+        const res = await client.get(`/companies/students/${student.student_id}/evaluations`);
+        evalData = res.data;
+    } catch (e) {
+        console.error('Error fetching evaluation data:', e);
+    }
+    
+    const currentScore = evalData?.current_evaluation?.score ?? '';
+    const currentCategory = evalData?.current_evaluation?.category ?? '';
+    const evaluationsThisMonth = evalData?.evaluations_this_month ?? 0;
+    const currentPeriod = evalData?.current_period === 'first_half' ? '1st-15th' : '16th-End';
+    const monthName = new Date(evalData?.current_year, evalData?.current_month - 1).toLocaleString('default', { month: 'long' });
     
     const content = `
         <div style="padding: 10px 0;">
-            <div class="detail-row" style="margin-bottom: 20px;">
+            <div class="detail-row" style="margin-bottom: 16px;">
                 <span class="detail-label">Student:</span>
                 <span class="detail-value">${student.first_name} ${student.last_name}</span>
             </div>
-            <div class="detail-row" style="margin-bottom: 20px;">
+            <div class="detail-row" style="margin-bottom: 16px;">
                 <span class="detail-label">ID Number:</span>
                 <span class="detail-value">${student.id_num}</span>
             </div>
-            <div class="detail-row" style="margin-bottom: 20px;">
+            <div class="detail-row" style="margin-bottom: 16px;">
                 <span class="detail-label">Course:</span>
                 <span class="detail-value"><span class="course-badge ${student.course.toLowerCase()}">${student.course}</span></span>
             </div>
-            <div class="detail-row" style="margin-bottom: 20px;">
-                <span class="detail-label">OJT Progress:</span>
-                <span class="detail-value">${student.completed_hours || 0} / ${student.required_hours || 0} hrs (${student.completion_percentage || 0}%)</span>
+            
+            <div style="background: #F3F4F6; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-weight: 600; color: #374151;">📊 Evaluation Progress</span>
+                    <span style="font-weight: 700; color: ${evaluationsThisMonth === 2 ? '#10B981' : '#F59E0B'}; font-size: 18px;">${evaluationsThisMonth}/2</span>
+                </div>
+                <div style="font-size: 13px; color: #6B7280; margin-bottom: 8px;">
+                    Current Period: <strong>${currentPeriod} of ${monthName}</strong>
+                </div>
+                ${currentCategory ? `
+                <div style="margin-top: 8px;">
+                    <span style="font-size: 12px; color: #6B7280;">Current Score:</span>
+                    <span style="font-weight: 600; color: #374151; margin-left: 4px;">${currentScore}/100</span>
+                    <span class="course-badge" style="margin-left: 8px; font-size: 11px;">${currentCategory}</span>
+                </div>
+                ` : ''}
             </div>
             
             <div style="border-top: 2px solid #E5E7EB; padding-top: 20px; margin-top: 20px;">
                 <div class="form-group">
-                    <label for="evaluation-rank" style="display: block; margin-bottom: 10px; font-weight: 600; color: #374151; font-size: 14px;">
-                        Evaluation Rank (0-100) <span style="color: #EF4444;">*</span>
+                    <label for="evaluation-score" style="display: block; margin-bottom: 10px; font-weight: 600; color: #374151; font-size: 14px;">
+                        Evaluation Score (0-100) <span style="color: #EF4444;">*</span>
                     </label>
                     <input 
                         type="number" 
-                        id="evaluation-rank" 
+                        id="evaluation-score" 
                         class="form-input" 
                         min="0" 
                         max="100" 
                         step="1"
-                        value="${currentRank}"
-                        placeholder="Enter rank (0-100)"
+                        value="${currentScore}"
+                        placeholder="Enter score (0-100)"
                         style="width: 100%; padding: 12px; border: 2px solid #E5E7EB; border-radius: 8px; font-size: 16px;"
                         required
                     >
-                    <p style="margin-top: 8px; color: #6B7280; font-size: 13px;">
-                        💡 Enter a score from 0 to 100 based on the student's performance
-                    </p>
+                    <div style="margin-top: 12px; padding: 12px; background: #EFF6FF; border-radius: 6px; font-size: 12px; color: #1E40AF;">
+                        <strong>📋 Grading Scale:</strong><br>
+                        81-100: Excellent | 61-80: Good | 41-60: Enough | 21-40: Poor | 0-20: Very Poor
+                    </div>
                 </div>
             </div>
         </div>
@@ -156,27 +208,29 @@ function openEvaluationModal(student) {
     
     // Set up save button handler
     setTimeout(() => {
-        const rankInput = document.getElementById('evaluation-rank');
+        const scoreInput = document.getElementById('evaluation-score');
         
         document.getElementById('save-evaluation-btn')?.addEventListener('click', async () => {
-            const rank = parseInt(rankInput.value, 10);
+            const score = parseInt(scoreInput.value, 10);
             
-            if (isNaN(rank) || rank < 0 || rank > 100) {
-                showError('Please enter a valid rank between 0 and 100');
-                rankInput.classList.add('error');
-                rankInput.focus();
+            if (isNaN(score) || score < 0 || score > 100) {
+                showError('Please enter a valid score between 0 and 100');
+                scoreInput.classList.add('error');
+                scoreInput.focus();
                 return;
             }
             
-            rankInput.classList.remove('error');
+            scoreInput.classList.remove('error');
             
             try {
-                await client.put(`/companies/students/${student.student_id}/evaluation`, {
-                    evaluation_rank: rank
+                const res = await client.post(`/companies/students/${student.student_id}/evaluations`, {
+                    evaluation_score: score
                 });
                 
                 modal.close();
-                showSuccess(`${student.first_name} ${student.last_name} evaluated with rank ${rank}/100`);
+                const category = res.data.category;
+                const evalCount = res.data.evaluations_this_month;
+                showSuccess(`${student.first_name} ${student.last_name} evaluated: ${score}/100 (${category}) - ${evalCount}/2 this month`);
                 
                 // Reload table
                 setTimeout(() => loadStudentsTable(), 1000);
@@ -187,7 +241,7 @@ function openEvaluationModal(student) {
         });
         
         // Focus on input
-        rankInput.focus();
+        scoreInput.focus();
     }, 0);
 }
 
