@@ -31,8 +31,8 @@ if ($result->num_rows === 0) {
 // Get current month/year info
 $currentMonth = intval(date('n'));
 $currentYear = intval(date('Y'));
-$currentDay = intval(date('j'));
-$currentPeriod = ($currentDay <= 15) ? 'first_half' : 'second_half';
+// Allow evaluation for both periods regardless of current date
+$currentPeriod = null; // Not restricting by period
 
 // Get all evaluations for this student
 $stmt = $conn->prepare("
@@ -79,30 +79,43 @@ $stmt->execute();
 $countResult = $stmt->get_result()->fetch_assoc();
 $evaluationsThisMonth = intval($countResult['count']);
 
-// Check if current period evaluation exists
+// Get evaluations for each period this month
 $stmt = $conn->prepare("
-    SELECT evaluation_score, category
+    SELECT evaluation_period, evaluation_score, category
     FROM student_evaluations 
     WHERE student_id = ? 
     AND company_id = ?
-    AND evaluation_period = ? 
     AND evaluation_month = ? 
     AND evaluation_year = ?
 ");
-$stmt->bind_param('iisii', $studentId, $companyId, $currentPeriod, $currentMonth, $currentYear);
+$stmt->bind_param('iiii', $studentId, $companyId, $currentMonth, $currentYear);
 $stmt->execute();
-$currentEvalResult = $stmt->get_result();
-$currentEvaluation = $currentEvalResult->num_rows > 0 ? $currentEvalResult->fetch_assoc() : null;
+$periodEvals = $stmt->get_result();
+
+$firstHalfEval = null;
+$secondHalfEval = null;
+
+while ($row = $periodEvals->fetch_assoc()) {
+    if ($row['evaluation_period'] === 'first_half') {
+        $firstHalfEval = [
+            'score' => intval($row['evaluation_score']),
+            'category' => $row['category']
+        ];
+    } else {
+        $secondHalfEval = [
+            'score' => intval($row['evaluation_score']),
+            'category' => $row['category']
+        ];
+    }
+}
 
 Response::success([
     'evaluations' => $evaluations,
     'current_month' => $currentMonth,
     'current_year' => $currentYear,
-    'current_period' => $currentPeriod,
     'evaluations_this_month' => $evaluationsThisMonth,
-    'current_evaluation' => $currentEvaluation ? [
-        'score' => intval($currentEvaluation['evaluation_score']),
-        'category' => $currentEvaluation['category']
-    ] : null,
-    'can_evaluate' => true // Can always evaluate/update current period
+    'first_half_evaluation' => $firstHalfEval,
+    'second_half_evaluation' => $secondHalfEval,
+    'can_evaluate_first_half' => true,  // Can always evaluate both periods
+    'can_evaluate_second_half' => true
 ]);

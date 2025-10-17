@@ -20,10 +20,16 @@ $studentId = intval($id);
 $data = json_decode(file_get_contents('php://input'), true);
 
 $evaluationScore = isset($data['evaluation_score']) ? intval($data['evaluation_score']) : null;
+$evaluationPeriod = isset($data['evaluation_period']) ? $data['evaluation_period'] : null;
 
 // Validate score
 if ($evaluationScore === null || $evaluationScore < 0 || $evaluationScore > 100) {
     Response::error('Evaluation score must be between 0 and 100', 400);
+}
+
+// Validate period
+if ($evaluationPeriod !== null && !in_array($evaluationPeriod, ['first_half', 'second_half'])) {
+    Response::error('Invalid evaluation period. Must be first_half or second_half', 400);
 }
 
 // Verify student belongs to this company
@@ -36,11 +42,15 @@ if ($result->num_rows === 0) {
     Response::error('Student not found or not assigned to your company', 404);
 }
 
-// Determine current evaluation period
-$currentDay = intval(date('j'));
+// Use provided period or auto-detect from current date
 $currentMonth = intval(date('n'));
 $currentYear = intval(date('Y'));
-$evaluationPeriod = ($currentDay <= 15) ? 'first_half' : 'second_half';
+
+if ($evaluationPeriod === null) {
+    // Auto-detect if not provided (backward compatibility)
+    $currentDay = intval(date('j'));
+    $evaluationPeriod = ($currentDay <= 15) ? 'first_half' : 'second_half';
+}
 
 // Calculate category based on score
 $category = '';
@@ -56,54 +66,64 @@ if ($evaluationScore >= 81) {
     $category = 'Very Poor';
 }
 
-// Check if evaluation already exists for this period
-$stmt = $conn->prepare("
-    SELECT evaluation_id 
-    FROM student_evaluations 
-    WHERE student_id = ? 
-    AND company_id = ? 
-    AND evaluation_period = ? 
-    AND evaluation_month = ? 
-    AND evaluation_year = ?
-");
-$stmt->bind_param('iisii', $studentId, $companyId, $evaluationPeriod, $currentMonth, $currentYear);
-$stmt->execute();
-$existing = $stmt->get_result();
+// Check if student_evaluations table exists
+$tableExists = $conn->query("SHOW TABLES LIKE 'student_evaluations'")->num_rows > 0;
 
-if ($existing->num_rows > 0) {
-    // Update existing evaluation
+if ($tableExists) {
+    // Check if evaluation already exists for this period
     $stmt = $conn->prepare("
-        UPDATE student_evaluations 
-        SET evaluation_score = ?, category = ?, evaluated_at = CURRENT_TIMESTAMP
+        SELECT evaluation_id 
+        FROM student_evaluations 
         WHERE student_id = ? 
         AND company_id = ? 
         AND evaluation_period = ? 
         AND evaluation_month = ? 
         AND evaluation_year = ?
     ");
-    $stmt->bind_param('isiisii', $evaluationScore, $category, $studentId, $companyId, $evaluationPeriod, $currentMonth, $currentYear);
+    $stmt->bind_param('iisii', $studentId, $companyId, $evaluationPeriod, $currentMonth, $currentYear);
     $stmt->execute();
-} else {
-    // Insert new evaluation
-    $stmt = $conn->prepare("
-        INSERT INTO student_evaluations 
-        (student_id, company_id, evaluation_score, evaluation_period, evaluation_month, evaluation_year, category)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    ");
-    $stmt->bind_param('iiisiis', $studentId, $companyId, $evaluationScore, $evaluationPeriod, $currentMonth, $currentYear, $category);
-    $stmt->execute();
+    $existing = $stmt->get_result();
+
+    if ($existing->num_rows > 0) {
+        // Update existing evaluation
+        $stmt = $conn->prepare("
+            UPDATE student_evaluations 
+            SET evaluation_score = ?, category = ?, evaluated_at = CURRENT_TIMESTAMP
+            WHERE student_id = ? 
+            AND company_id = ? 
+            AND evaluation_period = ? 
+            AND evaluation_month = ? 
+            AND evaluation_year = ?
+        ");
+        $stmt->bind_param('isiisii', $evaluationScore, $category, $studentId, $companyId, $evaluationPeriod, $currentMonth, $currentYear);
+        $stmt->execute();
+    } else {
+        // Insert new evaluation
+        $stmt = $conn->prepare("
+            INSERT INTO student_evaluations 
+            (student_id, company_id, evaluation_score, evaluation_period, evaluation_month, evaluation_year, category)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ");
+        $stmt->bind_param('iiisiis', $studentId, $companyId, $evaluationScore, $evaluationPeriod, $currentMonth, $currentYear, $category);
+        $stmt->execute();
+    }
 }
 
 // Update average evaluation_rank in verified_students table
-$stmt = $conn->prepare("
-    SELECT AVG(evaluation_score) as avg_score 
-    FROM student_evaluations 
-    WHERE student_id = ?
-");
-$stmt->bind_param('i', $studentId);
-$stmt->execute();
-$avgResult = $stmt->get_result()->fetch_assoc();
-$avgScore = round($avgResult['avg_score']);
+if ($tableExists) {
+    $stmt = $conn->prepare("
+        SELECT AVG(evaluation_score) as avg_score 
+        FROM student_evaluations 
+        WHERE student_id = ?
+    ");
+    $stmt->bind_param('i', $studentId);
+    $stmt->execute();
+    $avgResult = $stmt->get_result()->fetch_assoc();
+    $avgScore = $avgResult['avg_score'] ? round($avgResult['avg_score']) : $evaluationScore;
+} else {
+    // Fallback if table doesn't exist yet - use current score
+    $avgScore = $evaluationScore;
+}
 
 // Calculate performance_score category based on average
 $performanceScore = '';

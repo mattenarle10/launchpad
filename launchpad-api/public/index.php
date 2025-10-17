@@ -140,7 +140,18 @@ try {
             exit;
         }
         
-        // /companies/students/:id/evaluation (PUT - update student evaluation)
+        // /companies/students/:id/evaluations (POST - submit twice-monthly evaluation, GET - get evaluation history)
+        if (count($pathParts) === 4 && $pathParts[1] === 'students' && $pathParts[3] === 'evaluations') {
+            $id = $pathParts[2];
+            if ($method === 'POST') {
+                require __DIR__ . '/../routes/companies/submit-student-evaluation.php';
+            } elseif ($method === 'GET') {
+                require __DIR__ . '/../routes/companies/get-student-evaluations.php';
+            }
+            exit;
+        }
+        
+        // /companies/students/:id/evaluation (PUT - update student evaluation - legacy)
         if (count($pathParts) === 4 && $pathParts[1] === 'students' && $pathParts[3] === 'evaluation') {
             $id = $pathParts[2];
             require __DIR__ . '/../routes/companies/update-student-evaluation.php';

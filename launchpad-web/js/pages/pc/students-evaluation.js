@@ -122,11 +122,11 @@ async function openEvaluationModal(student) {
         console.error('Error fetching evaluation data:', e);
     }
     
-    const currentScore = evalData?.current_evaluation?.score ?? '';
-    const currentCategory = evalData?.current_evaluation?.category ?? '';
     const evaluationsThisMonth = evalData?.evaluations_this_month ?? 0;
-    const currentPeriod = evalData?.current_period === 'first_half' ? '1st-15th' : '16th-End';
     const monthName = new Date(evalData?.current_year, evalData?.current_month - 1).toLocaleString('default', { month: 'long' });
+    
+    const firstHalfEval = evalData?.first_half_evaluation;
+    const secondHalfEval = evalData?.second_half_evaluation;
     
     const content = `
         <div style="padding: 10px 0;">
@@ -144,23 +144,50 @@ async function openEvaluationModal(student) {
             </div>
             
             <div style="background: #F3F4F6; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <span style="font-weight: 600; color: #374151;">📊 Evaluation Progress</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span style="font-weight: 600; color: #374151;">📊 Evaluation Progress - ${monthName}</span>
                     <span style="font-weight: 700; color: ${evaluationsThisMonth === 2 ? '#10B981' : '#F59E0B'}; font-size: 18px;">${evaluationsThisMonth}/2</span>
                 </div>
-                <div style="font-size: 13px; color: #6B7280; margin-bottom: 8px;">
-                    Current Period: <strong>${currentPeriod} of ${monthName}</strong>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+                    <div style="background: white; padding: 12px; border-radius: 6px; border: 2px solid ${firstHalfEval ? '#10B981' : '#E5E7EB'};">
+                        <div style="font-size: 12px; color: #6B7280; margin-bottom: 4px;">1st-15th</div>
+                        ${firstHalfEval ? `
+                            <div style="font-weight: 700; color: #10B981; font-size: 16px;">${firstHalfEval.score}/100</div>
+                            <div style="font-size: 11px; color: #6B7280;">${firstHalfEval.category}</div>
+                        ` : `
+                            <div style="font-weight: 600; color: #9CA3AF; font-size: 14px;">Not Evaluated</div>
+                        `}
+                    </div>
+                    
+                    <div style="background: white; padding: 12px; border-radius: 6px; border: 2px solid ${secondHalfEval ? '#10B981' : '#E5E7EB'};">
+                        <div style="font-size: 12px; color: #6B7280; margin-bottom: 4px;">16th-End</div>
+                        ${secondHalfEval ? `
+                            <div style="font-weight: 700; color: #10B981; font-size: 16px;">${secondHalfEval.score}/100</div>
+                            <div style="font-size: 11px; color: #6B7280;">${secondHalfEval.category}</div>
+                        ` : `
+                            <div style="font-weight: 600; color: #9CA3AF; font-size: 14px;">Not Evaluated</div>
+                        `}
+                    </div>
                 </div>
-                ${currentCategory ? `
-                <div style="margin-top: 8px;">
-                    <span style="font-size: 12px; color: #6B7280;">Current Score:</span>
-                    <span style="font-weight: 600; color: #374151; margin-left: 4px;">${currentScore}/100</span>
-                    <span class="course-badge" style="margin-left: 8px; font-size: 11px;">${currentCategory}</span>
-                </div>
-                ` : ''}
             </div>
             
             <div style="border-top: 2px solid #E5E7EB; padding-top: 20px; margin-top: 20px;">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="evaluation-period" style="display: block; margin-bottom: 10px; font-weight: 600; color: #374151; font-size: 14px;">
+                        Evaluation Period <span style="color: #EF4444;">*</span>
+                    </label>
+                    <select 
+                        id="evaluation-period" 
+                        class="form-input"
+                        style="width: 100%; padding: 12px; border: 2px solid #E5E7EB; border-radius: 8px; font-size: 16px;"
+                        required
+                    >
+                        <option value="first_half" ${!secondHalfEval && firstHalfEval ? 'selected' : ''}>1st-15th of ${monthName}</option>
+                        <option value="second_half" ${secondHalfEval || (!firstHalfEval && !secondHalfEval) ? 'selected' : ''}>16th-End of ${monthName}</option>
+                    </select>
+                </div>
+                
                 <div class="form-group">
                     <label for="evaluation-score" style="display: block; margin-bottom: 10px; font-weight: 600; color: #374151; font-size: 14px;">
                         Evaluation Score (0-100) <span style="color: #EF4444;">*</span>
@@ -172,7 +199,7 @@ async function openEvaluationModal(student) {
                         min="0" 
                         max="100" 
                         step="1"
-                        value="${currentScore}"
+                        value=""
                         placeholder="Enter score (0-100)"
                         style="width: 100%; padding: 12px; border: 2px solid #E5E7EB; border-radius: 8px; font-size: 16px;"
                         required
@@ -209,9 +236,31 @@ async function openEvaluationModal(student) {
     // Set up save button handler
     setTimeout(() => {
         const scoreInput = document.getElementById('evaluation-score');
+        const periodSelect = document.getElementById('evaluation-period');
+        
+        // Pre-fill score when period changes
+        periodSelect.addEventListener('change', () => {
+            const period = periodSelect.value;
+            if (period === 'first_half' && firstHalfEval) {
+                scoreInput.value = firstHalfEval.score;
+            } else if (period === 'second_half' && secondHalfEval) {
+                scoreInput.value = secondHalfEval.score;
+            } else {
+                scoreInput.value = '';
+            }
+        });
+        
+        // Set initial score based on selected period
+        const initialPeriod = periodSelect.value;
+        if (initialPeriod === 'first_half' && firstHalfEval) {
+            scoreInput.value = firstHalfEval.score;
+        } else if (initialPeriod === 'second_half' && secondHalfEval) {
+            scoreInput.value = secondHalfEval.score;
+        }
         
         document.getElementById('save-evaluation-btn')?.addEventListener('click', async () => {
             const score = parseInt(scoreInput.value, 10);
+            const period = periodSelect.value;
             
             if (isNaN(score) || score < 0 || score > 100) {
                 showError('Please enter a valid score between 0 and 100');
@@ -224,13 +273,15 @@ async function openEvaluationModal(student) {
             
             try {
                 const res = await client.post(`/companies/students/${student.student_id}/evaluations`, {
-                    evaluation_score: score
+                    evaluation_score: score,
+                    evaluation_period: period
                 });
                 
                 modal.close();
                 const category = res.data.category;
                 const evalCount = res.data.evaluations_this_month;
-                showSuccess(`${student.first_name} ${student.last_name} evaluated: ${score}/100 (${category}) - ${evalCount}/2 this month`);
+                const periodText = period === 'first_half' ? '1st-15th' : '16th-End';
+                showSuccess(`${student.first_name} ${student.last_name} evaluated: ${score}/100 (${category}) - ${periodText} - ${evalCount}/2 this month`);
                 
                 // Reload table
                 setTimeout(() => loadStudentsTable(), 1000);
