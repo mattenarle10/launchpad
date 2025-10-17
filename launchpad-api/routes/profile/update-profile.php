@@ -133,6 +133,11 @@ if ($role === ROLE_CDC) {
         $params[] = $data['contact_num'];
         $types .= 's';
     }
+    if (isset($data['specialization'])) {
+        $updates[] = 'specialization = ?';
+        $params[] = $data['specialization'];
+        $types .= 's';
+    }
 
     if (empty($updates)) {
         Response::success(['message' => 'No changes to update']);

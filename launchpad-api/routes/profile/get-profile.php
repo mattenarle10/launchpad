@@ -83,6 +83,7 @@ if ($role === ROLE_CDC) {
             company_name,
             profile_pic,
             cor,
+            specialization,
             verified_at
         FROM verified_students 
         WHERE student_id = ?
@@ -107,6 +108,7 @@ if ($role === ROLE_CDC) {
         'company_name' => $row['company_name'],
         'profile_pic' => $row['profile_pic'],
         'cor' => $row['cor'],
+        'specialization' => $row['specialization'],
         'verified_at' => $row['verified_at'],
     ];
     

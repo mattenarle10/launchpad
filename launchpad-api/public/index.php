@@ -71,6 +71,12 @@ try {
             exit;
         }
         
+        // /students/evaluation/history (GET - student's evaluation history)
+        if (count($pathParts) === 3 && $pathParts[1] === 'evaluation' && $pathParts[2] === 'history') {
+            require __DIR__ . '/../routes/students/get-evaluation-history.php';
+            exit;
+        }
+        
         // /students/evaluation (GET - student's evaluation from company)
         if (count($pathParts) === 2 && $pathParts[1] === 'evaluation') {
             require __DIR__ . '/../routes/students/get-evaluation.php';
