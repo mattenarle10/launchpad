@@ -77,13 +77,25 @@ class StudentApi extends BaseApiGroup {
     required String lastName,
     required String email,
     required String contactNum,
+    String? specialization,
   }) async {
-    final response = await client.put('/profile', {
+    final data = {
       'first_name': firstName,
       'last_name': lastName,
       'email': email,
       'contact_num': contactNum,
-    });
+    };
+    
+    if (specialization != null && specialization.isNotEmpty) {
+      data['specialization'] = specialization;
+    }
+    
+    final response = await client.put('/profile', data);
     return response as Map<String, dynamic>;
+  }
+  
+  /// Get evaluation history
+  Future<Map<String, dynamic>> getEvaluationHistory() async {
+    return await client.get('/students/evaluations');
   }
 }

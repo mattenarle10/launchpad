@@ -71,7 +71,13 @@ try {
             exit;
         }
         
-        // /students/evaluation/history (GET - student's evaluation history)
+        // /students/evaluations (GET - student's evaluation history from student_evaluations table)
+        if (count($pathParts) === 2 && $pathParts[1] === 'evaluations') {
+            require __DIR__ . '/../routes/students/get-my-evaluations.php';
+            exit;
+        }
+        
+        // /students/evaluation/history (GET - student's evaluation history from evaluation_history table)
         if (count($pathParts) === 3 && $pathParts[1] === 'evaluation' && $pathParts[2] === 'history') {
             require __DIR__ . '/../routes/students/get-evaluation-history.php';
             exit;

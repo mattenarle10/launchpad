@@ -20,9 +20,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _emailController = TextEditingController();
   final _contactController = TextEditingController();
   
+  List<String> _selectedSpecializations = [];
+  
   bool _isLoading = true;
   bool _isSaving = false;
   Map<String, dynamic>? _profileData;
+  
+  final List<String> _specializationOptions = [
+    'Web Development',
+    'Mobile Development',
+    'UI/UX Design',
+    'Data Science',
+    'AI/ML',
+    'Cybersecurity',
+    'Cloud Computing',
+    'DevOps',
+    'Game Dev',
+    'Database',
+    'Networking',
+    'QA/Testing',
+    'System Admin',
+    'Architecture',
+  ];
 
   @override
   void initState() {
@@ -53,6 +72,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _lastNameController.text = profile['last_name'] ?? '';
         _emailController.text = profile['email'] ?? '';
         _contactController.text = profile['contact_num'] ?? '';
+        
+        // Parse specialization from comma-separated string
+        if (profile['specialization'] != null && profile['specialization'].toString().isNotEmpty) {
+          _selectedSpecializations = profile['specialization'].toString().split(',').map((e) => e.trim()).toList();
+        }
+        
         _isLoading = false;
       });
     } catch (e) {
@@ -70,11 +95,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     try {
       final studentApi = StudentApi(ApiClient.I);
+      // Join specializations as comma-separated string
+      final specializationString = _selectedSpecializations.isEmpty ? null : _selectedSpecializations.join(', ');
+      
       await studentApi.updateProfile(
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
         email: _emailController.text.trim(),
         contactNum: _contactController.text.trim(),
+        specialization: specializationString,
       );
 
       // Update cached user data and persist to SharedPreferences
@@ -85,6 +114,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         currentUser['last_name'] = _lastNameController.text.trim();
         currentUser['email'] = _emailController.text.trim();
         currentUser['contact_num'] = _contactController.text.trim();
+        currentUser['specialization'] = specializationString;
         
         // Persist the updated user data
         await ApiClient.I.updateUser(currentUser);
@@ -244,6 +274,93 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         }
                         return null;
                       },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Specialization Selector
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Specializations (Optional)',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF7A8BA0),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Tap to select your areas of expertise',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF9CA3AF),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: _specializationOptions.map((spec) {
+                            final isSelected = _selectedSpecializations.contains(spec);
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  if (isSelected) {
+                                    _selectedSpecializations.remove(spec);
+                                  } else {
+                                    _selectedSpecializations.add(spec);
+                                  }
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? const Color(0xFF4A6491)
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? const Color(0xFF4A6491)
+                                        : const Color(0xFFE0E4E8),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (isSelected)
+                                      const Padding(
+                                        padding: EdgeInsets.only(right: 4),
+                                        child: Icon(
+                                          Icons.check_circle,
+                                          size: 14,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    Text(
+                                      spec,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w600
+                                            : FontWeight.w500,
+                                        color: isSelected
+                                            ? Colors.white
+                                            : const Color(0xFF374151),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 32),
 

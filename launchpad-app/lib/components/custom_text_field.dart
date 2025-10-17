@@ -10,6 +10,7 @@ class CustomTextField extends StatelessWidget {
   final Widget? suffixIcon;
   final int maxLines;
   final bool enabled;
+  final String? hintText;
 
   const CustomTextField({
     super.key,
@@ -21,6 +22,7 @@ class CustomTextField extends StatelessWidget {
     this.suffixIcon,
     this.maxLines = 1,
     this.enabled = true,
+    this.hintText,
   });
 
   @override
@@ -38,8 +40,13 @@ class CustomTextField extends StatelessWidget {
       ),
       decoration: InputDecoration(
         labelText: label,
+        hintText: hintText,
         labelStyle: const TextStyle(
           color: Color(0xFF7A8BA0),
+          fontSize: 13,
+        ),
+        hintStyle: const TextStyle(
+          color: Color(0xFF9CA3AF),
           fontSize: 13,
         ),
         filled: true,

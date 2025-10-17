@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../styles/colors.dart';
 import '../../components/bottom-nav.dart';
 import '../../components/menu.dart';
+import '../../components/evaluation_history_modal.dart';
 import '../../services/api/client.dart';
 import '../../services/api/endpoints/student.dart';
 import 'report.dart';
@@ -278,13 +279,22 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            '${_userData?['first_name'] ?? ''} ${_userData?['last_name'] ?? ''}',
-                            style: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF3D5A7E),
-                            ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${_userData?['first_name'] ?? ''} ${_userData?['last_name'] ?? ''}',
+                                style: const TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF3D5A7E),
+                                ),
+                              ),
+                              if (_userData?['specialization'] != null && _userData!['specialization'].toString().isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                _buildSpecializationTags(),
+                              ],
+                            ],
                           ),
                           const SizedBox(height: 16),
                           
@@ -670,22 +680,25 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       children: [
         Expanded(
-          child: _buildStatCard(
-            icon: Icons.assessment,
-            title: 'Evaluation',
-            value: _evaluation != null && _evaluation!['evaluation_rank'] != null 
-                ? '${_evaluation!['evaluation_rank']}/100'
-                : 'N/A',
-            subtitle: _evaluation != null && _evaluation!['evaluation_rank'] != null
-                ? 'Company Evaluation'
-                : 'Not yet evaluated',
-            color: _evaluation != null && _evaluation!['evaluation_rank'] != null
+          child: GestureDetector(
+            onTap: () => EvaluationHistoryModal.show(context),
+            child: _buildStatCard(
+              icon: Icons.assessment,
+              title: 'Evaluation',
+              value: _evaluation != null && _evaluation!['evaluation_rank'] != null 
+                  ? '${_evaluation!['evaluation_rank']}/100'
+                  : 'N/A',
+              subtitle: _evaluation != null && _evaluation!['evaluation_rank'] != null
+                  ? 'Tap to view history'
+                  : 'Not yet evaluated',
+              color: _evaluation != null && _evaluation!['evaluation_rank'] != null
                 ? (_evaluation!['evaluation_rank'] >= 80 
                     ? const Color(0xFF10B981) 
                     : _evaluation!['evaluation_rank'] >= 60
                         ? const Color(0xFFF59E0B)
                         : const Color(0xFFEF4444))
                 : const Color(0xFF3B82F6),
+            ),
           ),
         ),
         const SizedBox(width: 12),
@@ -770,6 +783,78 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSpecializationTags() {
+    final specializationString = _userData!['specialization'].toString();
+    final specializations = specializationString.split(',').map((e) => e.trim()).toList();
+    
+    // Show max 2 tags, then "+X more"
+    final displayCount = specializations.length > 2 ? 2 : specializations.length;
+    final remaining = specializations.length - displayCount;
+    
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        ...specializations.take(displayCount).map((spec) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: const Color(0xFF4A6491).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFF4A6491).withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.star,
+                  size: 12,
+                  color: Color(0xFF4A6491),
+                ),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    spec,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF4A6491),
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+        if (remaining > 0)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6B7280).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFF6B7280).withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Text(
+              '+$remaining more',
+              style: const TextStyle(
+                fontSize: 11,
+                color: Color(0xFF6B7280),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
