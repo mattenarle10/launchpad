@@ -300,11 +300,20 @@
             } else if (type === 'course') {
                 const {it, cs, emc, total} = data;
                 const max = Math.max(it, cs, emc);
-                const maxCourse = it === max ? 'IT' : cs === max ? 'Computer Science' : 'EMC';
+                const min = Math.min(it, cs, emc);
+                const maxCourse = it === max ? 'IT' : cs === max ? 'CS' : 'EMC';
+                const minCourse = it === min ? 'IT' : cs === min ? 'CS' : 'EMC';
+                
                 if (total === 0) {
                     message = 'No students yet. Start accepting interns!';
+                } else if (it === cs && cs === emc) {
+                    message = `Perfect diversity! ${total} students equally split: IT (${it}), CS (${cs}), EMC (${emc}).`;
+                } else if (max - min <= 2) {
+                    message = `Well-balanced team: IT (${it}), CS (${cs}), EMC (${emc}). Diverse skills boost innovation!`;
+                } else if (total === max) {
+                    message = `All ${total} students are from ${maxCourse}. Consider diversifying with other courses!`;
                 } else {
-                    message = `${maxCourse} has the most students (${max}). Diverse skill sets strengthen your team!`;
+                    message = `${maxCourse} dominates with ${max} students. ${minCourse} (${min}) could bring fresh perspectives!`;
                 }
             } else if (type === 'evaluation') {
                 const {avg, excellent, total} = data;

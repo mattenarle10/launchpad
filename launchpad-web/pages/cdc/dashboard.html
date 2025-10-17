@@ -253,7 +253,7 @@
             if (el) el.textContent = value;
         }
 
-        function updateCDCInsight(elementId, count, type) {
+        function updateCDCInsight(elementId, data, type) {
             const element = document.getElementById(elementId);
             if (!element) return;
             
@@ -263,6 +263,7 @@
             </svg>`;
             
             if (type === 'students') {
+                const count = data;
                 if (count === 0) {
                     message = 'No verified students yet. Start verifying registrations!';
                 } else if (count < 10) {
@@ -273,6 +274,7 @@
                     message = `Excellent! ${count} students are using LaunchPad for their OJT.`;
                 }
             } else if (type === 'companies') {
+                const count = data;
                 if (count === 0) {
                     message = 'No partner companies yet. Reach out to potential partners!';
                 } else if (count === 1) {
@@ -283,6 +285,7 @@
                     message = `${count} partner companies provide opportunities for students.`;
                 }
             } else if (type === 'unverified') {
+                const count = data;
                 if (count === 0) {
                     message = 'All registrations are verified. Great job staying on top!';
                 } else if (count === 1) {
@@ -291,6 +294,51 @@
                     message = `${count} users pending verification. Review them when you can.`;
                 } else {
                     message = `${count} pending verifications. Consider reviewing them soon!`;
+                }
+            } else if (type === 'ojt') {
+                const {it, cs, emc, total} = data;
+                const max = Math.max(it, cs, emc);
+                const min = Math.min(it, cs, emc);
+                const maxCourse = it === max ? 'IT' : cs === max ? 'CS' : 'EMC';
+                const minCourse = it === min ? 'IT' : cs === min ? 'CS' : 'EMC';
+                
+                if (total === 0) {
+                    message = 'No students with OJT progress yet. Encourage companies to onboard interns!';
+                } else if (it === cs && cs === emc) {
+                    message = `Perfect balance! ${total} students equally distributed across IT, CS, and EMC.`;
+                } else if (max - min <= 5) {
+                    message = `${total} students well-balanced: IT (${it}), CS (${cs}), EMC (${emc}). Great diversity!`;
+                } else {
+                    message = `${maxCourse} leads with ${max} students. Consider promoting ${minCourse} (${min}) for better balance.`;
+                }
+            } else if (type === 'evaluation') {
+                const {avg, excellent, total} = data;
+                if (total === 0 || avg === 0) {
+                    message = 'No evaluations yet. Companies will evaluate students during their OJT.';
+                } else if (avg >= 85) {
+                    message = `Outstanding! System-wide average of ${avg}/100. Students are excelling!`;
+                } else if (avg >= 70) {
+                    message = `Good overall performance with ${avg}/100 average across all companies.`;
+                } else {
+                    message = `Average score is ${avg}/100. Monitor student progress and company feedback.`;
+                }
+            } else if (type === 'performance') {
+                const {excellent, total} = data;
+                if (total === 0 || excellent === 0) {
+                    message = 'Performance assessments will show as companies evaluate their interns.';
+                } else if (excellent > total / 2) {
+                    message = `Excellent! ${excellent} students performing at top level across companies.`;
+                } else {
+                    message = `${total} students assessed. Encourage companies to provide regular feedback.`;
+                }
+            } else if (type === 'jobs') {
+                const count = data;
+                if (count === 0) {
+                    message = 'No job postings yet. Encourage companies to post opportunities!';
+                } else if (count < 5) {
+                    message = `${count} opportunities available. More postings mean more student placements!`;
+                } else {
+                    message = `${count} active job postings. Great variety of opportunities for students!`;
                 }
             }
             
@@ -314,7 +362,9 @@
                 updateCDCInsight('students-insight', totalStudents, 'students');
                 updateCDCInsight('companies-insight', totalCompanies, 'companies');
                 updateCDCInsight('unverified-insight', unverifiedUsers, 'unverified');
-                setText('ojt-chart-center', s.students_with_progress ?? 0);
+                const studentsWithProgress = s.students_with_progress ?? 0;
+                setText('ojt-chart-center', studentsWithProgress);
+                
                 // Update course legend from backend breakdown
                 const breakdown = s.course_breakdown || {};
                 const it = breakdown.IT || 0;
@@ -324,13 +374,16 @@
                 if (legendTexts[0]) legendTexts[0].textContent = `IT - ${it}`;
                 if (legendTexts[1]) legendTexts[1].textContent = `CS - ${cs}`;
                 if (legendTexts[2]) legendTexts[2].textContent = `EMC - ${emc}`;
+                updateCDCInsight('cdc-ojt-insight', {it, cs, emc, total: studentsWithProgress}, 'ojt');
                 
                 // Update evaluation stats
                 const evaluation = s.evaluation || {};
-                setText('cdc-avg-evaluation', evaluation.average_rank > 0 ? `${evaluation.average_rank}/100` : '-');
+                const avgRank = evaluation.average_rank || 0;
+                setText('cdc-avg-evaluation', avgRank > 0 ? `${avgRank}/100` : '-');
                 setText('cdc-excellent-count', evaluation.excellent_count ?? 0);
                 setText('cdc-good-count', evaluation.good_count ?? 0);
                 setText('cdc-needs-improvement-count', evaluation.needs_improvement_count ?? 0);
+                updateCDCInsight('cdc-evaluation-insight', {avg: avgRank, excellent: evaluation.excellent_count, total: totalStudents}, 'evaluation');
                 
                 // Update performance stats
                 const performance = s.performance || {};
@@ -340,6 +393,7 @@
                 setText('cdc-perf-satisfactory', perfBreakdown.Satisfactory ?? 0);
                 setText('cdc-perf-needs-improvement', perfBreakdown['Needs Improvement'] ?? 0);
                 setText('cdc-perf-poor', perfBreakdown.Poor ?? 0);
+                updateCDCInsight('cdc-performance-insight', {excellent: perfBreakdown.Excellent, total: totalStudents}, 'performance');
             } catch (e) {
                 console.error('Failed to load dashboard stats:', e);
             }
@@ -349,7 +403,10 @@
             try {
                 const res = await client.get('/jobs');
                 const jobs = res.data || [];
-                const recentJobs = jobs.slice(0, 3); // Get latest 5 jobs
+                const recentJobs = jobs.slice(0, 3); // Get latest 3 jobs
+                
+                // Update jobs insight
+                updateCDCInsight('cdc-jobs-insight', jobs.length, 'jobs');
                 
                 const jobsList = document.getElementById('recent-jobs-list');
                 if (recentJobs.length === 0) {
@@ -374,6 +431,7 @@
             } catch (e) {
                 console.error('Failed to load recent jobs:', e);
                 document.getElementById('recent-jobs-list').innerHTML = '<div class="empty-state" style="padding: 20px;"><p style="color: rgba(255,255,255,0.7);">Failed to load jobs</p></div>';
+                updateCDCInsight('cdc-jobs-insight', 0, 'jobs');
             }
         }
 
