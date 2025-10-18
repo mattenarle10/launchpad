@@ -1,5 +1,5 @@
 /**
- * Submission Reports Page Logic
+ * Daily Time Records Page Logic
  * CDC reviews and approves/rejects student daily reports
  */
 
