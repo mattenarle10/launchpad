@@ -70,7 +70,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const res = await client.post('/profile/logo', fd);
                 const file = res.data?.company_logo;
                 if (file) {
-                    const absolute = `${window.location.origin}/LaunchPad/launchpad-api/uploads/company_logos/${file}`;
+                    const pathPrefix = window.location.hostname === 'localhost' ? '/LaunchPad' : '';
+                    const absolute = `${window.location.origin}${pathPrefix}/launchpad-api/uploads/company_logos/${file}`;
                     if (previewEl) previewEl.src = absolute;
                     showSuccess('Company logo updated');
                 } else {
@@ -111,7 +112,8 @@ function updateHeader(profile) {
 
     // Choose avatar image based on role
     // Use absolute base to avoid relative path issues
-    const imgBase = '/LaunchPad/launchpad-web/images/logo/';
+    const pathPrefix = window.location.hostname === 'localhost' ? '/LaunchPad' : '';
+    const imgBase = `${pathPrefix}/launchpad-web/images/logo/`;
     const avatarFile = profile.role === 'cdc'
         ? 'cdc-avatar.png'
         : (profile.role === 'company' ? 'launchpad.png' : 'pc.png');
@@ -173,7 +175,8 @@ function showCompanyForm(profile) {
     const previewEl = document.getElementById('company-logo-preview');
     const fileNameEl = document.getElementById('company-logo-filename');
     if (profile.company_logo && previewEl) {
-        const absolute = `${window.location.origin}/LaunchPad/launchpad-api/uploads/company_logos/${profile.company_logo}`;
+        const pathPrefix = window.location.hostname === 'localhost' ? '/LaunchPad' : '';
+        const absolute = `${window.location.origin}${pathPrefix}/launchpad-api/uploads/company_logos/${profile.company_logo}`;
         previewEl.src = absolute;
         if (fileNameEl) fileNameEl.textContent = profile.company_logo;
     }

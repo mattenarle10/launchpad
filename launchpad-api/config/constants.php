@@ -4,13 +4,16 @@
  * Application Constants
  */
 
-// Environment
-define('ENV', 'development'); // development | production
+// Environment - auto-detect based on server
+$isProduction = isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], 'launchpadph.net') !== false;
+define('ENV', $isProduction ? 'production' : 'development');
 define('DEBUG_MODE', ENV === 'development');
 
 // API Configuration
 define('API_VERSION', 'v1');
-define('BASE_URL', 'http://localhost/LaunchPad/launchpad-api/public');
+define('BASE_URL', $isProduction 
+    ? 'https://launchpadph.net/launchpad-api/public'
+    : 'http://localhost/LaunchPad/launchpad-api/public');
 
 // Security
 define('JWT_SECRET', 'your-secret-key-change-in-production'); // CHANGE THIS!

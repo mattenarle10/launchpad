@@ -7,10 +7,13 @@
 class CORS
 {
     private static array $allowedOrigins = [
+        // Local development
         'http://localhost:3000',
         'http://localhost:5173',
         'http://localhost:8081',
         'http://localhost:19006',
+        // Production
+        'https://launchpadph.net',
     ];
 
     public static function handle(): void

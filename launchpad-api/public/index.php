@@ -35,7 +35,11 @@ set_exception_handler(function($exception) {
 // Parse request
 $method = $_SERVER['REQUEST_METHOD'];
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$path = str_replace('/LaunchPad/launchpad-api/public', '', $path);
+
+// Remove base path for both localhost and production
+$path = str_replace('/LaunchPad/launchpad-api/public', '', $path); // Localhost
+$path = str_replace('/launchpad-api/public', '', $path); // Production (Hostinger)
+
 $path = trim($path, '/');
 $pathParts = explode('/', $path);
 
