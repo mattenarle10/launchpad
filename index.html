@@ -3,57 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="0; url=/launchpad-web/index.html">
-    <title>LaunchPad - Redirecting...</title>
+    <title>LaunchPad - OJT Management System</title>
+    <link rel="icon" type="image/x-icon" href="/launchpad-web/favicon.ico">
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #4A6FA5 0%, #3d5a87 50%, #2d4468 100%);
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            overflow: hidden;
         }
-        .loader {
+
+        .splash-container {
             text-align: center;
+            animation: fadeIn 0.8s ease-in-out;
         }
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid white;
+
+        .logo-wrapper {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .glow-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140px;
+            height: 140px;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: pulse 2s ease-in-out infinite;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+
         h1 {
-            font-size: 24px;
-            margin: 0 0 10px;
+            font-size: 48px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
         }
-        p {
+
+        .brand-highlight {
+            color: #88C0FF;
+        }
+
+        .tagline {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 400;
+            margin-bottom: 40px;
+        }
+
+        .loader-bar {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .loader-progress {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #88C0FF, #A8D5FF);
+            border-radius: 10px;
+            animation: loading 1.5s ease-in-out forwards;
+            box-shadow: 0 0 10px rgba(136, 192, 255, 0.5);
+        }
+
+        .loading-text {
+            margin-top: 20px;
             font-size: 14px;
-            opacity: 0.9;
+            color: rgba(255, 255, 255, 0.7);
+            animation: blink 1.5s ease-in-out infinite;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.3;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                opacity: 0.6;
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+        }
+
+        @keyframes loading {
+            0% {
+                width: 0%;
+            }
+            100% {
+                width: 100%;
+            }
+        }
+
+        @keyframes blink {
+            0%, 100% {
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .logo {
+                width: 100px;
+                height: 100px;
+            }
+            .glow-circle {
+                width: 120px;
+                height: 120px;
+            }
+            h1 {
+                font-size: 36px;
+            }
+            .tagline {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="loader">
-        <div class="spinner"></div>
-        <h1>🚀 LaunchPad</h1>
-        <p>Redirecting to login...</p>
+    <div class="splash-container">
+        <div class="logo-wrapper">
+            <div class="glow-circle"></div>
+            <img src="/launchpad-web/images/logo/launchpad.png" alt="LaunchPad Logo" class="logo">
+        </div>
+        
+        <h1>Launch<span class="brand-highlight">Pad</span></h1>
+        <p class="tagline">OJT Management System</p>
+        
+        <div class="loader-bar">
+            <div class="loader-progress"></div>
+        </div>
+        
+        <p class="loading-text">Loading...</p>
     </div>
+
     <script>
-        // Fallback if meta refresh doesn't work
+        // Redirect after animation completes
         setTimeout(() => {
             window.location.href = '/launchpad-web/index.html';
-        }, 100);
+        }, 1800);
     </script>
 </body>
 </html>
