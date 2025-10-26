@@ -105,6 +105,9 @@
                                 <option value="completed">Completed</option>
                                 <option value="not_started">Not Started</option>
                             </select>
+                            <select class="filter-dropdown" id="specialization-filter">
+                                <option value="">All Specializations</option>
+                            </select>
                         </div>
                     </div>
 
@@ -158,6 +161,16 @@
                             label: 'Course', 
                             sortable: true,
                             format: (value) => `<span class="course-badge ${value.toLowerCase()}">${value}</span>`
+                        },
+                        { 
+                            key: 'specialization', 
+                            label: 'Specializations', 
+                            sortable: true,
+                            format: (value) => {
+                                if (!value) return '<span style="color: #9CA3AF;">Not specified</span>';
+                                const specs = value.split(',').map(s => s.trim()).slice(0, 3);
+                                return specs.map(s => `<span class="tag-badge" style="background: #EDE9FE; color: #7C3AED; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 4px; display: inline-block;">${s}</span>`).join('');
+                            }
                         },
                         { 
                             key: 'ojt_status', 
@@ -218,6 +231,9 @@
             
             // Load students table for this company
             await loadStudentsTable();
+            
+            // Populate specialization filter
+            populateSpecializationFilter();
 
             // Setup search
             document.getElementById('search-input')?.addEventListener('input', (e) => {
@@ -234,9 +250,36 @@
                 applyFilters(dataTable);
             });
 
+            // Setup specialization filter
+            document.getElementById('specialization-filter')?.addEventListener('change', (e) => {
+                applyFilters(dataTable);
+            });
+
+            // Populate specialization filter
+            function populateSpecializationFilter() {
+                const specializationSet = new Set();
+                allStudents.forEach(student => {
+                    if (student.specialization) {
+                        student.specialization.split(',').forEach(spec => {
+                            specializationSet.add(spec.trim());
+                        });
+                    }
+                });
+                
+                const filterSelect = document.getElementById('specialization-filter');
+                const sorted = Array.from(specializationSet).sort();
+                sorted.forEach(spec => {
+                    const option = document.createElement('option');
+                    option.value = spec;
+                    option.textContent = spec;
+                    filterSelect.appendChild(option);
+                });
+            }
+
             function applyFilters(dataTable) {
                 const course = document.getElementById('course-filter').value;
                 const status = document.getElementById('status-filter').value;
+                const specialization = document.getElementById('specialization-filter').value;
                 
                 let filtered = allStudents;
                 
@@ -250,6 +293,13 @@
                     } else {
                         filtered = filtered.filter(s => s.ojt_status === status);
                     }
+                }
+                
+                if (specialization) {
+                    filtered = filtered.filter(s => {
+                        if (!s.specialization) return false;
+                        return s.specialization.split(',').map(sp => sp.trim()).includes(specialization);
+                    });
                 }
                 
                 dataTable.setData(filtered);

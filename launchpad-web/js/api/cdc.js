@@ -472,6 +472,16 @@ const CDCAPI = {
                         format: (value) => `<span class="course-badge ${value.toLowerCase()}">${value}</span>`
                     },
                     { 
+                        key: 'specialization', 
+                        label: 'Specializations', 
+                        sortable: true,
+                        format: (value) => {
+                            if (!value) return '<span style="color: #9CA3AF;">Not specified</span>';
+                            const specs = value.split(',').map(s => s.trim()).slice(0, 3);
+                            return specs.map(s => `<span class="tag-badge" style="background: #EDE9FE; color: #7C3AED; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 4px; display: inline-block;">${s}</span>`).join('');
+                        }
+                    },
+                    { 
                         key: 'ojt_status', 
                         label: 'OJT Status', 
                         sortable: true,

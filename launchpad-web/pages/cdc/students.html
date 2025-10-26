@@ -108,6 +108,9 @@
                                 <option value="completed">Completed</option>
                                 <option value="not_started">Not Started</option>
                             </select>
+                            <select class="filter-dropdown" id="specialization-filter">
+                                <option value="">All Specializations</option>
+                            </select>
                         </div>
                     </div>
 
@@ -168,6 +171,24 @@
                 companyFilter.appendChild(option);
             });
 
+            // Populate specialization filter dropdown
+            const specializationSet = new Set();
+            students.forEach(student => {
+                if (student.specialization) {
+                    student.specialization.split(',').forEach(spec => {
+                        specializationSet.add(spec.trim());
+                    });
+                }
+            });
+            const specializationFilter = document.getElementById('specialization-filter');
+            const sortedSpecs = Array.from(specializationSet).sort();
+            sortedSpecs.forEach(spec => {
+                const option = document.createElement('option');
+                option.value = spec;
+                option.textContent = spec;
+                specializationFilter.appendChild(option);
+            });
+
             // Setup search
             document.getElementById('search-input')?.addEventListener('input', (e) => {
                 dataTable.search(e.target.value);
@@ -188,10 +209,16 @@
                 applyFilters(dataTable);
             });
 
+            // Setup specialization filter
+            document.getElementById('specialization-filter')?.addEventListener('change', (e) => {
+                applyFilters(dataTable);
+            });
+
             function applyFilters(dataTable) {
                 const course = document.getElementById('course-filter').value;
                 const company = document.getElementById('company-filter').value;
                 const status = document.getElementById('status-filter').value;
+                const specialization = document.getElementById('specialization-filter').value;
                 
                 let filtered = allStudents;
                 
@@ -209,6 +236,13 @@
                     } else {
                         filtered = filtered.filter(s => s.ojt_status === status);
                     }
+                }
+                
+                if (specialization) {
+                    filtered = filtered.filter(s => {
+                        if (!s.specialization) return false;
+                        return s.specialization.split(',').map(sp => sp.trim()).includes(specialization);
+                    });
                 }
                 
                 dataTable.setData(filtered);

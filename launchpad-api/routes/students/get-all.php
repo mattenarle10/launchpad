@@ -22,7 +22,7 @@ $total = $result->fetch_assoc()['total'];
 $stmt = $conn->prepare("
     SELECT 
         s.student_id, s.id_num, s.first_name, s.last_name, s.email, 
-        s.course, s.contact_num, s.company_id, s.company_name, s.profile_pic, s.verified_at,
+        s.course, s.contact_num, s.specialization, s.company_id, s.company_name, s.profile_pic, s.verified_at,
         s.evaluation_rank, s.performance_score,
         o.required_hours, o.completed_hours, o.status as ojt_status
     FROM verified_students s
