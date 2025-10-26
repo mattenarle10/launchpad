@@ -29,6 +29,14 @@
                     </div>
                 </div>
                 <div class="header-actions">
+                    <button id="download-analytics-btn" style="margin-right: 16px; padding: 10px 20px; background: #10B981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: background 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10B981'">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Download Report
+                    </button>
                     <div class="user-menu">
                         <button class="user-menu-toggle" id="user-menu-toggle">
                             <div class="user-badge">
@@ -529,7 +537,95 @@
             
             // Load top students from all companies
             loadTopStudents();
+            
+            // Setup download button
+            document.getElementById('download-analytics-btn')?.addEventListener('click', downloadAnalyticsReport);
         });
+        
+        function downloadAnalyticsReport() {
+            try {
+                const timestamp = new Date().toISOString().split('T')[0];
+                let csvContent = "LaunchPad CDC Analytics Report\n";
+                csvContent += `Generated: ${new Date().toLocaleString()}\n\n`;
+                
+                // User Statistics
+                csvContent += "USER STATISTICS\n";
+                csvContent += "Category,Count\n";
+                csvContent += `Total Students,${document.getElementById('stat-total-students')?.textContent || '0'}\n`;
+                csvContent += `Total Companies,${document.getElementById('stat-total-companies')?.textContent || '0'}\n`;
+                csvContent += `Unverified Users,${document.getElementById('stat-unverified-users')?.textContent || '0'}\n`;
+                csvContent += `Students with OJT Progress,${document.getElementById('ojt-chart-center')?.textContent || '0'}\n\n`;
+                
+                // Course Distribution
+                csvContent += "COURSE DISTRIBUTION\n";
+                csvContent += "Course,Students\n";
+                const legendTexts = document.querySelectorAll('.chart-legend .legend-item .legend-text');
+                legendTexts.forEach(text => {
+                    const parts = text.textContent.trim().split(' - ');
+                    if (parts.length === 2) {
+                        csvContent += `${parts[0]},${parts[1]}\n`;
+                    }
+                });
+                csvContent += "\n";
+                
+                // Evaluation Rankings
+                csvContent += "EVALUATION RANKINGS\n";
+                csvContent += "Category,Count\n";
+                csvContent += `Average Score,${document.getElementById('cdc-avg-evaluation')?.textContent || '-'}\n`;
+                csvContent += `Excellent (≥80),${document.getElementById('cdc-excellent-count')?.textContent || '0'}\n`;
+                csvContent += `Good (60-79),${document.getElementById('cdc-good-count')?.textContent || '0'}\n`;
+                csvContent += `Needs Improvement (<60),${document.getElementById('cdc-needs-improvement-count')?.textContent || '0'}\n\n`;
+                
+                // Performance Assessment
+                csvContent += "PERFORMANCE ASSESSMENT\n";
+                csvContent += "Level,Count\n";
+                csvContent += `Excellent,${document.getElementById('cdc-perf-excellent')?.textContent || '0'}\n`;
+                csvContent += `Good,${document.getElementById('cdc-perf-good')?.textContent || '0'}\n`;
+                csvContent += `Satisfactory,${document.getElementById('cdc-perf-satisfactory')?.textContent || '0'}\n`;
+                csvContent += `Needs Improvement,${document.getElementById('cdc-perf-needs-improvement')?.textContent || '0'}\n`;
+                csvContent += `Poor,${document.getElementById('cdc-perf-poor')?.textContent || '0'}\n\n`;
+                
+                // Top Performers
+                csvContent += "TOP PERFORMING STUDENTS\n";
+                csvContent += "Rank,Name,ID Number,Course,Company,Score,Performance\n";
+                const topStudents = document.querySelectorAll('#cdc-top-students-list > div');
+                topStudents.forEach((student, index) => {
+                    const rank = index + 1;
+                    const nameEl = student.querySelector('div[style*="margin-bottom: 12px"] > div[style*="font-size: 18px"]');
+                    const idEl = student.querySelector('div[style*="margin-bottom: 12px"] > div[style*="font-size: 13px"]');
+                    const companyEl = student.querySelector('div[style*="margin-bottom: 12px"] > div[style*="font-size: 12px"]');
+                    const scoreEl = student.querySelector('div[style*="font-size: 32px"]');
+                    const perfEl = student.querySelector('div[style*="font-size: 13px"][style*="font-weight: 600"]');
+                    
+                    if (nameEl && idEl) {
+                        const name = nameEl.textContent.trim();
+                        const idParts = idEl.textContent.trim().split(' • ');
+                        const id = idParts[0] || '';
+                        const course = idParts[1] || '';
+                        const company = companyEl?.textContent.trim() || 'N/A';
+                        const score = scoreEl?.textContent.trim() || 'N/A';
+                        const perf = perfEl?.textContent.trim() || 'N/A';
+                        csvContent += `${rank},"${name}",${id},${course},"${company}",${score},${perf}\n`;
+                    }
+                });
+                
+                // Create and download file
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `LaunchPad_Analytics_Report_${timestamp}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                console.log('Analytics report downloaded successfully');
+            } catch (error) {
+                console.error('Error downloading analytics:', error);
+                alert('Failed to download analytics report');
+            }
+        }
     </script>
 </body>
 </html>
