@@ -73,6 +73,11 @@ if (isset($data['salary_range'])) {
     $params[] = $data['salary_range'];
     $types .= 's';
 }
+if (isset($data['application_url'])) {
+    $updates[] = 'application_url = ?';
+    $params[] = $data['application_url'];
+    $types .= 's';
+}
 if (isset($data['is_active'])) {
     $updates[] = 'is_active = ?';
     $params[] = $data['is_active'] ? 1 : 0;

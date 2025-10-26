@@ -127,6 +127,7 @@ CREATE TABLE IF NOT EXISTS job_opportunities (
     location VARCHAR(200),
     job_type ENUM('Full-time', 'Part-time', 'Contract', 'Internship') DEFAULT 'Full-time',
     salary_range VARCHAR(100),
+    application_url VARCHAR(500) DEFAULT NULL COMMENT 'External application URL',
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

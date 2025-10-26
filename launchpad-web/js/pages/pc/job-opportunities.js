@@ -232,6 +232,22 @@ function openJobModal(job = null) {
 
             <div class="form-group" style="margin-bottom: 16px;">
                 <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                    Application URL
+                    <span style="font-weight: 400; color: #6B7280; font-size: 13px;">(Optional)</span>
+                </label>
+                <input 
+                    type="url" 
+                    id="job-application-url" 
+                    class="form-input" 
+                    value="${job?.application_url || ''}"
+                    placeholder="e.g. https://yourcompany.com/careers/apply"
+                    style="width: 100%; padding: 12px; border: 2px solid #E5E7EB; border-radius: 8px; font-size: 14px;"
+                >
+                <p style="font-size: 12px; color: #6B7280; margin-top: 6px;">📱 Students can click this link in the mobile app to apply</p>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
                     Tech Specializations
                 </label>
                 <div id="tags-container" style="display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; border: 2px solid #E5E7EB; border-radius: 8px; min-height: 50px;">
@@ -310,6 +326,7 @@ async function saveJob() {
     const jobType = document.getElementById('job-type').value;
     const location = document.getElementById('job-location').value.trim();
     const salaryRange = document.getElementById('job-salary').value.trim();
+    const applicationUrl = document.getElementById('job-application-url').value.trim();
     const isActive = document.getElementById('job-active')?.checked ?? true;
     
     // Get selected tags
@@ -330,6 +347,7 @@ async function saveJob() {
             job_type: jobType,
             location: location || null,
             salary_range: salaryRange || null,
+            application_url: applicationUrl || null,
             tags: tagsString
         };
 
