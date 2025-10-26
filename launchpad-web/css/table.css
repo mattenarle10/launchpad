@@ -88,10 +88,12 @@
     margin: 0;
 }
 
-.table-search {
+.table-search,
+.table-actions {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .search-input {

@@ -12,7 +12,9 @@ if ($method !== 'GET') {
 $user = Auth::requireRole(ROLE_CDC);
 
 // Get student_id from path
-$studentId = intval($parts[3] ?? 0);
+// URL: /admin/students/:id/requirements
+// $parts[0] = 'admin', $parts[1] = 'students', $parts[2] = ID, $parts[3] = 'requirements'
+$studentId = intval($parts[2] ?? 0);
 
 if (!$studentId) {
     Response::error('Student ID is required', 400);
