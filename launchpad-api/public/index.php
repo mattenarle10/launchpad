@@ -129,6 +129,34 @@ try {
             }
             exit;
         }
+        
+        // /students/:id/requirements/submit
+        if (count($pathParts) === 4 && $pathParts[2] === 'requirements' && $pathParts[3] === 'submit') {
+            $id = $pathParts[1];
+            if ($method === 'POST') {
+                require __DIR__ . '/../routes/students/submit-requirement.php';
+            }
+            exit;
+        }
+        
+        // /students/:id/requirements/:requirement_id
+        if (count($pathParts) === 4 && $pathParts[2] === 'requirements' && is_numeric($pathParts[3])) {
+            $id = $pathParts[1];
+            if ($method === 'DELETE') {
+                $parts = $pathParts; // Pass parts array for requirement_id extraction
+                require __DIR__ . '/../routes/students/delete-requirement.php';
+            }
+            exit;
+        }
+        
+        // /students/:id/requirements
+        if (count($pathParts) === 3 && $pathParts[2] === 'requirements') {
+            $id = $pathParts[1];
+            if ($method === 'GET') {
+                require __DIR__ . '/../routes/students/get-requirements.php';
+            }
+            exit;
+        }
     }
 
     // Route: /profile
@@ -328,6 +356,19 @@ try {
         // /admin/companies (GET - CDC gets all companies)
         if (count($pathParts) === 2 && $pathParts[1] === 'companies') {
             require __DIR__ . '/../routes/admin/get-companies.php';
+            exit;
+        }
+        
+        // /admin/students/:id/requirements (GET - CDC views a student's requirements)
+        if (count($pathParts) === 4 && $pathParts[1] === 'students' && is_numeric($pathParts[2]) && $pathParts[3] === 'requirements') {
+            $parts = $pathParts; // Pass parts array for student_id extraction
+            require __DIR__ . '/../routes/admin/get-student-requirements.php';
+            exit;
+        }
+        
+        // /admin/requirements (GET - CDC views all requirements overview)
+        if (count($pathParts) === 2 && $pathParts[1] === 'requirements') {
+            require __DIR__ . '/../routes/admin/get-all-requirements.php';
             exit;
         }
     }
