@@ -91,7 +91,6 @@ CREATE TABLE `job_opportunities` (
   `location` varchar(200) DEFAULT NULL,
   `job_type` enum('Full-time','Part-time','Contract','Internship') DEFAULT 'Full-time',
   `salary_range` varchar(100) DEFAULT NULL,
-  `application_url` varchar(500) DEFAULT NULL COMMENT 'External application URL',
   `is_active` tinyint(1) DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),

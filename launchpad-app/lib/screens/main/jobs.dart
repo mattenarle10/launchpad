@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../styles/colors.dart';
 import '../../services/api/client.dart';
 import '../../services/api/endpoints/jobs.dart';
@@ -89,6 +90,27 @@ class _JobsScreenState extends State<JobsScreen> {
         return matchesSearch && matchesTag;
       }).toList();
     });
+  }
+
+  Future<void> _launchApplicationUrl(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        if (mounted) {
+          Toast.error(context, 'Could not open application link');
+        }
+      }
+    } catch (e) {
+      print('Error launching URL: $e');
+      if (mounted) {
+        Toast.error(context, 'Failed to open link');
+      }
+    }
   }
 
   void _showJobDetails(Map<String, dynamic> job) {
@@ -242,7 +264,34 @@ class _JobsScreenState extends State<JobsScreen> {
                           height: 1.6,
                         ),
                       ),
+                      const SizedBox(height: 20),
                     ],
+                    
+                    // Apply Now Button
+                    if (job['application_url'] != null && job['application_url'].toString().isNotEmpty)
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () => _launchApplicationUrl(job['application_url']),
+                          icon: const Icon(Icons.open_in_new, size: 20),
+                          label: const Text(
+                            'Apply Now',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4A6491),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 2,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -579,6 +628,9 @@ class _JobsScreenState extends State<JobsScreen> {
   }
 
   Widget _buildJobCard(Map<String, dynamic> job) {
+    final hasApplicationUrl = job['application_url'] != null && 
+                              job['application_url'].toString().isNotEmpty;
+    
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
@@ -593,16 +645,56 @@ class _JobsScreenState extends State<JobsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Job Title
-              Text(
-                job['title'] ?? '',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF3D5A7E),
-                ),
+              // Header Row with Title and Apply Icon
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Job Title
+                  Expanded(
+                    child: Text(
+                      job['title'] ?? '',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF3D5A7E),
+                      ),
+                    ),
+                  ),
+                  // Apply Now indicator
+                  if (hasApplicationUrl)
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFF10B981),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.open_in_new,
+                            size: 14,
+                            color: Color(0xFF10B981),
+                          ),
+                          const SizedBox(width: 4),
+                          const Text(
+                            'Apply',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF10B981),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               
               // Company Name
               Row(
