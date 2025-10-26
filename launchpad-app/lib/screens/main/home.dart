@@ -9,6 +9,7 @@ import 'report.dart';
 import 'profile.dart';
 import 'jobs.dart';
 import 'notifications.dart';
+import 'requirements.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -446,6 +447,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           
                           // Progress Card
                           _buildProgressCard(),
+                          const SizedBox(height: 24),
+                          
+                          // Requirements Card
+                          _buildRequirementsCard(),
                           const SizedBox(height: 20),
                           
                           // Stats Grid
@@ -855,6 +860,84 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
       ],
+    );
+  }
+
+  Widget _buildRequirementsCard() {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const RequirementsScreen(),
+          ),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF5A7BAD), Color(0xFF4A6491)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF4A6491).withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.folder_special,
+                color: Colors.white,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Check Your Requirements',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Upload and manage your OJT documents',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white,
+              size: 18,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

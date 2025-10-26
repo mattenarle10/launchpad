@@ -98,4 +98,32 @@ class StudentApi extends BaseApiGroup {
   Future<Map<String, dynamic>> getEvaluationHistory() async {
     return await client.get('/students/evaluations');
   }
+
+  // ==================== REQUIREMENTS API ====================
+
+  /// Get student requirements
+  /// Optional query param: type (pre_deployment, deployment, final_requirements)
+  Future<Map<String, dynamic>> getRequirements(int studentId, {String? type}) async {
+    final query = type != null ? {'type': type} : null;
+    final response = await get('/$studentId/requirements', query: query);
+    return response as Map<String, dynamic>;
+  }
+
+  /// Submit a requirement
+  Future<Map<String, dynamic>> submitRequirement(
+    int studentId,
+    FormData formData,
+  ) async {
+    final response = await post('/$studentId/requirements/submit', formData);
+    return response as Map<String, dynamic>;
+  }
+
+  /// Delete a requirement
+  Future<Map<String, dynamic>> deleteRequirement(
+    int studentId,
+    int requirementId,
+  ) async {
+    final response = await delete('/$studentId/requirements/$requirementId');
+    return response as Map<String, dynamic>;
+  }
 }

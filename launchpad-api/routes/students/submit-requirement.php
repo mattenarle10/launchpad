@@ -5,9 +5,35 @@
  * Student submits a requirement file (pre-deployment, deployment, or final)
  */
 
+// Increase timeouts for file upload
+set_time_limit(300); // 5 minutes
+ini_set('max_execution_time', '300');
+ini_set('memory_limit', '256M');
+ini_set('post_max_size', '20M');
+ini_set('upload_max_filesize', '20M');
+
+// Debug logging - FIRST THING!
+error_log("=== SUBMIT REQUIREMENT ENDPOINT HIT ===");
+error_log("Timestamp: " . date('Y-m-d H:i:s'));
+error_log("Method: " . ($method ?? 'undefined'));
+error_log("Student ID from URL: " . ($id ?? 'null'));
+error_log("POST data: " . print_r($_POST, true));
+error_log("FILES data: " . print_r($_FILES, true));
+error_log("Content-Type: " . ($_SERVER['CONTENT_TYPE'] ?? 'none'));
+error_log("Content-Length: " . ($_SERVER['CONTENT_LENGTH'] ?? 'none'));
+error_log("Auth header: " . ($_SERVER['HTTP_AUTHORIZATION'] ?? 'none'));
+error_log("========================================");
+
+// Also output to response in case PHP dies
+header('Content-Type: application/json');
+ob_start();
+
 if ($method !== 'POST') {
+    error_log("ERROR: Method not POST");
     Response::error('Method not allowed', 405);
 }
+
+try {
 
 $user = Auth::requireRole(ROLE_STUDENT);
 $studentId = intval($id);
@@ -76,3 +102,11 @@ Response::success([
     'file_name' => $originalFilename,
     'message' => 'Requirement submitted successfully!'
 ], 'Requirement uploaded successfully', 201);
+
+} catch (Exception $e) {
+    error_log("=== EXCEPTION IN SUBMIT REQUIREMENT ===");
+    error_log("Error: " . $e->getMessage());
+    error_log("Trace: " . $e->getTraceAsString());
+    error_log("=======================================");
+    Response::error('Upload failed: ' . $e->getMessage(), 500);
+}

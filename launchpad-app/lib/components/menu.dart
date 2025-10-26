@@ -3,6 +3,7 @@ import '../services/api/client.dart';
 import '../screens/landing.dart';
 import '../screens/main/report.dart';
 import '../screens/main/about.dart';
+import '../screens/main/requirements.dart';
 
 class MenuOverlay extends StatelessWidget {
   const MenuOverlay({super.key});
@@ -77,6 +78,19 @@ class MenuOverlay extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const ReportScreen()),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              _buildMenuItem(
+                context,
+                'Requirements',
+                Icons.folder_special_outlined,
+                () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const RequirementsScreen()),
                   );
                 },
               ),
