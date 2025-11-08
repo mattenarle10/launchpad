@@ -1,5 +1,8 @@
 RewriteEngine On
 
+# Allow direct access to uploads directory
+RewriteRule ^uploads/ - [L]
+
 # Redirect all requests to public/index.php
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

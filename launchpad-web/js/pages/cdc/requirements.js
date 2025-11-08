@@ -10,6 +10,7 @@ import { getSidebarMode } from '../../utils/sidebar-helper.js';
 import DataTable from '../table.js';
 import { showSuccess, showError } from '../../utils/notifications.js';
 import { createModal } from '../../utils/modal.js';
+import { openFileViewer } from '../../utils/file-viewer.js';
 
 let requirementsData = [];
 let dataTable = null;
@@ -238,6 +239,13 @@ function renderRequirementSection(title, type, requirements) {
                             </svg>
                             Download
                         </button>
+                        <button class="btn-view" onclick="viewFile('${req.file_path}', '${req.file_name}', '${type}')" style="margin-left: 8px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            View
+                        </button>
                     </div>
                 `).join('')}
             </div>
@@ -247,14 +255,14 @@ function renderRequirementSection(title, type, requirements) {
 
 function getFileIcon(fileName) {
     const ext = fileName.split('.').pop().toLowerCase();
-    if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
-        return '🖼️';
+    if (['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'svg'].includes(ext)) {
+        return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
     } else if (ext === 'pdf') {
-        return '📄';
+        return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>';
     } else if (['doc', 'docx'].includes(ext)) {
-        return '📝';
+        return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>';
     }
-    return '📎';
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>';
 }
 
 function formatFileSize(bytes) {
@@ -276,18 +284,24 @@ function formatDate(dateString) {
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
-// Make downloadFile available globally for onclick
+// Make downloadFile and viewFile available globally for onclick
 window.downloadFile = function(filePath, fileName, type) {
-    const baseUrl = client.getBaseUrl();
-    const downloadUrl = `${baseUrl}/../../uploads/requirements/${type}/${filePath}`;
+    const uploadsUrl = client.getUploadsUrl();
+    const fileUrl = `${uploadsUrl}/requirements/${type}/${filePath}`;
     
     const link = document.createElement('a');
-    link.href = downloadUrl;
+    link.href = fileUrl;
     link.download = fileName;
     link.target = '_blank';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    showSuccess(`Downloading ${fileName}`);
+    showSuccess(`${fileName} downloaded`);
+};
+
+window.viewFile = function(filePath, fileName, type) {
+    const uploadsUrl = client.getUploadsUrl();
+    const fileUrl = `${uploadsUrl}/requirements/${type}/${filePath}`;
+    openFileViewer(fileUrl, fileName);
 };

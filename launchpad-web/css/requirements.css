@@ -167,6 +167,33 @@
     height: 16px;
 }
 
+.btn-view {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #10B981;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.btn-view:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+}
+
+.btn-view svg {
+    width: 16px;
+    height: 16px;
+}
+
 .no-requirements {
     text-align: center;
     color: #94a3b8;
@@ -212,9 +239,12 @@
         align-items: flex-start;
     }
     
-    .btn-download {
+    .btn-download,
+    .btn-view {
         width: 100%;
         justify-content: center;
+        margin-left: 0 !important;
+        margin-top: 8px;
     }
     
     .requirements-sections {

@@ -129,6 +129,21 @@ class APIClient {
             method: 'DELETE'
         });
     }
+
+    /**
+     * Get base API URL
+     */
+    getBaseUrl() {
+        return API_BASE_URL;
+    }
+
+    /**
+     * Get uploads base URL
+     */
+    getUploadsUrl() {
+        return API_BASE_URL.replace('/public', '/uploads');
+    }
+
 }
 
 export default new APIClient();

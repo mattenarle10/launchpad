@@ -30,7 +30,7 @@ class Logger {
         $logMessage = "[{$timestamp}] [{$level}] {$message}" . PHP_EOL;
         
         $filepath = self::$logDir . '/' . $filename;
-        file_put_contents($filepath, $logMessage, FILE_APPEND);
+        @file_put_contents($filepath, $logMessage, FILE_APPEND);
     }
 
     /**
