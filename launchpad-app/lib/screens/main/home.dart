@@ -5,6 +5,7 @@ import '../../components/menu.dart';
 import '../../components/evaluation_history_modal.dart';
 import '../../services/api/client.dart';
 import '../../services/api/endpoints/student.dart';
+import '../../services/api/endpoints/notifications.dart';
 import 'report.dart';
 import 'profile.dart';
 import 'jobs.dart';
@@ -29,6 +30,8 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoadingProgress = false;
   bool _isLoadingEvaluation = false;
   bool _isLoadingPerformance = false;
+  int _unreadNotificationsCount = 0;
+  final _notificationsApi = NotificationsApi(ApiClient.I);
 
   @override
   void initState() {
@@ -37,6 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadOjtProgress();
     _loadEvaluation();
     _loadPerformance();
+    _loadNotificationsCount();
   }
 
   @override
@@ -145,6 +149,24 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _loadNotificationsCount() async {
+    try {
+      final notifications = await _notificationsApi.getStudentNotifications();
+      if (mounted) {
+        final unreadCount = notifications.where((n) => n['is_read'] != true && n['is_read'] != 1).length;
+        setState(() {
+          _unreadNotificationsCount = unreadCount;
+        });
+      }
+    } catch (e) {
+      print('Error loading notifications count: $e');
+    }
+  }
+
+  void _refreshNotificationsCount() {
+    _loadNotificationsCount();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,16 +176,20 @@ class _HomeScreenState extends State<HomeScreen> {
         onPageChanged: (index) {
           setState(() {
             _currentIndex = index;
+            if (index == 2) {
+              _refreshNotificationsCount();
+            }
           });
         },
         children: [
           const JobsScreen(),
           _buildHomePage(),
-          const NotificationsScreen(),
+          NotificationsScreen(key: ValueKey(_currentIndex)),
         ],
       ),
       bottomNavigationBar: FloatingBottomNav(
         currentIndex: _currentIndex,
+        unreadCount: _unreadNotificationsCount,
         onTap: (index) {
           _pageController.animateToPage(
             index,

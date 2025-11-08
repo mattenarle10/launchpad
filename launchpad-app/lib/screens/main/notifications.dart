@@ -43,11 +43,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
+  int get _unreadCount {
+    return _notifications.where((n) => n['is_read'] != true && n['is_read'] != 1).length;
+  }
+
   Future<void> _markAsRead(int notificationId, int recipientId) async {
     try {
-      // API expects notification_id in the URL
       await _notificationsApi.markAsRead(notificationId);
-      // Update local state immediately for better UX
       setState(() {
         final index = _notifications.indexWhere((n) => n['recipient_id'] == recipientId);
         if (index != -1) {
@@ -56,8 +58,59 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       });
     } catch (e) {
       print('Error marking notification as read: $e');
-      // Silently fail - not critical if mark as read fails
     }
+  }
+
+  Future<void> _markAllAsRead() async {
+    final unreadNotifications = _notifications.where(
+      (n) => n['is_read'] != true && n['is_read'] != 1
+    ).toList();
+
+    if (unreadNotifications.isEmpty) {
+      _showSnackBar('All notifications are already read');
+      return;
+    }
+
+    try {
+      for (var notification in unreadNotifications) {
+        final notificationId = notification['notification_id'];
+        if (notificationId != null) {
+          await _notificationsApi.markAsRead(notificationId);
+        }
+      }
+      setState(() {
+        for (var notification in _notifications) {
+          notification['is_read'] = true;
+        }
+      });
+      _showSnackBar('Marked ${unreadNotifications.length} notifications as read');
+    } catch (e) {
+      print('Error marking all as read: $e');
+      _showSnackBar('Failed to mark all as read');
+    }
+  }
+
+  Future<void> _deleteNotification(int recipientId) async {
+    try {
+      await _notificationsApi.deleteNotification(recipientId);
+      setState(() {
+        _notifications.removeWhere((n) => n['recipient_id'] == recipientId);
+      });
+      _showSnackBar('Notification deleted');
+    } catch (e) {
+      print('Error deleting notification: $e');
+      _showSnackBar('Failed to delete notification');
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   @override
@@ -70,21 +123,50 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             // Header
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Notifications',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF3D5A7E),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.refresh),
-                    onPressed: _loadNotifications,
-                    color: const Color(0xFF3D5A7E),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Notifications',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF3D5A7E),
+                            ),
+                          ),
+                          if (_unreadCount > 0)
+                            Text(
+                              '$_unreadCount unread',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          if (_unreadCount > 0)
+                            IconButton(
+                              icon: const Icon(Icons.done_all),
+                              onPressed: _markAllAsRead,
+                              color: const Color(0xFF3D5A7E),
+                              tooltip: 'Mark all as read',
+                            ),
+                          IconButton(
+                            icon: const Icon(Icons.refresh),
+                            onPressed: _loadNotifications,
+                            color: const Color(0xFF3D5A7E),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -202,7 +284,51 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final recipientId = notification['recipient_id'];
     final sentBy = notification['sent_by'] ?? 'CDC Admin';
 
-    return Card(
+    return Dismissible(
+      key: Key('notification_$recipientId'),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        margin: const EdgeInsets.only(bottom: 12.0),
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Icon(
+          Icons.delete,
+          color: Colors.white,
+          size: 28,
+        ),
+      ),
+      confirmDismiss: (direction) async {
+        return await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Delete Notification'),
+              content: const Text('Are you sure you want to delete this notification?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text(
+                    'Delete',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+      onDismissed: (direction) {
+        _deleteNotification(recipientId);
+      },
+      child: Card(
       margin: const EdgeInsets.only(bottom: 12.0),
       elevation: isRead ? 0 : 2,
       color: isRead ? Colors.grey[100] : Colors.white,
@@ -298,11 +424,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   void _showNotificationDetails(Map<String, dynamic> notification) {
     final sentBy = notification['sent_by'] ?? 'CDC Admin';
+    final isRead = notification['is_read'] == true || notification['is_read'] == 1;
+    final notificationId = notification['notification_id'];
+    final recipientId = notification['recipient_id'];
     
     showDialog(
       context: context,
@@ -375,6 +505,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
         ),
         actions: [
+          if (!isRead && notificationId != null && recipientId != null)
+            TextButton.icon(
+              onPressed: () {
+                _markAsRead(notificationId, recipientId);
+                Navigator.pop(context);
+              },
+              icon: const Icon(Icons.done),
+              label: const Text('Mark as Read'),
+            ),
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Close'),
