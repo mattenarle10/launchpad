@@ -153,7 +153,7 @@ function editHoursModal(student) {
                     <button type="button" id="decrease-hours" style="width: 40px; height: 40px; border: 2px solid #E5E7EB; border-radius: 8px; background: white; cursor: pointer; font-size: 20px; font-weight: bold; color: #6B7280; transition: all 0.2s;">
                         −
                     </button>
-                    <input type="number" id="hours-input" value="${student.completed_hours}" min="0" max="${student.required_hours * 2}" step="0.5" style="width: 100px; height: 40px; text-align: center; font-size: 18px; font-weight: bold; border: 2px solid #3B82F6; border-radius: 8px; color: #111827; -moz-appearance: textfield;" />
+                    <input type="number" id="hours-input" value="${student.completed_hours}" min="0" max="${student.required_hours}" step="0.5" style="width: 100px; height: 40px; text-align: center; font-size: 18px; font-weight: bold; border: 2px solid #3B82F6; border-radius: 8px; color: #111827; -moz-appearance: textfield;" />
                     <button type="button" id="increase-hours" style="width: 40px; height: 40px; border: 2px solid #E5E7EB; border-radius: 8px; background: white; cursor: pointer; font-size: 20px; font-weight: bold; color: #6B7280; transition: all 0.2s;">
                         +
                     </button>
@@ -204,7 +204,22 @@ function editHoursModal(student) {
         // Increase hours
         increaseBtn?.addEventListener('click', () => {
             const current = parseFloat(hoursInput.value);
-            hoursInput.value = (current + 0.5).toFixed(1);
+            const newValue = current + 0.5;
+            if (newValue <= student.required_hours) {
+                hoursInput.value = newValue.toFixed(1);
+            } else {
+                showError(`Cannot exceed required hours (${student.required_hours} hrs)`);
+            }
+        });
+        
+        // Validate manual input
+        hoursInput?.addEventListener('input', () => {
+            const value = parseFloat(hoursInput.value);
+            if (value < 0) {
+                hoursInput.value = '0';
+            } else if (value > student.required_hours) {
+                hoursInput.value = student.required_hours;
+            }
         });
         
         // Hover effects
@@ -229,8 +244,18 @@ function editHoursModal(student) {
         document.getElementById('confirm-update-btn')?.addEventListener('click', async () => {
             const hours = parseFloat(hoursInput.value);
             
-            if (isNaN(hours) || hours < 0) {
-                showError('Please enter valid hours');
+            if (isNaN(hours)) {
+                showError('Please enter a valid number');
+                return;
+            }
+            
+            if (hours < 0) {
+                showError('Hours cannot be negative');
+                return;
+            }
+            
+            if (hours > student.required_hours) {
+                showError(`Hours cannot exceed required hours (${student.required_hours} hrs)`);
                 return;
             }
             
