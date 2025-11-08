@@ -368,8 +368,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
         ),
       ),
-    ),
-  );
+    );
 }
 
   void _showNotificationDetails(Map<String, dynamic> notification) {
