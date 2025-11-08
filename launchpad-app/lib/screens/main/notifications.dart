@@ -47,11 +47,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return _notifications.where((n) => n['is_read'] != true && n['is_read'] != 1).length;
   }
 
-  Future<void> _markAsRead(int notificationId, int recipientId) async {
+  Future<void> _markAsRead(int notificationId) async {
     try {
       await _notificationsApi.markAsRead(notificationId);
       setState(() {
-        final index = _notifications.indexWhere((n) => n['recipient_id'] == recipientId);
+        final index = _notifications.indexWhere((n) => n['notification_id'] == notificationId);
         if (index != -1) {
           _notifications[index]['is_read'] = true;
         }
@@ -90,18 +90,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
-  Future<void> _deleteNotification(int recipientId) async {
-    try {
-      await _notificationsApi.deleteNotification(recipientId);
-      setState(() {
-        _notifications.removeWhere((n) => n['recipient_id'] == recipientId);
-      });
-      _showSnackBar('Notification deleted');
-    } catch (e) {
-      print('Error deleting notification: $e');
-      _showSnackBar('Failed to delete notification');
-    }
-  }
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -284,51 +272,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final recipientId = notification['recipient_id'];
     final sentBy = notification['sent_by'] ?? 'CDC Admin';
 
-    return Dismissible(
-      key: Key('notification_$recipientId'),
-      direction: DismissDirection.endToStart,
-      background: Container(
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
-        margin: const EdgeInsets.only(bottom: 12.0),
-        decoration: BoxDecoration(
-          color: Colors.red,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: const Icon(
-          Icons.delete,
-          color: Colors.white,
-          size: 28,
-        ),
-      ),
-      confirmDismiss: (direction) async {
-        return await showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Delete Notification'),
-              content: const Text('Are you sure you want to delete this notification?'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text(
-                    'Delete',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-      onDismissed: (direction) {
-        _deleteNotification(recipientId);
-      },
-      child: Card(
+    return Card(
       margin: const EdgeInsets.only(bottom: 12.0),
       elevation: isRead ? 0 : 2,
       color: isRead ? Colors.grey[100] : Colors.white,
@@ -342,8 +286,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       child: InkWell(
         onTap: () {
           // Mark as read when tapped
-          if (!isRead && notificationId != null && recipientId != null) {
-            _markAsRead(notificationId, recipientId);
+          if (!isRead && notificationId != null) {
+            _markAsRead(notificationId);
           }
           // Show details
           _showNotificationDetails(notification);
@@ -505,10 +449,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
         ),
         actions: [
-          if (!isRead && notificationId != null && recipientId != null)
+          if (!isRead && notificationId != null)
             TextButton.icon(
               onPressed: () {
-                _markAsRead(notificationId, recipientId);
+                _markAsRead(notificationId);
                 Navigator.pop(context);
               },
               icon: const Icon(Icons.done),
