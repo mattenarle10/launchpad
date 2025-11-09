@@ -9,8 +9,8 @@
 ```
 LaunchPad/
 ├── launchpad-api/     # PHP REST API backend
-├── launchpad-web/     # Web dashboard (CDC portal)
-└── launchpad-app/     # Flutter mobile app (Students & Companies)
+├── launchpad-web/     # Web dashboard (CDC portal, Companies)
+└── launchpad-app/     # Flutter mobile app (Students)
 ```
 
 ---
