@@ -102,7 +102,8 @@ async function loadStudentsTable() {
                 }
             ],
             data: students,
-            pageSize: 20,
+            pagination: true,
+            pageSize: 10,
             emptyMessage: 'No students found'
         });
 

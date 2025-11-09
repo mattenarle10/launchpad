@@ -101,6 +101,7 @@ async function loadJobsTable() {
                 }
             ],
             data: allJobs,
+            pagination: true,
             pageSize: 10,
             emptyMessage: 'No job postings available'
         });

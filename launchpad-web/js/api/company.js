@@ -340,6 +340,7 @@ const CompanyAPI = {
                     }
                 ],
                 data: companies,
+                pagination: true,
                 pageSize: 10,
                 emptyMessage: 'No companies found'
             });

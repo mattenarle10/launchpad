@@ -85,6 +85,7 @@ async function loadNotificationsTable() {
                 }
             ],
             data: allNotifications,
+            pagination: true,
             pageSize: 10,
             emptyMessage: 'No notifications sent yet'
         });
