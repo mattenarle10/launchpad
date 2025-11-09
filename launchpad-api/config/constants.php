@@ -5,6 +5,7 @@
  */
 
 // Environment - auto-detect based on server
+// Production is active when deployed on launchpadph.net
 $isProduction = isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], 'launchpadph.net') !== false;
 define('ENV', $isProduction ? 'production' : 'development');
 define('DEBUG_MODE', ENV === 'development');

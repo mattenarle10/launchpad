@@ -2,11 +2,11 @@
  * Base API Client - Handles all HTTP requests
  */
 
-// Local Development
- const API_BASE_URL = 'http://localhost/LaunchPad/launchpad-api/public';
+// Local Development (commented for production)
+// const API_BASE_URL = 'http://localhost/LaunchPad/launchpad-api/public';
 
-// Production (Hostinger)
-//const API_BASE_URL = 'https://launchpadph.net/launchpad-api/public';
+// Production (Hostinger) - ACTIVE
+const API_BASE_URL = 'https://launchpadph.net/launchpad-api/public';
 
 class APIClient {
     constructor() {
