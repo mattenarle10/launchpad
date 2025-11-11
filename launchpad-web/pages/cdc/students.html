@@ -232,9 +232,14 @@
                 
                 if (status) {
                     if (status === 'not_started') {
-                        filtered = filtered.filter(s => !s.ojt_status);
+                        // Filter students with not_started status or no status at all
+                        filtered = filtered.filter(s => !s.ojt_status || s.ojt_status === '' || s.ojt_status === null || s.ojt_status === 'not_started');
+                    } else if (status === 'ongoing') {
+                        // Database stores "ongoing" as "in_progress"
+                        filtered = filtered.filter(s => s.ojt_status === 'in_progress');
                     } else {
-                        filtered = filtered.filter(s => s.ojt_status === status);
+                        // Filter by specific status (completed)
+                        filtered = filtered.filter(s => s.ojt_status && s.ojt_status === status);
                     }
                 }
                 
