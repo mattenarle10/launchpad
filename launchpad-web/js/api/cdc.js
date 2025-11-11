@@ -5,7 +5,7 @@
 import client from './client.js';
 import DataTable from '../pages/table.js';
 import { showSuccess, showError, showWarning } from '../utils/notifications.js';
-import { openImageViewer } from '../utils/image-viewer.js';
+import { openFileViewer } from '../utils/file-viewer.js';
 import { createModal } from '../utils/modal.js';
 
 const CDCAPI = {
@@ -237,16 +237,21 @@ const CDCAPI = {
             <div class="cor-preview">
                 <h4>Certificate of Registration</h4>
                 <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: center;">
-                    ${isImage ? `
-                        <button class="btn-action btn-view" onclick="window.viewCORImage('${corUrl}', '${student.id_num} - COR')">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
-                            View COR
-                        </button>
-                    ` : ''}
-
+                    <button class="btn-action btn-view" onclick="window.viewCORFile('${corUrl}', '${student.id_num} - COR')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        View COR
+                    </button>
+                    <button class="btn-action btn-download" onclick="window.downloadCORFile('${corUrl}', '${student.cor}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Download
+                    </button>
                 </div>
             </div>
         `;
@@ -289,9 +294,31 @@ const CDCAPI = {
                 this.rejectStudentWithConfirm(student);
             });
 
-            // Setup image viewer
-            window.viewCORImage = (imageUrl, title) => {
-                openImageViewer(imageUrl, title);
+            // Setup file viewer and download
+            window.viewCORFile = (fileUrl, title) => {
+                openFileViewer(fileUrl, title);
+            };
+            
+            window.downloadCORFile = async (fileUrl, fileName) => {
+                try {
+                    const response = await fetch(fileUrl);
+                    if (!response.ok) throw new Error('File not found');
+                    
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                    
+                    showSuccess('File downloaded successfully');
+                } catch (error) {
+                    console.error('Download error:', error);
+                    showError('Failed to download file');
+                }
             };
         }, 0);
     },

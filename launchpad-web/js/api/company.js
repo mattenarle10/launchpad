@@ -5,7 +5,7 @@
 import client from './client.js';
 import DataTable from '../pages/table.js';
 import { showSuccess, showError, showWarning } from '../utils/notifications.js';
-import { openImageViewer } from '../utils/image-viewer.js';
+import { openFileViewer } from '../utils/file-viewer.js';
 import { createModal } from '../utils/modal.js';
 
 const CompanyAPI = {
@@ -187,25 +187,44 @@ const CompanyAPI = {
             ${logoUrl || moaUrl ? `
                 <div class="cor-preview">
                     <h4>Documents</h4>
-                    <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: center;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; justify-content: center;">
                         ${logoUrl ? `
-                            <button class="btn-action btn-view" onclick="window.viewCompanyDocImage('${logoUrl}', '${company.company_name} - Logo')">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
-                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                    <polyline points="21 15 16 10 5 21"></polyline>
-                                </svg>
-                                View Logo
-                            </button>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-action btn-view" onclick="window.viewCompanyDoc('${logoUrl}', '${company.company_name} - Logo')">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    View Logo
+                                </button>
+                                <button class="btn-action btn-download" onclick="window.downloadCompanyDoc('${logoUrl}', '${company.company_logo}')">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                    Download
+                                </button>
+                            </div>
                         ` : ''}
                         ${moaUrl ? `
-                            <button class="btn-action btn-view" onclick="window.viewCompanyDocImage('${moaUrl}', '${company.company_name} - MOA')">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                    <polyline points="14 2 14 8 20 8"></polyline>
-                                </svg>
-                                View MOA
-                            </button>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-action btn-view" onclick="window.viewCompanyDoc('${moaUrl}', '${company.company_name} - MOA')">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    View MOA
+                                </button>
+                                <button class="btn-action btn-download" onclick="window.downloadCompanyDoc('${moaUrl}', '${company.moa_document}')">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                    Download
+                                </button>
+                            </div>
                         ` : ''}
                     </div>
                 </div>
@@ -237,10 +256,32 @@ const CompanyAPI = {
         modal.setFooter(footer);
         modal.open(content);
 
-        // Setup image viewer
+        // Setup file viewer and download
         setTimeout(() => {
-            window.viewCompanyDocImage = (imageUrl, title) => {
-                openImageViewer(imageUrl, title);
+            window.viewCompanyDoc = (fileUrl, title) => {
+                openFileViewer(fileUrl, title);
+            };
+            
+            window.downloadCompanyDoc = async (fileUrl, fileName) => {
+                try {
+                    const response = await fetch(fileUrl);
+                    if (!response.ok) throw new Error('File not found');
+                    
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                    
+                    showSuccess('File downloaded successfully');
+                } catch (error) {
+                    console.error('Download error:', error);
+                    showError('Failed to download file');
+                }
             };
 
             // Approve handler
@@ -408,25 +449,44 @@ const CompanyAPI = {
             ${logoUrl || moaUrl ? `
                 <div class="cor-preview">
                     <h4>Documents</h4>
-                    <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: center;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; justify-content: center;">
                         ${logoUrl ? `
-                            <button class="btn-action btn-view" onclick="window.viewCompanyImage('${logoUrl}', '${company.company_name} - Logo')">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
-                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                    <polyline points="21 15 16 10 5 21"></polyline>
-                                </svg>
-                                View Logo
-                            </button>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-action btn-view" onclick="window.viewCompanyFile('${logoUrl}', '${company.company_name} - Logo')">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    View Logo
+                                </button>
+                                <button class="btn-action btn-download" onclick="window.downloadCompanyFile('${logoUrl}', '${company.company_logo}')">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                    Download
+                                </button>
+                            </div>
                         ` : ''}
                         ${moaUrl ? `
-                            <button class="btn-action btn-view" onclick="window.viewCompanyImage('${moaUrl}', '${company.company_name} - MOA')">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                    <polyline points="14 2 14 8 20 8"></polyline>
-                                </svg>
-                                View MOA
-                            </button>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-action btn-view" onclick="window.viewCompanyFile('${moaUrl}', '${company.company_name} - MOA')">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    View MOA
+                                </button>
+                                <button class="btn-action btn-download" onclick="window.downloadCompanyFile('${moaUrl}', '${company.moa_document}')">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                    Download
+                                </button>
+                            </div>
                         ` : ''}
                     </div>
                 </div>
@@ -440,10 +500,32 @@ const CompanyAPI = {
 
         modal.open(content);
 
-        // Setup image viewer
+        // Setup file viewer and download
         setTimeout(() => {
-            window.viewCompanyImage = (imageUrl, title) => {
-                openImageViewer(imageUrl, title);
+            window.viewCompanyFile = (fileUrl, title) => {
+                openFileViewer(fileUrl, title);
+            };
+            
+            window.downloadCompanyFile = async (fileUrl, fileName) => {
+                try {
+                    const response = await fetch(fileUrl);
+                    if (!response.ok) throw new Error('File not found');
+                    
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                    
+                    showSuccess('File downloaded successfully');
+                } catch (error) {
+                    console.error('Download error:', error);
+                    showError('Failed to download file');
+                }
             };
         }, 0);
     },
