@@ -140,7 +140,15 @@
     font-style: italic;
 }
 
-.btn-download {
+.file-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* Action buttons in requirement items */
+.requirement-item .btn-download {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -156,18 +164,18 @@
     flex-shrink: 0;
 }
 
-.btn-download:hover {
+.requirement-item .btn-download:hover {
     background: #3D5A7E;
     transform: translateY(-1px);
     box-shadow: 0 4px 6px rgba(74, 100, 145, 0.2);
 }
 
-.btn-download svg {
+.requirement-item .btn-download svg {
     width: 16px;
     height: 16px;
 }
 
-.btn-view {
+.requirement-item .btn-view {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -183,13 +191,13 @@
     flex-shrink: 0;
 }
 
-.btn-view:hover {
+.requirement-item .btn-view:hover {
     background: #059669;
     transform: translateY(-1px);
     box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
 }
 
-.btn-view svg {
+.requirement-item .btn-view svg {
     width: 16px;
     height: 16px;
 }
@@ -239,12 +247,16 @@
         align-items: flex-start;
     }
     
-    .btn-download,
-    .btn-view {
+    .file-actions {
+        width: 100%;
+        flex-direction: column;
+        margin-top: 8px;
+    }
+    
+    .requirement-item .btn-download,
+    .requirement-item .btn-view {
         width: 100%;
         justify-content: center;
-        margin-left: 0 !important;
-        margin-top: 8px;
     }
     
     .requirements-sections {
