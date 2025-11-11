@@ -151,16 +151,35 @@ export class FileViewer {
         this.currentFile = null;
     }
 
-    download() {
+    async download() {
         if (!this.currentFile) return;
 
-        const link = document.createElement('a');
-        link.href = this.currentFile.url;
-        link.download = this.currentFile.name;
-        link.target = '_blank';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        try {
+            const response = await fetch(this.currentFile.url);
+            if (!response.ok) {
+                throw new Error('File not found');
+            }
+            
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = this.currentFile.name;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Download error:', error);
+            // Fallback to direct download
+            const link = document.createElement('a');
+            link.href = this.currentFile.url;
+            link.download = this.currentFile.name;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     }
 
     getFileExtension(url) {
