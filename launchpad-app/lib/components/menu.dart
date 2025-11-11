@@ -97,16 +97,6 @@ class MenuOverlay extends StatelessWidget {
               const SizedBox(height: 12),
               _buildMenuItem(
                 context,
-                'Saved',
-                Icons.bookmark_outline,
-                () {
-                  Navigator.pop(context);
-                  // TODO: Navigate to Saved page
-                },
-              ),
-              const SizedBox(height: 12),
-              _buildMenuItem(
-                context,
                 'Logout',
                 Icons.logout_outlined,
                 () => _handleLogout(context),
