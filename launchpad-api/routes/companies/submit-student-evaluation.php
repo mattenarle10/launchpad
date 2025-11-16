@@ -161,6 +161,47 @@ $stmt->execute();
 $countResult = $stmt->get_result()->fetch_assoc();
 $evaluationsThisMonth = intval($countResult['count']);
 
+// Get student and company info for notification
+$stmt = $conn->prepare("
+    SELECT 
+        s.first_name, 
+        s.last_name,
+        c.company_name
+    FROM verified_students s
+    JOIN verified_companies c ON s.company_id = c.company_id
+    WHERE s.student_id = ?
+");
+$stmt->bind_param('i', $studentId);
+$stmt->execute();
+$studentInfo = $stmt->get_result()->fetch_assoc();
+
+// Send notification to the student about their evaluation
+try {
+    $periodText = $evaluationPeriod === 'first_half' ? '1st-15th' : '16th-End';
+    $monthName = date('F', mktime(0, 0, 0, $currentMonth, 1));
+    
+    $notificationTitle = "New Performance Evaluation";
+    $notificationMessage = "Hello {$studentInfo['first_name']},\n\n";
+    $notificationMessage .= "You have received a performance evaluation from {$studentInfo['company_name']}!\n\n";
+    $notificationMessage .= "📊 Score: {$evaluationScore}/100 ({$category})\n";
+    $notificationMessage .= "📅 Period: {$monthName} {$currentYear} ({$periodText})\n";
+    $notificationMessage .= "📈 Average Score: {$avgScore}/100 ({$performanceScore})\n";
+    $notificationMessage .= "✅ Evaluations this month: {$evaluationsThisMonth}/2\n\n";
+    $notificationMessage .= "Keep up the great work! Check your app for more details.";
+    
+    NotificationHelper::createCompanyNotification(
+        $conn,
+        $companyId,
+        $notificationTitle,
+        $notificationMessage,
+        'specific',
+        [$studentId]
+    );
+} catch (Exception $e) {
+    // Log error but don't fail evaluation submission
+    error_log("Failed to send evaluation notification: " . $e->getMessage());
+}
+
 Response::success([
     'student_id' => $studentId,
     'evaluation_score' => $evaluationScore,
