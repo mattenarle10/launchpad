@@ -50,7 +50,7 @@ $stmt->execute();
 
 $jobId = $conn->insert_id;
 
-// Get created job
+// Get created job with company name
 $stmt = $conn->prepare("
     SELECT 
         j.*,
@@ -62,5 +62,32 @@ $stmt = $conn->prepare("
 $stmt->bind_param('i', $jobId);
 $stmt->execute();
 $job = $stmt->get_result()->fetch_assoc();
+
+// Send notification to all students about the new job opportunity
+try {
+    $notificationTitle = "New Job Opportunity: {$title}";
+    $notificationMessage = "{$job['company_name']} has posted a new job opportunity!\n\n";
+    $notificationMessage .= "Position: {$title}\n";
+    $notificationMessage .= "Type: {$jobType}\n";
+    if ($location) {
+        $notificationMessage .= "Location: {$location}\n";
+    }
+    if ($salaryRange) {
+        $notificationMessage .= "Salary Range: {$salaryRange}\n";
+    }
+    $notificationMessage .= "\nCheck the Job Opportunities section in the app for more details!";
+    
+    NotificationHelper::createCompanyNotification(
+        $conn,
+        $companyId,
+        $notificationTitle,
+        $notificationMessage,
+        'all',
+        []
+    );
+} catch (Exception $e) {
+    // Log error but don't fail job creation
+    error_log("Failed to send job notification: " . $e->getMessage());
+}
 
 Response::success($job, 'Job opportunity created successfully');
