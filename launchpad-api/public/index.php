@@ -13,6 +13,7 @@ require_once __DIR__ . '/../lib/response.php';
 require_once __DIR__ . '/../lib/cors.php';
 require_once __DIR__ . '/../lib/auth.php';
 require_once __DIR__ . '/../utils/Logger.php';
+require_once __DIR__ . '/../utils/NotificationHelper.php';
 
 // Handle CORS
 CORS::handle();
