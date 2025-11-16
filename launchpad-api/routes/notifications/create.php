@@ -36,33 +36,15 @@ if ($recipientType === 'specific' && empty($studentIds)) {
 
 $cdcUserId = Auth::getUserId();
 
-// Start transaction
-$conn->begin_transaction();
-
 try {
-    // Insert notification
-    $stmt = $conn->prepare("
-        INSERT INTO notifications (title, message, recipient_type, created_by)
-        VALUES (?, ?, ?, ?)
-    ");
-    $stmt->bind_param('sssi', $title, $message, $recipientType, $cdcUserId);
-    $stmt->execute();
-    $notificationId = $conn->insert_id;
-
-    // If sending to specific students, insert recipients
-    if ($recipientType === 'specific') {
-        $stmt = $conn->prepare("
-            INSERT INTO notification_recipients (notification_id, student_id)
-            VALUES (?, ?)
-        ");
-        
-        foreach ($studentIds as $studentId) {
-            $stmt->bind_param('ii', $notificationId, $studentId);
-            $stmt->execute();
-        }
-    }
-
-    $conn->commit();
+    $notificationId = NotificationHelper::createCdcNotification(
+        $conn, 
+        $cdcUserId, 
+        $title, 
+        $message, 
+        $recipientType, 
+        $studentIds
+    );
 
     Response::success([
         'notification_id' => $notificationId,
@@ -73,6 +55,5 @@ try {
     ], 'Notification sent successfully');
 
 } catch (Exception $e) {
-    $conn->rollback();
     Response::error('Failed to send notification: ' . $e->getMessage(), 500);
 }
