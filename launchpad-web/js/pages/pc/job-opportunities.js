@@ -131,7 +131,25 @@ const TECH_TAGS = [
     'QA/Testing',
     'Game Development',
     'Embedded Systems',
-    'Network Engineering'
+    'Network Engineering',
+    // Entertainment Multimedia Computing (EMC) Specializations
+    'Animation',
+    '3D Modeling',
+    '3D Animation',
+    'Graphic Design',
+    'Video Production',
+    'Video Editing',
+    'Motion Graphics',
+    'Visual Effects (VFX)',
+    'Digital Art',
+    'Multimedia Design',
+    'Game Design',
+    'Sound Design',
+    'Audio Production',
+    'Photography',
+    'Cinematography',
+    'Character Design',
+    '2D Animation'
 ];
 
 function openJobModal(job = null) {
