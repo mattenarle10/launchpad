@@ -23,9 +23,10 @@ if (empty($companyName) || empty($username) || empty($email) || empty($address) 
     Response::error('Missing required fields: company_name, username, email, address, password', 400);
 }
 
-// Validate password length
-if (strlen($password) < PASSWORD_MIN_LENGTH) {
-    Response::error('Password must be at least ' . PASSWORD_MIN_LENGTH . ' characters', 400);
+// Validate password complexity
+$passwordValidation = Auth::validatePasswordComplexity($password);
+if (!$passwordValidation['valid']) {
+    Response::error('Password requirements not met: ' . implode(', ', $passwordValidation['errors']), 400);
 }
 
 // Validate email format
