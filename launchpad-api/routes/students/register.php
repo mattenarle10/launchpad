@@ -24,6 +24,9 @@ $contactNum = $_POST['contact_num'] ?? '';
 $password = $_POST['password'] ?? '';
 // Ignore any provided company at signup; company is attached during verification
 $companyName = '';
+// Semester and academic year (optional, defaults applied)
+$semester = $_POST['semester'] ?? '1st';
+$academicYear = $_POST['academic_year'] ?? date('Y') . '-' . (date('Y') + 1);
 
 // Validate required fields
 if (empty($email) || empty($idNumber) || empty($firstName) || empty($lastName) || empty($course) || empty($password)) {
@@ -34,6 +37,12 @@ if (empty($email) || empty($idNumber) || empty($firstName) || empty($lastName) |
 $allowedCourses = ['IT', 'COMSCI', 'EMC'];
 if (!in_array(strtoupper($course), $allowedCourses)) {
     Response::error('Invalid course. Choose: IT, COMSCI, or EMC', 400);
+}
+
+// Validate semester
+$allowedSemesters = ['1st', '2nd', 'summer'];
+if (!in_array($semester, $allowedSemesters)) {
+    $semester = '1st'; // Default to 1st if invalid
 }
 
 // Validate password complexity
@@ -176,29 +185,31 @@ try {
 // Try with specialization column first (newer schema), fall back to old schema
 $insertSuccess = false;
 
-// Try newer schema with specialization
+// Try newer schema with specialization, semester, academic_year
 $stmt = $conn->prepare("
     INSERT INTO unverified_students 
-    (id_num, first_name, last_name, email, course, contact_num, specialization, password, company_name, cor)
-    VALUES (?, ?, ?, ?, ?, ?, NULL, ?, NULL, ?)
+    (id_num, first_name, last_name, email, course, contact_num, specialization, semester, academic_year, password, company_name, cor)
+    VALUES (?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, NULL, ?)
 ");
 
 if ($stmt) {
     $stmt->bind_param(
-        'ssssssss',
+        'ssssssssss',
         $idNumber,
         $firstName,
         $lastName,
         $email,
         $course,
         $contactNum,
+        $semester,
+        $academicYear,
         $hashedPassword,
         $filename
     );
     
     if ($stmt->execute()) {
         $insertSuccess = true;
-        error_log("Student registered successfully (with specialization): " . $email);
+        error_log("Student registered successfully (with semester/year): " . $email);
     }
 }
 
