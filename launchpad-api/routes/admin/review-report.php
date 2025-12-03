@@ -3,6 +3,10 @@
 /**
  * POST /admin/reports/:id/review
  * CDC approves or rejects a daily report
+ * 
+ * NOTE: Primary DTR approval is now handled by Partner Companies (PC).
+ * CDC can still approve/reject for monitoring purposes, but PC is the main approver.
+ * Use /companies/dtr/:id/validate for PC approval flow.
  */
 
 if ($method !== 'POST') {

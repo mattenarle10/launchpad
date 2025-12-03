@@ -223,6 +223,26 @@ try {
             exit;
         }
         
+        // /companies/students/:id/dtr (GET - get student's DTR reports)
+        if (count($pathParts) === 4 && $pathParts[1] === 'students' && $pathParts[3] === 'dtr') {
+            $id = $pathParts[2];
+            require __DIR__ . '/../routes/companies/get-student-dtr.php';
+            exit;
+        }
+        
+        // /companies/dtr/pending (GET - get all pending DTR for company's students)
+        if (count($pathParts) === 3 && $pathParts[1] === 'dtr' && $pathParts[2] === 'pending') {
+            require __DIR__ . '/../routes/companies/get-pending-dtr.php';
+            exit;
+        }
+        
+        // /companies/dtr/:id/validate (POST - approve/reject DTR)
+        if (count($pathParts) === 4 && $pathParts[1] === 'dtr' && $pathParts[3] === 'validate') {
+            $id = $pathParts[2];
+            require __DIR__ . '/../routes/companies/validate-dtr.php';
+            exit;
+        }
+        
         // /companies
         if (count($pathParts) === 1) {
             require __DIR__ . '/../routes/companies/get-all.php';

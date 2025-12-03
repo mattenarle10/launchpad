@@ -8,18 +8,18 @@
 class Database
 {
     // Local Development (commented for production)
-    // private const HOST = 'localhost';
-    // private const DB_NAME = 'launchpad_db';
-    // private const USERNAME = 'root';
-    // private const PASSWORD = '';
-    // private const CHARSET = 'utf8mb4';
+    private const HOST = '127.0.0.1';
+    private const DB_NAME = 'launchpad_db';
+    private const USERNAME = 'root';
+    private const PASSWORD = '';
+    private const CHARSET = 'utf8mb4';
 
     // Production (Hostinger) - ACTIVE
-    private const HOST = 'localhost';
-    private const DB_NAME = 'u153905861_launchpad_db';
-    private const USERNAME = 'u153905861_launchpad';
-    private const PASSWORD = 'Naomi.123!';
-    private const CHARSET = 'utf8mb4';
+    // private const HOST = 'localhost';
+    // private const DB_NAME = 'u153905861_launchpad_db';
+    // private const USERNAME = 'u153905861_launchpad';
+    // private const PASSWORD = 'Naomi.123!';
+    // private const CHARSET = 'utf8mb4';
 
     private static ?mysqli $connection = null;
 
