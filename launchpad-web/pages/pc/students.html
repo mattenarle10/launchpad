@@ -105,6 +105,15 @@
                                 <option value="completed">Completed</option>
                                 <option value="not_started">Not Started</option>
                             </select>
+                            <select class="filter-dropdown" id="semester-filter">
+                                <option value="">All Semesters</option>
+                                <option value="1st">1st Semester</option>
+                                <option value="2nd">2nd Semester</option>
+                                <option value="summer">Summer</option>
+                            </select>
+                            <select class="filter-dropdown" id="academic-year-filter">
+                                <option value="">All Academic Years</option>
+                            </select>
                             <select class="filter-dropdown" id="specialization-filter">
                                 <option value="">All Specializations</option>
                             </select>
@@ -255,6 +264,16 @@
                 applyFilters(dataTable);
             });
 
+            // Setup semester filter
+            document.getElementById('semester-filter')?.addEventListener('change', (e) => {
+                applyFilters(dataTable);
+            });
+
+            // Setup academic year filter
+            document.getElementById('academic-year-filter')?.addEventListener('change', (e) => {
+                applyFilters(dataTable);
+            });
+
             // Populate specialization filter
             function populateSpecializationFilter() {
                 const specializationSet = new Set();
@@ -274,12 +293,24 @@
                     option.textContent = spec;
                     filterSelect.appendChild(option);
                 });
+
+                // Populate academic year filter
+                const academicYears = [...new Set(allStudents.map(s => s.academic_year).filter(Boolean))].sort().reverse();
+                const academicYearFilter = document.getElementById('academic-year-filter');
+                academicYears.forEach(year => {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    academicYearFilter.appendChild(option);
+                });
             }
 
             function applyFilters(dataTable) {
                 const course = document.getElementById('course-filter').value;
                 const status = document.getElementById('status-filter').value;
                 const specialization = document.getElementById('specialization-filter').value;
+                const semester = document.getElementById('semester-filter').value;
+                const academicYear = document.getElementById('academic-year-filter').value;
                 
                 let filtered = allStudents;
                 
@@ -300,6 +331,14 @@
                         if (!s.specialization) return false;
                         return s.specialization.split(',').map(sp => sp.trim()).includes(specialization);
                     });
+                }
+
+                if (semester) {
+                    filtered = filtered.filter(s => s.semester === semester);
+                }
+
+                if (academicYear) {
+                    filtered = filtered.filter(s => s.academic_year === academicYear);
                 }
                 
                 dataTable.setData(filtered);
