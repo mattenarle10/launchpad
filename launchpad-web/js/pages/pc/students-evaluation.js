@@ -1,6 +1,7 @@
 /**
  * Students Evaluation Page
- * Partner Company evaluates their students (0-100 rank)
+ * Partner Company evaluates their students using 10-question form (1-4 scale)
+ * Total score is calculated from responses and scaled to 100
  */
 
 import { loadSidebar, loadUserInfo } from '../../components.js';
@@ -13,6 +14,68 @@ import { createModal } from '../../utils/modal.js';
 
 let allStudents = [];
 let dataTable = null;
+
+// 10 Evaluation Questions with 4 choices each
+const EVALUATION_QUESTIONS = [
+    {
+        id: 'q1',
+        question: 'Attendance and Punctuality',
+        description: 'How consistent is the student in attending work and arriving on time?'
+    },
+    {
+        id: 'q2',
+        question: 'Quality of Work',
+        description: 'How well does the student complete assigned tasks with accuracy and attention to detail?'
+    },
+    {
+        id: 'q3',
+        question: 'Productivity',
+        description: 'How efficiently does the student complete work within expected timeframes?'
+    },
+    {
+        id: 'q4',
+        question: 'Initiative',
+        description: 'Does the student take initiative and show willingness to learn new tasks?'
+    },
+    {
+        id: 'q5',
+        question: 'Communication Skills',
+        description: 'How effectively does the student communicate with supervisors and colleagues?'
+    },
+    {
+        id: 'q6',
+        question: 'Teamwork',
+        description: 'How well does the student collaborate and work with team members?'
+    },
+    {
+        id: 'q7',
+        question: 'Professionalism',
+        description: 'Does the student demonstrate professional behavior and appropriate workplace conduct?'
+    },
+    {
+        id: 'q8',
+        question: 'Problem Solving',
+        description: 'How well does the student handle challenges and find solutions?'
+    },
+    {
+        id: 'q9',
+        question: 'Adaptability',
+        description: 'How well does the student adapt to changes and new situations?'
+    },
+    {
+        id: 'q10',
+        question: 'Overall Performance',
+        description: 'Overall assessment of the student\'s internship performance'
+    }
+];
+
+// Rating scale (1-4)
+const RATING_SCALE = [
+    { value: 1, label: 'Poor', description: 'Below expectations, needs significant improvement' },
+    { value: 2, label: 'Fair', description: 'Meets some expectations, needs improvement' },
+    { value: 3, label: 'Good', description: 'Meets expectations, performs well' },
+    { value: 4, label: 'Excellent', description: 'Exceeds expectations, outstanding performance' }
+];
 
 async function loadStudentsTable() {
     const tableWrapper = document.getElementById('table-wrapper');
@@ -128,110 +191,146 @@ async function openEvaluationModal(student) {
     const firstHalfEval = evalData?.first_half_evaluation;
     const secondHalfEval = evalData?.second_half_evaluation;
     
-    const content = `
-        <div style="padding: 10px 0;">
-            <div class="detail-row" style="margin-bottom: 16px;">
-                <span class="detail-label">Student:</span>
-                <span class="detail-value">${student.first_name} ${student.last_name}</span>
-            </div>
-            <div class="detail-row" style="margin-bottom: 16px;">
-                <span class="detail-label">ID Number:</span>
-                <span class="detail-value">${student.id_num}</span>
-            </div>
-            <div class="detail-row" style="margin-bottom: 16px;">
-                <span class="detail-label">Course:</span>
-                <span class="detail-value"><span class="course-badge ${student.course.toLowerCase()}">${student.course}</span></span>
-            </div>
-            
-            <div style="background: #F3F4F6; padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #E5E7EB;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A6491" stroke-width="2">
-                            <path d="M3 3v18h18"></path>
-                            <path d="M18 17V9"></path>
-                            <path d="M13 17V5"></path>
-                            <path d="M8 17v-3"></path>
-                        </svg>
-                        <span style="font-weight: 600; color: #3D5A7E; font-size: 14px;">${monthName} Evaluations</span>
+    // Generate questions HTML
+    const questionsHtml = EVALUATION_QUESTIONS.map((q, idx) => `
+        <div class="eval-question" style="background: #F9FAFB; padding: 16px; border-radius: 8px; margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                <div>
+                    <div style="font-weight: 600; color: #1F2937; font-size: 14px;">
+                        ${idx + 1}. ${q.question}
                     </div>
-                    <span style="font-weight: 700; color: ${evaluationsThisMonth === 2 ? '#10B981' : '#F59E0B'}; font-size: 16px;">${evaluationsThisMonth}/2</span>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;">
-                    <div style="background: white; padding: 12px; border-radius: 6px; border: 2px solid ${firstHalfEval ? '#4A6491' : '#E5E7EB'}; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                        <div style="font-size: 11px; color: #6B7280; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">1st-15th</div>
-                        ${firstHalfEval ? `
-                            <div style="font-weight: 700; color: #4A6491; font-size: 20px; margin-bottom: 2px;">${firstHalfEval.score}</div>
-                            <div style="font-size: 11px; color: #6B7280;">${firstHalfEval.category}</div>
-                        ` : `
-                            <div style="font-weight: 600; color: #9CA3AF; font-size: 13px;">Not Evaluated</div>
-                        `}
-                    </div>
-                    
-                    <div style="background: white; padding: 12px; border-radius: 6px; border: 2px solid ${secondHalfEval ? '#4A6491' : '#E5E7EB'}; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                        <div style="font-size: 11px; color: #6B7280; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">16th-End</div>
-                        ${secondHalfEval ? `
-                            <div style="font-weight: 700; color: #4A6491; font-size: 20px; margin-bottom: 2px;">${secondHalfEval.score}</div>
-                            <div style="font-size: 11px; color: #6B7280;">${secondHalfEval.category}</div>
-                        ` : `
-                            <div style="font-weight: 600; color: #9CA3AF; font-size: 13px;">Not Evaluated</div>
-                        `}
+                    <div style="font-size: 12px; color: #6B7280; margin-top: 4px;">
+                        ${q.description}
                     </div>
                 </div>
             </div>
-            
-            <div style="border-top: 2px solid #E5E7EB; padding-top: 20px; margin-top: 20px;">
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label for="evaluation-period" style="display: block; margin-bottom: 10px; font-weight: 600; color: #3D5A7E; font-size: 14px;">
-                        Evaluation Period <span style="color: #EF4444;">*</span>
-                    </label>
-                    <select 
-                        id="evaluation-period" 
-                        class="form-input"
-                        style="width: 100%; padding: 12px; border: 2px solid #E5E7EB; border-radius: 8px; font-size: 15px; color: #374151;"
-                        required
-                    >
-                        <option value="first_half" ${!secondHalfEval && firstHalfEval ? 'selected' : ''}>1st-15th of ${monthName}</option>
-                        <option value="second_half" ${secondHalfEval || (!firstHalfEval && !secondHalfEval) ? 'selected' : ''}>16th-End of ${monthName}</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="evaluation-score" style="display: block; margin-bottom: 10px; font-weight: 600; color: #3D5A7E; font-size: 14px;">
-                        Evaluation Score (0-100) <span style="color: #EF4444;">*</span>
-                    </label>
-                    <input 
-                        type="number" 
-                        id="evaluation-score" 
-                        class="form-input" 
-                        min="0" 
-                        max="100" 
-                        step="1"
-                        value=""
-                        placeholder="Enter score (0-100)"
-                        style="width: 100%; padding: 12px; border: 2px solid #E5E7EB; border-radius: 8px; font-size: 16px;"
-                        required
-                    >
-                    <div style="margin-top: 12px; padding: 10px 12px; background: #EFF6FF; border-radius: 6px; border-left: 3px solid #4A6491;">
-                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4A6491" stroke-width="2">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                            </svg>
-                            <strong style="font-size: 12px; color: #3D5A7E;">Grading Scale</strong>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                ${RATING_SCALE.map(r => `
+                    <label style="flex: 1; min-width: 80px; cursor: pointer;">
+                        <input type="radio" name="${q.id}" value="${r.value}" style="display: none;" required>
+                        <div class="rating-option" data-value="${r.value}" style="
+                            padding: 10px 8px;
+                            text-align: center;
+                            border: 2px solid #E5E7EB;
+                            border-radius: 8px;
+                            background: white;
+                            transition: all 0.2s;
+                        ">
+                            <div style="font-weight: 700; font-size: 18px; color: #374151;">${r.value}</div>
+                            <div style="font-size: 11px; color: #6B7280;">${r.label}</div>
                         </div>
-                        <div style="font-size: 11px; color: #4A6491; line-height: 1.6;">
-                            81-100: Excellent | 61-80: Good | 41-60: Enough | 21-40: Poor | 0-20: Very Poor
-                        </div>
-                    </div>
-                </div>
+                    </label>
+                `).join('')}
             </div>
         </div>
+    `).join('');
+    
+    const content = `
+        <div style="padding: 10px 0;">
+            <!-- Student Info -->
+            <div style="display: flex; gap: 20px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #E5E7EB;">
+                <div>
+                    <div style="font-size: 12px; color: #6B7280;">Student</div>
+                    <div style="font-weight: 600; color: #1F2937;">${student.first_name} ${student.last_name}</div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: #6B7280;">ID Number</div>
+                    <div style="font-weight: 600; color: #1F2937;">${student.id_num}</div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: #6B7280;">Course</div>
+                    <div><span class="course-badge ${student.course.toLowerCase()}">${student.course}</span></div>
+                </div>
+            </div>
+            
+            <!-- Evaluation Status -->
+            <div style="background: #EFF6FF; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A6491" stroke-width="2">
+                        <path d="M3 3v18h18"></path>
+                        <path d="M18 17V9"></path>
+                        <path d="M13 17V5"></path>
+                        <path d="M8 17v-3"></path>
+                    </svg>
+                    <span style="font-weight: 600; color: #3D5A7E; font-size: 14px;">${monthName} Evaluations</span>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <span style="font-size: 13px; color: ${firstHalfEval ? '#10B981' : '#9CA3AF'};">
+                        1st-15th: ${firstHalfEval ? `${firstHalfEval.score}/100` : 'Pending'}
+                    </span>
+                    <span style="font-size: 13px; color: ${secondHalfEval ? '#10B981' : '#9CA3AF'};">
+                        16th-End: ${secondHalfEval ? `${secondHalfEval.score}/100` : 'Pending'}
+                    </span>
+                    <span style="font-weight: 700; color: ${evaluationsThisMonth === 2 ? '#10B981' : '#F59E0B'};">${evaluationsThisMonth}/2</span>
+                </div>
+            </div>
+            
+            <!-- Period Selection -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #3D5A7E; font-size: 14px;">
+                    Evaluation Period <span style="color: #EF4444;">*</span>
+                </label>
+                <select id="evaluation-period" style="width: 100%; padding: 12px; border: 2px solid #E5E7EB; border-radius: 8px; font-size: 14px;">
+                    <option value="first_half" ${!firstHalfEval ? 'selected' : ''}>1st-15th of ${monthName}</option>
+                    <option value="second_half" ${firstHalfEval && !secondHalfEval ? 'selected' : ''}>16th-End of ${monthName}</option>
+                </select>
+            </div>
+            
+            <!-- Rating Scale Legend -->
+            <div style="background: #FEF3C7; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">
+                <div style="font-weight: 600; color: #92400E; font-size: 13px; margin-bottom: 8px;">Rating Scale</div>
+                <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: #78350F;">
+                    <span><strong>1</strong> - Poor</span>
+                    <span><strong>2</strong> - Fair</span>
+                    <span><strong>3</strong> - Good</span>
+                    <span><strong>4</strong> - Excellent</span>
+                </div>
+            </div>
+            
+            <!-- Questions -->
+            <div id="evaluation-questions" style="max-height: 400px; overflow-y: auto; padding-right: 8px;">
+                ${questionsHtml}
+            </div>
+            
+            <!-- Score Display -->
+            <div style="background: #F3F4F6; padding: 16px; border-radius: 8px; margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-size: 12px; color: #6B7280;">Calculated Score</div>
+                    <div style="font-size: 11px; color: #9CA3AF;">Based on your responses (10 questions × 4 max = 40, scaled to 100)</div>
+                </div>
+                <div id="calculated-score" style="font-size: 32px; font-weight: 700; color: #6366F1;">--</div>
+            </div>
+        </div>
+        
+        <style>
+            .rating-option:hover {
+                border-color: #6366F1 !important;
+                background: #EEF2FF !important;
+            }
+            .rating-option.selected {
+                border-color: #6366F1 !important;
+                background: #6366F1 !important;
+            }
+            .rating-option.selected div {
+                color: white !important;
+            }
+            #evaluation-questions::-webkit-scrollbar {
+                width: 6px;
+            }
+            #evaluation-questions::-webkit-scrollbar-track {
+                background: #F3F4F6;
+                border-radius: 3px;
+            }
+            #evaluation-questions::-webkit-scrollbar-thumb {
+                background: #D1D5DB;
+                border-radius: 3px;
+            }
+        </style>
     `;
     
     const modal = createModal('evaluation-modal', {
         title: `Evaluate ${student.first_name} ${student.last_name}`,
-        size: 'medium'
+        size: 'large'
     });
     
     const footer = `
@@ -242,50 +341,81 @@ async function openEvaluationModal(student) {
                 <polyline points="17 21 17 13 7 13 7 21"></polyline>
                 <polyline points="7 3 7 8 15 8"></polyline>
             </svg>
-            Save Evaluation
+            Submit Evaluation
         </button>
     `;
     
     modal.setFooter(footer);
     modal.open(content);
     
-    // Set up save button handler
+    // Set up rating selection and score calculation
     setTimeout(() => {
-        const scoreInput = document.getElementById('evaluation-score');
-        const periodSelect = document.getElementById('evaluation-period');
+        const ratingOptions = document.querySelectorAll('.rating-option');
+        const scoreDisplay = document.getElementById('calculated-score');
         
-        // Pre-fill score when period changes
-        periodSelect.addEventListener('change', () => {
-            const period = periodSelect.value;
-            if (period === 'first_half' && firstHalfEval) {
-                scoreInput.value = firstHalfEval.score;
-            } else if (period === 'second_half' && secondHalfEval) {
-                scoreInput.value = secondHalfEval.score;
-            } else {
-                scoreInput.value = '';
-            }
+        // Handle rating selection
+        ratingOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // Find the radio input and check it
+                const radio = option.parentElement.querySelector('input[type="radio"]');
+                radio.checked = true;
+                
+                // Update visual selection
+                const questionContainer = option.closest('.eval-question');
+                questionContainer.querySelectorAll('.rating-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                option.classList.add('selected');
+                
+                // Calculate score
+                calculateScore();
+            });
         });
         
-        // Set initial score based on selected period
-        const initialPeriod = periodSelect.value;
-        if (initialPeriod === 'first_half' && firstHalfEval) {
-            scoreInput.value = firstHalfEval.score;
-        } else if (initialPeriod === 'second_half' && secondHalfEval) {
-            scoreInput.value = secondHalfEval.score;
-        }
-        
-        document.getElementById('save-evaluation-btn')?.addEventListener('click', async () => {
-            const score = parseInt(scoreInput.value, 10);
-            const period = periodSelect.value;
+        function calculateScore() {
+            let total = 0;
+            let answered = 0;
             
-            if (isNaN(score) || score < 0 || score > 100) {
-                showError('Please enter a valid score between 0 and 100');
-                scoreInput.classList.add('error');
-                scoreInput.focus();
-                return;
+            EVALUATION_QUESTIONS.forEach(q => {
+                const selected = document.querySelector(`input[name="${q.id}"]:checked`);
+                if (selected) {
+                    total += parseInt(selected.value);
+                    answered++;
+                }
+            });
+            
+            if (answered === 0) {
+                scoreDisplay.textContent = '--';
+                scoreDisplay.style.color = '#9CA3AF';
+            } else {
+                // Scale to 100: (total / 40) * 100
+                const score = Math.round((total / 40) * 100);
+                scoreDisplay.textContent = score;
+                
+                // Color based on score
+                if (score >= 81) {
+                    scoreDisplay.style.color = '#10B981';
+                } else if (score >= 61) {
+                    scoreDisplay.style.color = '#6366F1';
+                } else if (score >= 41) {
+                    scoreDisplay.style.color = '#F59E0B';
+                } else {
+                    scoreDisplay.style.color = '#EF4444';
+                }
             }
             
-            scoreInput.classList.remove('error');
+            return answered === 10 ? Math.round((total / 40) * 100) : null;
+        }
+        
+        // Save button handler
+        document.getElementById('save-evaluation-btn')?.addEventListener('click', async () => {
+            const score = calculateScore();
+            const period = document.getElementById('evaluation-period').value;
+            
+            if (score === null) {
+                showError('Please answer all 10 questions');
+                return;
+            }
             
             try {
                 const res = await client.post(`/companies/students/${student.student_id}/evaluations`, {
@@ -303,13 +433,10 @@ async function openEvaluationModal(student) {
                 setTimeout(() => loadStudentsTable(), 1000);
             } catch (error) {
                 console.error('Error saving evaluation:', error);
-                showError('Failed to save evaluation: ' + error.message);
+                showError('Failed to save evaluation: ' + (error.response?.data?.message || error.message));
             }
         });
-        
-        // Focus on input
-        scoreInput.focus();
-    }, 0);
+    }, 100);
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

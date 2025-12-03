@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DTR Approval - LaunchPad</title>
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../css/sidebar.css">
+    <link rel="stylesheet" href="../../css/dashboard.css">
+    <link rel="stylesheet" href="../../css/dropdown.css">
+    <link rel="stylesheet" href="../../css/table.css">
+    <link rel="stylesheet" href="../../css/notifications.css">
+    <link rel="stylesheet" href="../../css/modal.css">
+    <style>
+        .dtr-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid #F59E0B;
+        }
+        .dtr-card.approved {
+            border-left-color: #10B981;
+        }
+        .dtr-card.rejected {
+            border-left-color: #EF4444;
+        }
+        .dtr-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        .dtr-student {
+            font-weight: 600;
+            font-size: 16px;
+            color: #1F2937;
+        }
+        .dtr-id {
+            font-size: 13px;
+            color: #6B7280;
+        }
+        .dtr-date {
+            font-size: 14px;
+            color: #6B7280;
+            background: #F3F4F6;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        .dtr-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .dtr-detail {
+            display: flex;
+            flex-direction: column;
+        }
+        .dtr-detail-label {
+            font-size: 12px;
+            color: #9CA3AF;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .dtr-detail-value {
+            font-size: 15px;
+            color: #1F2937;
+        }
+        .dtr-accomplishments {
+            background: #F9FAFB;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.5;
+        }
+        .dtr-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .hours-input {
+            width: 80px;
+            padding: 8px 12px;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+        }
+        .hours-input:focus {
+            outline: none;
+            border-color: #6366F1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .btn-approve {
+            background: #10B981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-approve:hover {
+            background: #059669;
+        }
+        .btn-reject {
+            background: #EF4444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-reject:hover {
+            background: #DC2626;
+        }
+        .btn-view-file {
+            background: #6366F1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-view-file:hover {
+            background: #4F46E5;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6B7280;
+        }
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        .pending-badge {
+            background: #FEF3C7;
+            color: #D97706;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .remarks-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px 12px;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            width: 90%;
+            max-width: 500px;
+        }
+        .modal-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .modal-body textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            font-size: 14px;
+            resize: vertical;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 16px;
+        }
+        .btn-cancel {
+            background: #F3F4F6;
+            color: #374151;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar Placeholder -->
+        <div id="sidebar-placeholder"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="page-header">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <img src="../../images/logo/pc.png" alt="Company Logo" id="user-avatar">
+                    </div>
+                    <div class="user-details">
+                        <h1 id="user-name">Loading...</h1>
+                        <p>Partner Company Portal</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <div class="user-menu">
+                        <button class="user-menu-toggle" id="user-menu-toggle">
+                            <div class="user-badge">
+                                <img src="../../images/logo/pc.png" alt="Company Logo">
+                            </div>
+                            <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        <div class="user-dropdown" id="user-dropdown">
+                            <div class="dropdown-header">
+                                <div class="dropdown-avatar">
+                                    <img src="../../images/logo/pc.png" alt="Company Logo">
+                                </div>
+                                <h3 id="dropdown-user-name">Company Name</h3>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <a href="#" class="dropdown-item" id="profile-btn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                <span>Profile</span>
+                            </a>
+                            <a href="#" class="dropdown-item" id="logout-btn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                    <polyline points="16 17 21 12 16 7"></polyline>
+                                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                                </svg>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="dashboard-content">
+                <!-- Stats -->
+                <div class="stats-grid">
+                    <div class="card stat-card">
+                        <h3 class="card-title">Pending DTR</h3>
+                        <div class="stat-number" id="pending-count">0</div>
+                        <p class="stat-label">Awaiting Approval</p>
+                    </div>
+                    <div class="card stat-card">
+                        <h3 class="card-title">Pending Hours</h3>
+                        <div class="stat-number" id="pending-hours">0</div>
+                        <p class="stat-label">Total Requested</p>
+                    </div>
+                </div>
+
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <select class="filter-dropdown" id="student-filter">
+                        <option value="">All Students</option>
+                    </select>
+                    <select class="filter-dropdown" id="month-filter">
+                        <option value="">All Months</option>
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
+
+                <!-- DTR List -->
+                <div id="dtr-list">
+                    <div class="loading">
+                        <p>Loading pending DTR...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Reject Modal -->
+    <div class="modal-overlay" id="reject-modal">
+        <div class="modal-content">
+            <div class="modal-header">Reject DTR Report</div>
+            <div class="modal-body">
+                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Reason for rejection:</label>
+                <textarea id="rejection-reason" placeholder="Enter reason for rejection..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" id="cancel-reject">Cancel</button>
+                <button class="btn-reject" id="confirm-reject">Reject DTR</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { loadSidebar, loadUserInfo } from '../../js/components.js';
+        import { initUserDropdown } from '../../js/pages/dropdown.js';
+        import client from '../../js/api/client.js';
+        import { showSuccess, showError } from '../../js/utils/notifications.js';
+        import { getSidebarMode } from '../../js/utils/sidebar-helper.js';
+
+        let pendingDTR = [];
+        let currentRejectId = null;
+
+        async function loadPendingDTR() {
+            const dtrList = document.getElementById('dtr-list');
+            dtrList.innerHTML = '<div class="loading"><p>Loading pending DTR...</p></div>';
+
+            try {
+                const res = await client.get('/companies/dtr/pending');
+                pendingDTR = res.data?.reports || [];
+                
+                // Update stats
+                document.getElementById('pending-count').textContent = res.data?.summary?.pending_count || 0;
+                document.getElementById('pending-hours').textContent = (res.data?.summary?.total_pending_hours || 0).toFixed(1);
+
+                // Populate student filter
+                populateStudentFilter();
+
+                renderDTRList(pendingDTR);
+            } catch (error) {
+                console.error('Error loading DTR:', error);
+                dtrList.innerHTML = `
+                    <div class="empty-state">
+                        <p>Error loading DTR: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function populateStudentFilter() {
+            const studentFilter = document.getElementById('student-filter');
+            const students = [...new Map(pendingDTR.map(d => [d.student_id, { id: d.student_id, name: d.student_name }])).values()];
+            
+            students.forEach(s => {
+                const option = document.createElement('option');
+                option.value = s.id;
+                option.textContent = s.name;
+                studentFilter.appendChild(option);
+            });
+        }
+
+        function renderDTRList(data) {
+            const dtrList = document.getElementById('dtr-list');
+
+            if (data.length === 0) {
+                dtrList.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <h3>No Pending DTR</h3>
+                        <p>All daily time records have been reviewed!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            dtrList.innerHTML = data.map(dtr => `
+                <div class="dtr-card" id="dtr-${dtr.report_id}">
+                    <div class="dtr-header">
+                        <div>
+                            <div class="dtr-student">${dtr.student_name}</div>
+                            <div class="dtr-id">${dtr.id_num} • ${dtr.course}</div>
+                        </div>
+                        <div class="dtr-date">${formatDate(dtr.report_date)}</div>
+                    </div>
+                    <div class="dtr-details">
+                        <div class="dtr-detail">
+                            <span class="dtr-detail-label">Hours Requested</span>
+                            <span class="dtr-detail-value" style="font-size: 20px; font-weight: 600; color: #6366F1;">${dtr.hours_requested} hrs</span>
+                        </div>
+                        <div class="dtr-detail">
+                            <span class="dtr-detail-label">Submitted</span>
+                            <span class="dtr-detail-value">${formatDateTime(dtr.created_at)}</span>
+                        </div>
+                    </div>
+                    <div class="dtr-accomplishments">
+                        <strong>Accomplishments:</strong><br>
+                        ${dtr.accomplishments || 'No accomplishments provided'}
+                    </div>
+                    <div class="dtr-actions">
+                        ${dtr.file_path ? `<a href="${getFileUrl(dtr.file_path)}" target="_blank" class="btn-view-file">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            View File
+                        </a>` : ''}
+                        <div style="flex: 1;"></div>
+                        <label style="font-size: 14px; color: #6B7280;">Approved Hours:</label>
+                        <input type="number" class="hours-input" id="hours-${dtr.report_id}" value="${dtr.hours_requested}" min="0" max="24" step="0.5">
+                        <input type="text" class="remarks-input" id="remarks-${dtr.report_id}" placeholder="Remarks (optional)" style="max-width: 200px;">
+                        <button class="btn-approve" onclick="approveDTR(${dtr.report_id})">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            Approve
+                        </button>
+                        <button class="btn-reject" onclick="openRejectModal(${dtr.report_id})">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                            Reject
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function formatDateTime(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+        }
+
+        function getFileUrl(filePath) {
+            // Adjust path for web access
+            return `../../../launchpad-api/${filePath}`;
+        }
+
+        window.approveDTR = async function(reportId) {
+            const hoursInput = document.getElementById(`hours-${reportId}`);
+            const remarksInput = document.getElementById(`remarks-${reportId}`);
+            const hours = parseFloat(hoursInput.value);
+            const remarks = remarksInput.value;
+
+            if (isNaN(hours) || hours < 0 || hours > 24) {
+                showError('Please enter valid hours (0-24)');
+                return;
+            }
+
+            try {
+                const res = await client.post(`/companies/dtr/${reportId}/validate`, {
+                    action: 'approve',
+                    hours_approved: hours,
+                    remarks: remarks
+                });
+
+                showSuccess(`DTR approved! ${hours} hours added.`);
+                
+                // Remove card from list
+                const card = document.getElementById(`dtr-${reportId}`);
+                card.classList.add('approved');
+                setTimeout(() => {
+                    card.remove();
+                    updateCounts();
+                }, 500);
+
+            } catch (error) {
+                console.error('Error approving DTR:', error);
+                showError('Failed to approve: ' + (error.response?.data?.message || error.message));
+            }
+        };
+
+        window.openRejectModal = function(reportId) {
+            currentRejectId = reportId;
+            document.getElementById('rejection-reason').value = '';
+            document.getElementById('reject-modal').classList.add('active');
+        };
+
+        window.closeRejectModal = function() {
+            currentRejectId = null;
+            document.getElementById('reject-modal').classList.remove('active');
+        };
+
+        window.confirmReject = async function() {
+            const reason = document.getElementById('rejection-reason').value.trim();
+            
+            if (!reason) {
+                showError('Please provide a rejection reason');
+                return;
+            }
+
+            try {
+                await client.post(`/companies/dtr/${currentRejectId}/validate`, {
+                    action: 'reject',
+                    rejection_reason: reason
+                });
+
+                showSuccess('DTR rejected');
+                closeRejectModal();
+                
+                // Remove card from list
+                const card = document.getElementById(`dtr-${currentRejectId}`);
+                card.classList.add('rejected');
+                setTimeout(() => {
+                    card.remove();
+                    updateCounts();
+                }, 500);
+
+            } catch (error) {
+                console.error('Error rejecting DTR:', error);
+                showError('Failed to reject: ' + (error.response?.data?.message || error.message));
+            }
+        };
+
+        function updateCounts() {
+            const remaining = document.querySelectorAll('.dtr-card:not(.approved):not(.rejected)').length;
+            document.getElementById('pending-count').textContent = remaining;
+            
+            if (remaining === 0) {
+                renderDTRList([]);
+            }
+        }
+
+        function applyFilters() {
+            const studentId = document.getElementById('student-filter').value;
+            const month = document.getElementById('month-filter').value;
+
+            let filtered = pendingDTR;
+
+            if (studentId) {
+                filtered = filtered.filter(d => d.student_id == studentId);
+            }
+
+            if (month) {
+                filtered = filtered.filter(d => {
+                    const date = new Date(d.report_date);
+                    return (date.getMonth() + 1) == month;
+                });
+            }
+
+            renderDTRList(filtered);
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication
+            if (!client.isAuthenticated()) {
+                showError('Please login to access this page');
+                setTimeout(() => window.location.href = '../login.html?type=company', 1500);
+                return;
+            }
+
+            // Load components
+            await loadSidebar('dtr-approval', getSidebarMode());
+            loadUserInfo();
+            
+            // Initialize dropdown
+            initUserDropdown(
+                'user-menu-toggle',
+                'user-dropdown',
+                () => {
+                    client.clearAuth();
+                    window.location.href = '../login.html?type=company';
+                },
+                () => window.location.href = '../profile.html'
+            );
+            
+            // Load pending DTR
+            await loadPendingDTR();
+
+            // Setup filters
+            document.getElementById('student-filter').addEventListener('change', applyFilters);
+            document.getElementById('month-filter').addEventListener('change', applyFilters);
+
+            // Setup modal
+            document.getElementById('cancel-reject').addEventListener('click', closeRejectModal);
+            document.getElementById('confirm-reject').addEventListener('click', confirmReject);
+            document.getElementById('reject-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'reject-modal') closeRejectModal();
+            });
+        });
+    </script>
+</body>
+</html>

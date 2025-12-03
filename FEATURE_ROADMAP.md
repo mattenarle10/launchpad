@@ -136,6 +136,60 @@ Body (Reject):  { "action": "reject", "rejection_reason": "Incomplete report" }
 | **Approve/Reject DTR** | **PC (Primary)** | **Approves/rejects, sets final hours (+/-)** |
 | Approve DTR | CDC (Monitor) | Can still approve/reject, but PC is primary |
 | Filter Students | CDC/PC (Web) | Filter by semester, academic year, course, status |
+| **Evaluate Student** | **PC (Web)** | **10-question form (1-4 scale), auto-calculates score** |
+
+---
+
+### ✅ Phase 3.5 & 4: PC DTR Approval Page - HOW TO TEST
+
+**PC Dashboard → DTR Approval:**
+1. Login as Company at `/pages/login.html?type=company`
+2. Click "DTR Approval" in sidebar
+3. See list of pending DTR from your students
+4. For each DTR:
+   - View student name, date, hours requested, accomplishments
+   - Click "View File" to see uploaded document
+   - Adjust "Approved Hours" if needed (can be +/- from requested)
+   - Add optional remarks
+   - Click **Approve** or **Reject**
+5. Approved hours are added to student's OJT progress automatically
+
+**API Endpoints:**
+```
+GET /companies/dtr/pending
+POST /companies/dtr/:id/validate
+  Body: { "action": "approve", "hours_approved": 7.5, "remarks": "..." }
+  Body: { "action": "reject", "rejection_reason": "..." }
+```
+
+---
+
+### ✅ Phase 4.5: 10-Question Evaluation Form - HOW TO TEST
+
+**PC Dashboard → Students Evaluation:**
+1. Login as Company
+2. Click "Students Evaluation" in sidebar
+3. Click "Evaluate" on any student
+4. See 10 evaluation questions:
+   - Attendance and Punctuality
+   - Quality of Work
+   - Productivity
+   - Initiative
+   - Communication Skills
+   - Teamwork
+   - Professionalism
+   - Problem Solving
+   - Adaptability
+   - Overall Performance
+5. Rate each question 1-4:
+   - 1 = Poor
+   - 2 = Fair
+   - 3 = Good
+   - 4 = Excellent
+6. Score auto-calculates: (total / 40) × 100
+7. Select evaluation period (1st-15th or 16th-End)
+8. Click "Submit Evaluation"
+9. Student receives notification with score
 
 ---
 
@@ -184,20 +238,18 @@ Body (Reject):  { "action": "reject", "rejection_reason": "Incomplete report" }
 - [x] **3.2** Update submit-daily-report API for flexible hours (not fixed 8)
 - [x] **3.3** Update Flutter report screen with hours input field
 - [x] **3.4** Create PC endpoint to validate/approve DTR hours
-- [ ] **3.5** Add PC DTR validation page with +/- hours adjustment (web UI)
+- [x] **3.5** Add PC DTR Approval page with approve/reject and hours adjustment ✅
 
 ---
 
-## Phase 4: PC (Partner Company) Features
+## Phase 4: PC (Partner Company) Features ✅
 - [x] **4.1** Add company_validated fields to daily_reports (done in 3.1)
 - [x] **4.2** Create get-student-dtr API for company view
-- [x] **4.3** Create validate-dtr API for company approval
-- [ ] **4.4** Add DTR view page in PC dashboard with +/- hours (web UI)
-- [ ] **4.5** Update evaluation schema for NAO format criteria (later)
-- [ ] **4.6** Create NAO-format evaluation submission API (later)
-- [ ] **4.7** Update PC evaluation form with NAO format
-- [ ] **4.8** Create get-completed-students API for companies
-- [ ] **4.9** Add completed students tab in PC dashboard
+- [x] **4.3** Create validate-dtr API for company approval (approve/reject)
+- [x] **4.4** Add DTR Approval page in PC dashboard ✅
+- [x] **4.5** Update evaluation form with 10-question multiple choice (1-4 scale) ✅
+- [ ] **4.6** Create get-completed-students API for companies
+- [ ] **4.7** Add completed students tab in PC dashboard
 
 ---
 
