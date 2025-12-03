@@ -21,6 +21,8 @@ class _ReportScreenState extends State<ReportScreen> {
   final _descriptionController = TextEditingController();
   final _activityTypeController = TextEditingController();
   
+  final _hoursController = TextEditingController(text: '8');
+  
   File? _reportFile;
   String? _reportFileName;
   DateTime _selectedDate = DateTime.now();
@@ -30,6 +32,7 @@ class _ReportScreenState extends State<ReportScreen> {
   void dispose() {
     _descriptionController.dispose();
     _activityTypeController.dispose();
+    _hoursController.dispose();
     super.dispose();
   }
 
@@ -100,6 +103,12 @@ class _ReportScreenState extends State<ReportScreen> {
         throw Exception('User not found');
       }
 
+      // Parse hours from input
+      final hours = double.tryParse(_hoursController.text) ?? 8.0;
+      if (hours <= 0 || hours > 24) {
+        throw Exception('Hours must be between 0.1 and 24');
+      }
+
       final reportApi = ReportApi(ApiClient.I);
       await reportApi.submitDailyReport(
         studentId: user['student_id'],
@@ -108,17 +117,18 @@ class _ReportScreenState extends State<ReportScreen> {
         activityType: _activityTypeController.text,
         reportFile: _reportFile!,
         fileName: _reportFileName!,
-        hoursRequested: 8.0,
+        hoursRequested: hours,
       );
 
       if (!mounted) return;
 
-      Toast.success(context, 'Report submitted! Waiting for CDC approval.');
+      Toast.success(context, 'Report submitted! Waiting for company approval.');
       
       // Clear form
       setState(() {
         _descriptionController.clear();
         _activityTypeController.clear();
+        _hoursController.text = '8';
         _reportFile = null;
         _reportFileName = null;
         _selectedDate = DateTime.now();
@@ -205,6 +215,53 @@ class _ReportScreenState extends State<ReportScreen> {
                 ),
               ),
               const SizedBox(height: 20),
+
+              // Hours Requested (Flexible)
+              const Text(
+                'Hours Worked',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF374151),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                ),
+                child: TextFormField(
+                  controller: _hoursController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    hintText: 'Enter hours (e.g., 8, 4.5, 10)',
+                    prefixIcon: Icon(Icons.access_time, color: Color(0xFF6B7280)),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter hours worked';
+                    }
+                    final hours = double.tryParse(value);
+                    if (hours == null || hours <= 0 || hours > 24) {
+                      return 'Hours must be between 0.1 and 24';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Your company will validate and approve the hours',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF9CA3AF),
+                ),
+              ),
+              const SizedBox(height: 16),
 
               // Activity Type (Optional)
               CustomTextField(
