@@ -18,7 +18,7 @@ if ($user['id'] !== $studentId) {
 
 // Get form data
 $reportDate = $_POST['report_date'] ?? date('Y-m-d');
-$hoursRequested = floatval($_POST['hours_requested'] ?? 0);
+$hoursRequested = floatval($_POST['hours_requested'] ?? 8); // Default 8, but flexible
 $description = $_POST['description'] ?? 'Daily OJT Activities';
 $activityType = $_POST['activity_type'] ?? 'Daily Activities';
 
@@ -76,7 +76,7 @@ if ($existing) {
     } else if ($existing['status'] === 'approved') {
         Response::error('Report for this date has already been approved', 400);
     } else {
-        Response::error('You can resubmit after CDC reviews your previous report for this date', 400);
+        Response::error('You can resubmit after your previous report for this date is reviewed', 400);
     }
 }
 
