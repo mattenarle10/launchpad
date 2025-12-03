@@ -15,66 +15,59 @@ import { createModal } from '../../utils/modal.js';
 let allStudents = [];
 let dataTable = null;
 
-// 10 Evaluation Questions with 4 choices each
-const EVALUATION_QUESTIONS = [
+// Evaluation Categories with weighted scoring (based on USLS Trainee's Performance Evaluation)
+const EVALUATION_CATEGORIES = [
     {
-        id: 'q1',
-        question: 'Attendance and Punctuality',
-        description: 'How consistent is the student in attending work and arriving on time?'
+        id: 'competence',
+        name: 'I. COMPETENCE',
+        weight: 40, // 40%
+        questions: [
+            { id: 'c1', text: 'Exhibits workable knowledge and understanding of the assigned tasks' },
+            { id: 'c2', text: 'Expresses willingness to work in groups' },
+            { id: 'c3', text: 'Receptive to ideas of the other people' },
+            { id: 'c4', text: 'Shows positive response to corrections made by his/her superiors' },
+            { id: 'c5', text: 'Submits quality work' }
+        ]
     },
     {
-        id: 'q2',
-        question: 'Quality of Work',
-        description: 'How well does the student complete assigned tasks with accuracy and attention to detail?'
+        id: 'attendance',
+        name: 'II. ATTENDANCE AND PUNCTUALITY',
+        weight: 30, // 30%
+        questions: [
+            { id: 'a1', text: 'Maintains regular OJT time' },
+            { id: 'a2', text: 'Reports to work on time' },
+            { id: 'a3', text: 'Notifies the Supervisor ahead of time if unable to report for duty' },
+            { id: 'a4', text: 'Makes up for absences' }
+        ]
     },
     {
-        id: 'q3',
-        question: 'Productivity',
-        description: 'How efficiently does the student complete work within expected timeframes?'
+        id: 'communication',
+        name: 'III. COMMUNICATION SKILLS',
+        weight: 20, // 20%
+        questions: [
+            { id: 'cm1', text: 'Proficiency in English' },
+            { id: 'cm2', text: 'Ability to express ideas and deliver them clearly' }
+        ]
     },
     {
-        id: 'q4',
-        question: 'Initiative',
-        description: 'Does the student take initiative and show willingness to learn new tasks?'
-    },
-    {
-        id: 'q5',
-        question: 'Communication Skills',
-        description: 'How effectively does the student communicate with supervisors and colleagues?'
-    },
-    {
-        id: 'q6',
-        question: 'Teamwork',
-        description: 'How well does the student collaborate and work with team members?'
-    },
-    {
-        id: 'q7',
-        question: 'Professionalism',
-        description: 'Does the student demonstrate professional behavior and appropriate workplace conduct?'
-    },
-    {
-        id: 'q8',
-        question: 'Problem Solving',
-        description: 'How well does the student handle challenges and find solutions?'
-    },
-    {
-        id: 'q9',
-        question: 'Adaptability',
-        description: 'How well does the student adapt to changes and new situations?'
-    },
-    {
-        id: 'q10',
-        question: 'Overall Performance',
-        description: 'Overall assessment of the student\'s internship performance'
+        id: 'personality',
+        name: 'IV. PERSONALITY',
+        weight: 10, // 10%
+        questions: [
+            { id: 'p1', text: 'Physically neat in appearance' },
+            { id: 'p2', text: 'Relates well with people in a pleasing manner and maintains sincerity and fairness when confronted with difficulties' },
+            { id: 'p3', text: 'Possesses self-confidence in his/her ability and shows a high level of initiative' },
+            { id: 'p4', text: 'Shows ability to manage time and identify priorities' }
+        ]
     }
 ];
 
-// Rating scale (1-4)
+// Rating scale (1=Very Good to 4=Poor) - LOWER IS BETTER
 const RATING_SCALE = [
-    { value: 1, label: 'Poor', description: 'Below expectations, needs significant improvement' },
-    { value: 2, label: 'Fair', description: 'Meets some expectations, needs improvement' },
-    { value: 3, label: 'Good', description: 'Meets expectations, performs well' },
-    { value: 4, label: 'Excellent', description: 'Exceeds expectations, outstanding performance' }
+    { value: 1, label: 'VG', fullLabel: 'Very Good', color: '#10B981' },
+    { value: 2, label: 'G', fullLabel: 'Good', color: '#6366F1' },
+    { value: 3, label: 'F', fullLabel: 'Fair', color: '#F59E0B' },
+    { value: 4, label: 'P', fullLabel: 'Poor', color: '#EF4444' }
 ];
 
 async function loadStudentsTable() {
@@ -191,35 +184,41 @@ async function openEvaluationModal(student) {
     const firstHalfEval = evalData?.first_half_evaluation;
     const secondHalfEval = evalData?.second_half_evaluation;
     
-    // Generate questions HTML
-    const questionsHtml = EVALUATION_QUESTIONS.map((q, idx) => `
-        <div class="eval-question" style="background: #F9FAFB; padding: 16px; border-radius: 8px; margin-bottom: 12px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                <div>
-                    <div style="font-weight: 600; color: #1F2937; font-size: 14px;">
-                        ${idx + 1}. ${q.question}
-                    </div>
-                    <div style="font-size: 12px; color: #6B7280; margin-top: 4px;">
-                        ${q.description}
-                    </div>
-                </div>
+    // Generate categories and questions HTML
+    const categoriesHtml = EVALUATION_CATEGORIES.map(cat => `
+        <div class="eval-category" style="margin-bottom: 24px;">
+            <div style="background: #4A6491; color: white; padding: 10px 16px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 600;">${cat.name}</span>
+                <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 12px;">${cat.weight}%</span>
             </div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                ${RATING_SCALE.map(r => `
-                    <label style="flex: 1; min-width: 80px; cursor: pointer;">
-                        <input type="radio" name="${q.id}" value="${r.value}" style="display: none;" required>
-                        <div class="rating-option" data-value="${r.value}" style="
-                            padding: 10px 8px;
-                            text-align: center;
-                            border: 2px solid #E5E7EB;
-                            border-radius: 8px;
-                            background: white;
-                            transition: all 0.2s;
-                        ">
-                            <div style="font-weight: 700; font-size: 18px; color: #374151;">${r.value}</div>
-                            <div style="font-size: 11px; color: #6B7280;">${r.label}</div>
+            <div style="border: 1px solid #E5E7EB; border-top: none; border-radius: 0 0 8px 8px; padding: 12px;">
+                ${cat.questions.map((q, idx) => `
+                    <div class="eval-question" style="padding: 12px; border-bottom: ${idx < cat.questions.length - 1 ? '1px solid #F3F4F6' : 'none'};">
+                        <div style="font-size: 13px; color: #374151; margin-bottom: 10px;">
+                            ${idx + 1}. ${q.text}
                         </div>
-                    </label>
+                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                            ${RATING_SCALE.map(r => `
+                                <label style="cursor: pointer;">
+                                    <input type="radio" name="${q.id}" value="${r.value}" data-category="${cat.id}" style="display: none;" required>
+                                    <div class="rating-btn" data-value="${r.value}" style="
+                                        width: 40px;
+                                        height: 40px;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        border: 2px solid #E5E7EB;
+                                        border-radius: 8px;
+                                        background: white;
+                                        font-weight: 600;
+                                        font-size: 14px;
+                                        color: #6B7280;
+                                        transition: all 0.2s;
+                                    ">${r.value}</div>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
                 `).join('')}
             </div>
         </div>
@@ -278,40 +277,57 @@ async function openEvaluationModal(student) {
             
             <!-- Rating Scale Legend -->
             <div style="background: #FEF3C7; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">
-                <div style="font-weight: 600; color: #92400E; font-size: 13px; margin-bottom: 8px;">Rating Scale</div>
-                <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: #78350F;">
-                    <span><strong>1</strong> - Poor</span>
-                    <span><strong>2</strong> - Fair</span>
-                    <span><strong>3</strong> - Good</span>
-                    <span><strong>4</strong> - Excellent</span>
+                <div style="font-weight: 600; color: #92400E; font-size: 13px; margin-bottom: 8px;">Rating Scale (Please Encircle)</div>
+                <div style="display: flex; gap: 20px; flex-wrap: wrap; font-size: 12px; color: #78350F;">
+                    <span><strong>1</strong> - Very Good</span>
+                    <span><strong>2</strong> - Good</span>
+                    <span><strong>3</strong> - Fair</span>
+                    <span><strong>4</strong> - Poor</span>
                 </div>
             </div>
             
-            <!-- Questions -->
-            <div id="evaluation-questions" style="max-height: 400px; overflow-y: auto; padding-right: 8px;">
-                ${questionsHtml}
+            <!-- Categories & Questions -->
+            <div id="evaluation-questions" style="max-height: 450px; overflow-y: auto; padding-right: 8px;">
+                ${categoriesHtml}
+            </div>
+            
+            <!-- Comments Section -->
+            <div style="margin-top: 16px;">
+                <label style="display: block; font-size: 13px; color: #374151; margin-bottom: 8px;">
+                    Comments or recommendations to help improve the trainee's performance:
+                </label>
+                <textarea id="evaluation-comments" rows="3" style="width: 100%; padding: 10px; border: 1px solid #E5E7EB; border-radius: 8px; font-size: 13px; resize: vertical;" placeholder="Optional comments..."></textarea>
             </div>
             
             <!-- Score Display -->
-            <div style="background: #F3F4F6; padding: 16px; border-radius: 8px; margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <div style="font-size: 12px; color: #6B7280;">Calculated Score</div>
-                    <div style="font-size: 11px; color: #9CA3AF;">Based on your responses (10 questions × 4 max = 40, scaled to 100)</div>
+            <div style="background: linear-gradient(135deg, #4A6491 0%, #3D5A7E 100%); padding: 16px; border-radius: 8px; margin-top: 16px; color: white;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 14px; opacity: 0.9;">Weighted Score</div>
+                        <div style="font-size: 11px; opacity: 0.7;">Competence 40% + Attendance 30% + Communication 20% + Personality 10%</div>
+                    </div>
+                    <div id="calculated-score" style="font-size: 36px; font-weight: 700;">--</div>
                 </div>
-                <div id="calculated-score" style="font-size: 32px; font-weight: 700; color: #6366F1;">--</div>
+                <div id="score-breakdown" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 12px; display: none;">
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center;">
+                        <div><div style="opacity: 0.7;">Competence</div><div id="score-competence" style="font-weight: 600;">-</div></div>
+                        <div><div style="opacity: 0.7;">Attendance</div><div id="score-attendance" style="font-weight: 600;">-</div></div>
+                        <div><div style="opacity: 0.7;">Communication</div><div id="score-communication" style="font-weight: 600;">-</div></div>
+                        <div><div style="opacity: 0.7;">Personality</div><div id="score-personality" style="font-weight: 600;">-</div></div>
+                    </div>
+                </div>
             </div>
         </div>
         
         <style>
-            .rating-option:hover {
-                border-color: #6366F1 !important;
-                background: #EEF2FF !important;
+            .rating-btn:hover {
+                border-color: #4A6491 !important;
+                background: #EFF6FF !important;
+                color: #4A6491 !important;
             }
-            .rating-option.selected {
-                border-color: #6366F1 !important;
-                background: #6366F1 !important;
-            }
-            .rating-option.selected div {
+            .rating-btn.selected {
+                border-color: #4A6491 !important;
+                background: #4A6491 !important;
                 color: white !important;
             }
             #evaluation-questions::-webkit-scrollbar {
@@ -350,22 +366,23 @@ async function openEvaluationModal(student) {
     
     // Set up rating selection and score calculation
     setTimeout(() => {
-        const ratingOptions = document.querySelectorAll('.rating-option');
+        const ratingBtns = document.querySelectorAll('.rating-btn');
         const scoreDisplay = document.getElementById('calculated-score');
+        const scoreBreakdown = document.getElementById('score-breakdown');
         
         // Handle rating selection
-        ratingOptions.forEach(option => {
-            option.addEventListener('click', () => {
+        ratingBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
                 // Find the radio input and check it
-                const radio = option.parentElement.querySelector('input[type="radio"]');
+                const radio = btn.parentElement.querySelector('input[type="radio"]');
                 radio.checked = true;
                 
-                // Update visual selection
-                const questionContainer = option.closest('.eval-question');
-                questionContainer.querySelectorAll('.rating-option').forEach(opt => {
-                    opt.classList.remove('selected');
+                // Update visual selection within the same question
+                const questionContainer = btn.closest('.eval-question');
+                questionContainer.querySelectorAll('.rating-btn').forEach(b => {
+                    b.classList.remove('selected');
                 });
-                option.classList.add('selected');
+                btn.classList.add('selected');
                 
                 // Calculate score
                 calculateScore();
@@ -373,54 +390,92 @@ async function openEvaluationModal(student) {
         });
         
         function calculateScore() {
-            let total = 0;
-            let answered = 0;
+            const categoryScores = {};
+            let totalQuestions = 0;
+            let answeredQuestions = 0;
             
-            EVALUATION_QUESTIONS.forEach(q => {
-                const selected = document.querySelector(`input[name="${q.id}"]:checked`);
-                if (selected) {
-                    total += parseInt(selected.value);
-                    answered++;
-                }
+            // Calculate score for each category
+            EVALUATION_CATEGORIES.forEach(cat => {
+                let catTotal = 0;
+                let catAnswered = 0;
+                
+                cat.questions.forEach(q => {
+                    totalQuestions++;
+                    const selected = document.querySelector(`input[name="${q.id}"]:checked`);
+                    if (selected) {
+                        // Convert 1-4 scale to score (1=100, 2=75, 3=50, 4=25)
+                        const rating = parseInt(selected.value);
+                        const questionScore = (5 - rating) * 25; // 1->100, 2->75, 3->50, 4->25
+                        catTotal += questionScore;
+                        catAnswered++;
+                        answeredQuestions++;
+                    }
+                });
+                
+                // Average score for this category
+                categoryScores[cat.id] = catAnswered > 0 ? Math.round(catTotal / catAnswered) : null;
             });
             
-            if (answered === 0) {
+            // Update category score displays
+            document.getElementById('score-competence').textContent = categoryScores.competence !== null ? categoryScores.competence : '-';
+            document.getElementById('score-attendance').textContent = categoryScores.attendance !== null ? categoryScores.attendance : '-';
+            document.getElementById('score-communication').textContent = categoryScores.communication !== null ? categoryScores.communication : '-';
+            document.getElementById('score-personality').textContent = categoryScores.personality !== null ? categoryScores.personality : '-';
+            
+            if (answeredQuestions === 0) {
                 scoreDisplay.textContent = '--';
-                scoreDisplay.style.color = '#9CA3AF';
-            } else {
-                // Scale to 100: (total / 40) * 100
-                const score = Math.round((total / 40) * 100);
-                scoreDisplay.textContent = score;
-                
-                // Color based on score
-                if (score >= 81) {
-                    scoreDisplay.style.color = '#10B981';
-                } else if (score >= 61) {
-                    scoreDisplay.style.color = '#6366F1';
-                } else if (score >= 41) {
-                    scoreDisplay.style.color = '#F59E0B';
-                } else {
-                    scoreDisplay.style.color = '#EF4444';
-                }
+                scoreBreakdown.style.display = 'none';
+                return null;
             }
             
-            return answered === 10 ? Math.round((total / 40) * 100) : null;
+            // Calculate weighted total
+            // Competence 40% + Attendance 30% + Communication 20% + Personality 10%
+            let weightedScore = 0;
+            let weightedTotal = 0;
+            
+            if (categoryScores.competence !== null) {
+                weightedScore += categoryScores.competence * 0.40;
+                weightedTotal += 40;
+            }
+            if (categoryScores.attendance !== null) {
+                weightedScore += categoryScores.attendance * 0.30;
+                weightedTotal += 30;
+            }
+            if (categoryScores.communication !== null) {
+                weightedScore += categoryScores.communication * 0.20;
+                weightedTotal += 20;
+            }
+            if (categoryScores.personality !== null) {
+                weightedScore += categoryScores.personality * 0.10;
+                weightedTotal += 10;
+            }
+            
+            // Normalize if not all categories answered
+            const finalScore = weightedTotal > 0 ? Math.round(weightedScore * (100 / weightedTotal)) : 0;
+            
+            scoreDisplay.textContent = finalScore;
+            scoreBreakdown.style.display = 'block';
+            
+            // Return score only if all questions answered
+            return answeredQuestions === totalQuestions ? finalScore : null;
         }
         
         // Save button handler
         document.getElementById('save-evaluation-btn')?.addEventListener('click', async () => {
             const score = calculateScore();
             const period = document.getElementById('evaluation-period').value;
+            const comments = document.getElementById('evaluation-comments').value.trim();
             
             if (score === null) {
-                showError('Please answer all 10 questions');
+                showError('Please answer all 15 questions');
                 return;
             }
             
             try {
                 const res = await client.post(`/companies/students/${student.student_id}/evaluations`, {
                     evaluation_score: score,
-                    evaluation_period: period
+                    evaluation_period: period,
+                    comments: comments
                 });
                 
                 modal.close();

@@ -136,7 +136,7 @@ Body (Reject):  { "action": "reject", "rejection_reason": "Incomplete report" }
 | **Approve/Reject DTR** | **PC (Primary)** | **Approves/rejects, sets final hours (+/-)** |
 | Approve DTR | CDC (Monitor) | Can still approve/reject, but PC is primary |
 | Filter Students | CDC/PC (Web) | Filter by semester, academic year, course, status |
-| **Evaluate Student** | **PC (Web)** | **10-question form (1-4 scale), auto-calculates score** |
+| **Evaluate Student** | **PC (Web)** | **15-question USLS form (4 categories, weighted scoring)** |
 
 ---
 
@@ -164,32 +164,73 @@ POST /companies/dtr/:id/validate
 
 ---
 
-### ✅ Phase 4.5: 10-Question Evaluation Form - HOW TO TEST
+### ✅ Phase 4.5: USLS Performance Evaluation Form - HOW TO TEST
 
 **PC Dashboard → Students Evaluation:**
 1. Login as Company
 2. Click "Students Evaluation" in sidebar
 3. Click "Evaluate" on any student
-4. See 10 evaluation questions:
-   - Attendance and Punctuality
-   - Quality of Work
-   - Productivity
-   - Initiative
-   - Communication Skills
-   - Teamwork
-   - Professionalism
-   - Problem Solving
-   - Adaptability
-   - Overall Performance
+4. See 4 weighted categories with 15 total questions:
+
+**I. COMPETENCE (40%)** - 5 questions
+   - Exhibits workable knowledge and understanding of assigned tasks
+   - Expresses willingness to work in groups
+   - Receptive to ideas of other people
+   - Shows positive response to corrections
+   - Submits quality work
+
+**II. ATTENDANCE AND PUNCTUALITY (30%)** - 4 questions
+   - Maintains regular OJT time
+   - Reports to work on time
+   - Notifies supervisor ahead of time if unable to report
+   - Makes up for absences
+
+**III. COMMUNICATION SKILLS (20%)** - 2 questions
+   - Proficiency in English
+   - Ability to express ideas and deliver them clearly
+
+**IV. PERSONALITY (10%)** - 4 questions
+   - Physically neat in appearance
+   - Relates well with people, maintains sincerity and fairness
+   - Possesses self-confidence and shows initiative
+   - Shows ability to manage time and identify priorities
+
 5. Rate each question 1-4:
-   - 1 = Poor
-   - 2 = Fair
-   - 3 = Good
-   - 4 = Excellent
-6. Score auto-calculates: (total / 40) × 100
-7. Select evaluation period (1st-15th or 16th-End)
-8. Click "Submit Evaluation"
-9. Student receives notification with score
+   - **1 = Very Good** (100 pts)
+   - **2 = Good** (75 pts)
+   - **3 = Fair** (50 pts)
+   - **4 = Poor** (25 pts)
+
+6. Score auto-calculates with weighted formula:
+   - `(Competence avg × 40%) + (Attendance avg × 30%) + (Communication avg × 20%) + (Personality avg × 10%)`
+
+7. Add optional comments/recommendations
+8. Select evaluation period (1st-15th or 16th-End)
+9. Click "Submit Evaluation"
+10. Student receives notification with score
+
+---
+
+### ✅ Phase 4.6 & 4.7: Completed Students - HOW TO TEST
+
+**PC Dashboard → Completed Students:**
+1. Login as Company
+2. Click "Completed Students" in sidebar
+3. See list of students who finished OJT at your company
+4. View stats: Total Completed, Avg Hours, Avg Evaluation
+5. Filter by course, semester, academic year
+6. Each row shows:
+   - Student info (ID, name, email, course)
+   - Hours completed vs required
+   - Completion date
+   - Final evaluation score
+   - Performance category
+
+**API Endpoint:**
+```
+GET /companies/students/completed
+GET /companies/students/completed?academic_year=2024-2025&semester=1st&course=IT
+```
 
 ---
 
@@ -247,9 +288,14 @@ POST /companies/dtr/:id/validate
 - [x] **4.2** Create get-student-dtr API for company view
 - [x] **4.3** Create validate-dtr API for company approval (approve/reject)
 - [x] **4.4** Add DTR Approval page in PC dashboard ✅
-- [x] **4.5** Update evaluation form with 10-question multiple choice (1-4 scale) ✅
-- [ ] **4.6** Create get-completed-students API for companies
-- [ ] **4.7** Add completed students tab in PC dashboard
+- [x] **4.5** Update evaluation form with USLS 15-question weighted form ✅
+  - I. Competence (40%) - 5 questions
+  - II. Attendance & Punctuality (30%) - 4 questions
+  - III. Communication Skills (20%) - 2 questions
+  - IV. Personality (10%) - 4 questions
+  - Rating: 1=Very Good, 2=Good, 3=Fair, 4=Poor
+- [x] **4.6** Create get-completed-students API for companies ✅
+- [x] **4.7** Add completed students page in PC dashboard ✅
 
 ---
 

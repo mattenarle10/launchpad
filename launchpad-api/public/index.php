@@ -243,6 +243,12 @@ try {
             exit;
         }
         
+        // /companies/students/completed (GET - get completed OJT students)
+        if (count($pathParts) === 3 && $pathParts[1] === 'students' && $pathParts[2] === 'completed') {
+            require __DIR__ . '/../routes/companies/get-completed-students.php';
+            exit;
+        }
+        
         // /companies
         if (count($pathParts) === 1) {
             require __DIR__ . '/../routes/companies/get-all.php';
