@@ -36,9 +36,10 @@ if (!in_array(strtoupper($course), $allowedCourses)) {
     Response::error('Invalid course. Choose: IT, COMSCI, or EMC', 400);
 }
 
-// Validate password length
-if (strlen($password) < PASSWORD_MIN_LENGTH) {
-    Response::error('Password must be at least ' . PASSWORD_MIN_LENGTH . ' characters', 400);
+// Validate password complexity
+$passwordValidation = Auth::validatePasswordComplexity($password);
+if (!$passwordValidation['valid']) {
+    Response::error('Password requirements not met: ' . implode(', ', $passwordValidation['errors']), 400);
 }
 
 // Handle COR (Certificate of Registration) upload
