@@ -6,6 +6,7 @@
 import { loadSidebar } from '../components.js';
 import { initUserDropdown } from './dropdown.js';
 import client from '../api/client.js';
+import AuthAPI from '../api/auth.js';
 import { showSuccess, showError } from '../utils/notifications.js';
 import { getSidebarMode } from '../utils/sidebar-helper.js';
 
@@ -37,6 +38,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Setup form submission
     document.getElementById('profile-form')?.addEventListener('submit', handleSubmit);
+
+    // Setup change password modal
+    setupChangePasswordModal();
 
     // Logo upload handlers (company only)
     const fileInput = document.getElementById('company-logo-file');
@@ -234,5 +238,134 @@ async function handleSubmit(e) {
     } finally {
         saveBtn.disabled = false;
         saveBtn.textContent = 'Save Changes';
+    }
+}
+
+// Change Password Modal Functions
+function setupChangePasswordModal() {
+    const modal = document.getElementById('change-password-modal');
+    const openBtn = document.getElementById('change-password-btn');
+    const closeBtn = document.getElementById('close-password-modal');
+    const cancelBtn = document.getElementById('cancel-password-btn');
+    const form = document.getElementById('change-password-form');
+    const newPasswordInput = document.getElementById('new-password');
+    const overlay = modal?.querySelector('.modal-overlay');
+
+    // Open modal
+    openBtn?.addEventListener('click', () => {
+        modal.style.display = 'flex';
+        resetPasswordForm();
+    });
+
+    // Close modal
+    const closeModal = () => {
+        modal.style.display = 'none';
+        resetPasswordForm();
+    };
+
+    closeBtn?.addEventListener('click', closeModal);
+    cancelBtn?.addEventListener('click', closeModal);
+    overlay?.addEventListener('click', closeModal);
+
+    // Toggle password visibility
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.dataset.target;
+            const input = document.getElementById(targetId);
+            if (input) {
+                input.type = input.type === 'password' ? 'text' : 'password';
+            }
+        });
+    });
+
+    // Real-time password validation
+    newPasswordInput?.addEventListener('input', () => {
+        validatePasswordRequirements(newPasswordInput.value);
+    });
+
+    // Form submission
+    form?.addEventListener('submit', handleChangePassword);
+}
+
+function validatePasswordRequirements(password) {
+    const requirements = {
+        length: password.length >= 8,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /[0-9]/.test(password),
+        special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+    };
+
+    Object.entries(requirements).forEach(([key, met]) => {
+        const el = document.querySelector(`.requirement[data-check="${key}"]`);
+        if (el) {
+            if (met) {
+                el.classList.add('met');
+                el.querySelector('.check-icon').textContent = '✓';
+            } else {
+                el.classList.remove('met');
+                el.querySelector('.check-icon').textContent = '○';
+            }
+        }
+    });
+
+    return Object.values(requirements).every(v => v);
+}
+
+function resetPasswordForm() {
+    const form = document.getElementById('change-password-form');
+    form?.reset();
+    
+    // Reset requirement indicators
+    document.querySelectorAll('.requirement').forEach(el => {
+        el.classList.remove('met');
+        el.querySelector('.check-icon').textContent = '○';
+    });
+}
+
+async function handleChangePassword(e) {
+    e.preventDefault();
+
+    const currentPassword = document.getElementById('current-password').value;
+    const newPassword = document.getElementById('new-password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
+    const submitBtn = document.getElementById('submit-password-btn');
+
+    // Validate passwords match
+    if (newPassword !== confirmPassword) {
+        showError('New passwords do not match');
+        return;
+    }
+
+    // Validate password complexity
+    const validation = AuthAPI.validatePasswordComplexity(newPassword);
+    if (!validation.valid) {
+        showError('Password requirements not met: ' + validation.errors[0]);
+        return;
+    }
+
+    // Check new password is different
+    if (currentPassword === newPassword) {
+        showError('New password must be different from current password');
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Changing...';
+
+    try {
+        await AuthAPI.changePassword(currentPassword, newPassword, confirmPassword);
+        showSuccess('Password changed successfully!');
+        
+        // Close modal
+        document.getElementById('change-password-modal').style.display = 'none';
+        resetPasswordForm();
+
+    } catch (error) {
+        console.error('Error changing password:', error);
+        showError(error.message || 'Failed to change password');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Change Password';
     }
 }
