@@ -27,10 +27,11 @@ $sql = "
         dr.student_id,
         dr.report_date,
         dr.hours_requested,
-        dr.accomplishments,
+        dr.description,
+        dr.activity_type,
         dr.status,
-        dr.file_path,
-        dr.created_at,
+        dr.report_file,
+        dr.submitted_at,
         s.first_name,
         s.last_name,
         s.id_num,
@@ -61,7 +62,7 @@ if ($studentId !== null) {
     $types .= 'i';
 }
 
-$sql .= " ORDER BY dr.report_date DESC, dr.created_at DESC";
+$sql .= " ORDER BY dr.report_date DESC, dr.submitted_at DESC";
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param($types, ...$params);
@@ -78,9 +79,10 @@ while ($row = $result->fetch_assoc()) {
         'course' => $row['course'],
         'report_date' => $row['report_date'],
         'hours_requested' => floatval($row['hours_requested']),
-        'accomplishments' => $row['accomplishments'],
-        'file_path' => $row['file_path'],
-        'created_at' => $row['created_at']
+        'accomplishments' => $row['description'],
+        'activity_type' => $row['activity_type'],
+        'file_path' => $row['report_file'],
+        'created_at' => $row['submitted_at']
     ];
 }
 

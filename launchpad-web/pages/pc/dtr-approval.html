@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="../../css/table.css">
     <link rel="stylesheet" href="../../css/notifications.css">
     <link rel="stylesheet" href="../../css/modal.css">
+    <link rel="stylesheet" href="../../css/file-viewer.css">
     <style>
         .dtr-card {
             background: white;
@@ -93,8 +94,8 @@
         }
         .hours-input:focus {
             outline: none;
-            border-color: #6366F1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(57, 88, 134, 0.12);
         }
         .btn-approve {
             background: #10B981;
@@ -127,7 +128,7 @@
             background: #DC2626;
         }
         .btn-view-file {
-            background: #6366F1;
+            background: var(--primary-blue);
             color: white;
             border: none;
             padding: 10px 20px;
@@ -140,7 +141,7 @@
             gap: 6px;
         }
         .btn-view-file:hover {
-            background: #4F46E5;
+            background: var(--secondary-blue);
         }
         .empty-state {
             text-align: center;
@@ -286,20 +287,6 @@
 
             <!-- Page Content -->
             <div class="dashboard-content">
-                <!-- Stats -->
-                <div class="stats-grid">
-                    <div class="card stat-card">
-                        <h3 class="card-title">Pending DTR</h3>
-                        <div class="stat-number" id="pending-count">0</div>
-                        <p class="stat-label">Awaiting Approval</p>
-                    </div>
-                    <div class="card stat-card">
-                        <h3 class="card-title">Pending Hours</h3>
-                        <div class="stat-number" id="pending-hours">0</div>
-                        <p class="stat-label">Total Requested</p>
-                    </div>
-                </div>
-
                 <!-- Filter Bar -->
                 <div class="filter-bar">
                     <select class="filter-dropdown" id="student-filter">
@@ -347,15 +334,38 @@
         </div>
     </div>
 
+    <!-- Approve Confirm Modal -->
+    <div class="modal-overlay" id="approve-modal">
+        <div class="modal-content">
+            <div class="modal-header">Approve DTR Report</div>
+            <div class="modal-body">
+                <p style="margin-bottom: 16px; color: #6B7280; line-height: 1.5;">
+                    You are about to <strong>approve this DTR</strong> using the current values in
+                    <strong>Approved Hours</strong> and <strong>Remarks</strong>.
+                </p>
+                <p style="margin: 0; font-size: 14px; color: #4B5563;">
+                    If you need to adjust hours or remarks, close this dialog first, update the fields in the card,
+                    then click <strong>Approve</strong> again.
+                </p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" id="cancel-approve">Cancel</button>
+                <button class="btn-approve" id="confirm-approve">Confirm Approve</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { loadSidebar, loadUserInfo } from '../../js/components.js';
         import { initUserDropdown } from '../../js/pages/dropdown.js';
         import client from '../../js/api/client.js';
         import { showSuccess, showError } from '../../js/utils/notifications.js';
         import { getSidebarMode } from '../../js/utils/sidebar-helper.js';
+        import { openFileViewer } from '../../js/utils/file-viewer.js';
 
         let pendingDTR = [];
         let currentRejectId = null;
+        let currentApproveId = null;
 
         async function loadPendingDTR() {
             const dtrList = document.getElementById('dtr-list');
@@ -365,9 +375,16 @@
                 const res = await client.get('/companies/dtr/pending');
                 pendingDTR = res.data?.reports || [];
                 
-                // Update stats
-                document.getElementById('pending-count').textContent = res.data?.summary?.pending_count || 0;
-                document.getElementById('pending-hours').textContent = (res.data?.summary?.total_pending_hours || 0).toFixed(1);
+                // Update stats (safe even if stat cards are removed)
+                const pendingCountEl = document.getElementById('pending-count');
+                if (pendingCountEl) {
+                    pendingCountEl.textContent = res.data?.summary?.pending_count || 0;
+                }
+
+                const pendingHoursEl = document.getElementById('pending-hours');
+                if (pendingHoursEl) {
+                    pendingHoursEl.textContent = (res.data?.summary?.total_pending_hours || 0).toFixed(1);
+                }
 
                 // Populate student filter
                 populateStudentFilter();
@@ -435,18 +452,18 @@
                         ${dtr.accomplishments || 'No accomplishments provided'}
                     </div>
                     <div class="dtr-actions">
-                        ${dtr.file_path ? `<a href="${getFileUrl(dtr.file_path)}" target="_blank" class="btn-view-file">
+                        ${dtr.file_path ? `<button type="button" class="btn-view-file" data-file-url="${getFileUrl(dtr.file_path)}" data-file-title="${dtr.student_name.replace(/'/g, "\\'")} - ${formatDate(dtr.report_date)}">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                                 <polyline points="14 2 14 8 20 8"></polyline>
                             </svg>
                             View File
-                        </a>` : ''}
+                        </button>` : ''}
                         <div style="flex: 1;"></div>
                         <label style="font-size: 14px; color: #6B7280;">Approved Hours:</label>
                         <input type="number" class="hours-input" id="hours-${dtr.report_id}" value="${dtr.hours_requested}" min="0" max="24" step="0.5">
                         <input type="text" class="remarks-input" id="remarks-${dtr.report_id}" placeholder="Remarks (optional)" style="max-width: 200px;">
-                        <button class="btn-approve" onclick="approveDTR(${dtr.report_id})">
+                        <button class="btn-approve" onclick="openApproveModal(${dtr.report_id})">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="20 6 9 17 4 12"></polyline>
                             </svg>
@@ -462,6 +479,8 @@
                     </div>
                 </div>
             `).join('');
+
+            attachViewFileHandlers();
         }
 
         function formatDate(dateStr) {
@@ -475,8 +494,8 @@
         }
 
         function getFileUrl(filePath) {
-            // Adjust path for web access
-            return `../../../launchpad-api/${filePath}`;
+            // Serve from uploads/daily_reports just like CDC submission reports page
+            return `../../../launchpad-api/uploads/daily_reports/${filePath}`;
         }
 
         window.approveDTR = async function(reportId) {
@@ -564,6 +583,39 @@
             }
         }
 
+        function attachViewFileHandlers() {
+            const buttons = document.querySelectorAll('.btn-view-file[data-file-url]');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const url = btn.getAttribute('data-file-url');
+                    const title = btn.getAttribute('data-file-title') || 'Report File';
+                    if (url) {
+                        openFileViewer(url, title);
+                    }
+                });
+            });
+        }
+
+        function openApproveModal(reportId) {
+            currentApproveId = reportId;
+            document.getElementById('approve-modal').classList.add('active');
+        }
+
+        function closeApproveModal() {
+            currentApproveId = null;
+            document.getElementById('approve-modal').classList.remove('active');
+        }
+
+        async function confirmApprove() {
+            if (!currentApproveId) {
+                closeApproveModal();
+                return;
+            }
+
+            await approveDTR(currentApproveId);
+            closeApproveModal();
+        }
+
         function applyFilters() {
             const studentId = document.getElementById('student-filter').value;
             const month = document.getElementById('month-filter').value;
@@ -614,11 +666,18 @@
             document.getElementById('student-filter').addEventListener('change', applyFilters);
             document.getElementById('month-filter').addEventListener('change', applyFilters);
 
-            // Setup modal
+            // Setup reject modal
             document.getElementById('cancel-reject').addEventListener('click', closeRejectModal);
             document.getElementById('confirm-reject').addEventListener('click', confirmReject);
             document.getElementById('reject-modal').addEventListener('click', (e) => {
                 if (e.target.id === 'reject-modal') closeRejectModal();
+            });
+
+            // Setup approve modal
+            document.getElementById('cancel-approve').addEventListener('click', closeApproveModal);
+            document.getElementById('confirm-approve').addEventListener('click', confirmApprove);
+            document.getElementById('approve-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'approve-modal') closeApproveModal();
             });
         });
     </script>

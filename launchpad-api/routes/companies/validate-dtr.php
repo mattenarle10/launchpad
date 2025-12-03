@@ -78,12 +78,10 @@ if ($action === 'approve') {
             company_validated = 1,
             company_validated_at = NOW(),
             company_validated_by = ?,
-            company_remarks = ?,
-            reviewed_by = ?,
-            reviewed_at = NOW()
+            company_remarks = ?
         WHERE report_id = ?
     ");
-    $stmt->bind_param('disii', $hoursApproved, $user['id'], $remarks, $user['id'], $reportId);
+    $stmt->bind_param('disi', $hoursApproved, $user['id'], $remarks, $reportId);
 
     if (!$stmt->execute()) {
         Response::error('Failed to approve DTR', 500);
@@ -146,12 +144,10 @@ if ($action === 'approve') {
             company_validated = 1,
             company_validated_at = NOW(),
             company_validated_by = ?,
-            company_remarks = ?,
-            reviewed_by = ?,
-            reviewed_at = NOW()
+            company_remarks = ?
         WHERE report_id = ?
     ");
-    $stmt->bind_param('sisii', $rejectionReason, $user['id'], $remarks, $user['id'], $reportId);
+    $stmt->bind_param('sisi', $rejectionReason, $user['id'], $remarks, $reportId);
 
     if (!$stmt->execute()) {
         Response::error('Failed to reject DTR', 500);
