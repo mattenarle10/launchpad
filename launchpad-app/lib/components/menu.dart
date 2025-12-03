@@ -4,6 +4,7 @@ import '../screens/landing.dart';
 import '../screens/main/report.dart';
 import '../screens/main/about.dart';
 import '../screens/main/requirements.dart';
+import '../screens/main/change_password.dart';
 
 class MenuOverlay extends StatelessWidget {
   const MenuOverlay({super.key});
@@ -91,6 +92,19 @@ class MenuOverlay extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const RequirementsScreen()),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              _buildMenuItem(
+                context,
+                'Change Password',
+                Icons.lock_outline,
+                () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
                   );
                 },
               ),
