@@ -56,6 +56,27 @@ const CDCAPI = {
     },
 
     /**
+     * Get unverified CDC users
+     */
+    async getUnverifiedCdcUsers() {
+        return client.get('/admin/unverified/cdc');
+    },
+
+    /**
+     * Verify CDC user
+     */
+    async verifyCdcUser(id) {
+        return client.post(`/admin/verify/cdc/${id}`, {});
+    },
+
+    /**
+     * Reject CDC user
+     */
+    async rejectCdcUser(id) {
+        return client.delete(`/admin/reject/cdc/${id}`);
+    },
+
+    /**
      * Get pending reports
      */
     async getPendingReports() {
@@ -193,6 +214,120 @@ const CDCAPI = {
             `;
             showError('Failed to load students: ' + error.message);
             throw error;
+        }
+    },
+
+    /**
+     * Load and display unverified CDC users in a DataTable
+     */
+    async loadUnverifiedCdcUsersTable(tableWrapperId, statElementId) {
+        const tableWrapper = document.getElementById(tableWrapperId);
+        tableWrapper.innerHTML = '<div class="loading"><div class="loading-spinner"></div><p>Loading CDC accounts...</p></div>';
+
+        try {
+            const response = await this.getUnverifiedCdcUsers();
+            const users = response.data || [];
+
+            // Update stats if element exists
+            if (statElementId) {
+                const statElement = document.getElementById(statElementId);
+                if (statElement) statElement.textContent = users.length;
+            }
+
+            const dataTable = new DataTable({
+                containerId: tableWrapperId,
+                columns: [
+                    { key: 'username', label: 'Username', sortable: true },
+                    {
+                        key: 'first_name',
+                        label: 'Name',
+                        sortable: true,
+                        format: (value, row) => `${row.first_name} ${row.last_name}`
+                    },
+                    { key: 'email', label: 'Email', sortable: true },
+                    {
+                        key: 'created_at',
+                        label: 'Requested',
+                        sortable: true,
+                        format: (value) => this.formatDate(value)
+                    }
+                ],
+                actions: [
+                    {
+                        type: 'approve',
+                        label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;"><polyline points="20 6 9 17 4 12"></polyline></svg>Approve',
+                        onClick: (row) => this.approveCdcUserWithConfirm(row, () => this.loadUnverifiedCdcUsersTable(tableWrapperId, statElementId))
+                    },
+                    {
+                        type: 'reject',
+                        label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>Decline',
+                        onClick: (row) => this.rejectCdcUserWithConfirm(row, () => this.loadUnverifiedCdcUsersTable(tableWrapperId, statElementId))
+                    }
+                ],
+                data: users,
+                pageSize: 10,
+                emptyMessage: 'No pending CDC account requests'
+            });
+
+            return { dataTable, users };
+
+        } catch (error) {
+            console.error('Error loading CDC accounts:', error);
+            tableWrapper.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                    </div>
+                    <div class="empty-state-text">Error loading CDC accounts</div>
+                    <div class="empty-state-subtext">${error.message}</div>
+                </div>
+            `;
+            showError('Failed to load CDC accounts: ' + error.message);
+            throw error;
+        }
+    },
+
+    /**
+     * Approve CDC user with confirmation
+     */
+    async approveCdcUserWithConfirm(user, onSuccess) {
+        if (!confirm(`Verify CDC account for ${user.first_name} ${user.last_name} (${user.username})?`)) {
+            return;
+        }
+
+        try {
+            await this.verifyCdcUser(user.id);
+            showSuccess(`CDC account for ${user.first_name} ${user.last_name} has been verified.`);
+            if (onSuccess) {
+                setTimeout(() => onSuccess(), 1000);
+            }
+        } catch (error) {
+            console.error('Error verifying CDC user:', error);
+            showError('Failed to verify CDC user: ' + error.message);
+        }
+    },
+
+    /**
+     * Reject CDC user with confirmation
+     */
+    async rejectCdcUserWithConfirm(user, onSuccess) {
+        if (!confirm(`Reject CDC account request for ${user.first_name} ${user.last_name} (${user.username})?\n\nThis action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            await this.rejectCdcUser(user.id);
+            showWarning(`CDC account request for ${user.first_name} ${user.last_name} has been rejected.`);
+            if (onSuccess) {
+                setTimeout(() => onSuccess(), 1000);
+            }
+        } catch (error) {
+            console.error('Error rejecting CDC user:', error);
+            showError('Failed to reject CDC user: ' + error.message);
         }
     },
 

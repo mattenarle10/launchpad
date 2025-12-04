@@ -83,6 +83,11 @@
                         <div class="stat-number" id="pending-companies-count">0</div>
                         <p class="stat-label">Awaiting Verification</p>
                     </div>
+                    <div class="card stat-card">
+                        <h3 class="card-title">Pending CDC Staff</h3>
+                        <div class="stat-number" id="pending-cdc-count">0</div>
+                        <p class="stat-label">Awaiting Verification</p>
+                    </div>
                 </div>
 
                 <!-- Tab Navigation -->
@@ -102,6 +107,14 @@
                             <polyline points="9 22 9 12 15 12 15 22"></polyline>
                         </svg>
                         Companies
+                    </button>
+                    <button class="tab-btn" data-tab="cdc">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M19 7l-2 2-2-2"></path>
+                        </svg>
+                        CDC Staff
                     </button>
                 </div>
 
@@ -158,6 +171,30 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- CDC Tab -->
+                <div class="tab-content" id="cdc-tab">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 8px;">
+                                    <path d="M9 11l3 3L22 4"></path>
+                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                                </svg>
+                                Pending CDC Staff Verifications
+                            </h2>
+                            <div class="table-search">
+                                <input type="text" class="search-input" id="cdc-search-input" placeholder="Search by name, username, or email...">
+                            </div>
+                        </div>
+
+                        <div id="cdc-table-wrapper">
+                            <div class="loading">
+                                <p>Loading pending CDC accounts...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -174,8 +211,10 @@
 
         let studentsData = [];
         let companiesData = [];
+        let cdcUsersData = [];
         let studentDataTable = null;
         let companyDataTable = null;
+        let cdcDataTable = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
             // Check authentication
@@ -210,6 +249,11 @@
             companyDataTable = companiesResult.dataTable;
             companiesData = companiesResult.companies;
 
+            // Load CDC users table using CDC API
+            const cdcResult = await CDCAPI.loadUnverifiedCdcUsersTable('cdc-table-wrapper', 'pending-cdc-count');
+            cdcDataTable = cdcResult.dataTable;
+            cdcUsersData = cdcResult.users;
+
             // Setup students search
             document.getElementById('students-search-input')?.addEventListener('input', (e) => {
                 studentDataTable.search(e.target.value);
@@ -228,6 +272,11 @@
             // Setup companies search
             document.getElementById('companies-search-input')?.addEventListener('input', (e) => {
                 companyDataTable.search(e.target.value);
+            });
+
+            // Setup CDC search
+            document.getElementById('cdc-search-input')?.addEventListener('input', (e) => {
+                cdcDataTable?.search(e.target.value);
             });
 
             // Tab switching logic
