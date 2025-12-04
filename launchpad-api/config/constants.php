@@ -42,6 +42,13 @@ define('ROLE_COMPANY', 'company');
 // OJT Configuration
 define('DEFAULT_OJT_HOURS', 500);
 
+// Email Configuration
+define('MAIL_FROM_EMAIL', 'launchpadphnet@gmail.com');
+define('MAIL_FROM_NAME', 'LaunchPad');
+define('MAIL_APP_URL', $isProduction 
+    ? 'https://launchpadph.net'
+    : 'http://localhost/LaunchPad/launchpad-web');
+
 // Error Reporting
 if (DEBUG_MODE) {
     error_reporting(E_ALL);
