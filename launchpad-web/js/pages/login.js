@@ -20,9 +20,11 @@ if (loginType === 'cdc') {
     document.title = 'CDC Login - LaunchPad';
     pageSubtitle.textContent = 'Career Development Center';
     loginTitle.textContent = 'CDC Login';
-    // Hide register link for CDC
     const registerLink = document.getElementById('register-link');
-    if (registerLink) registerLink.style.display = 'none';
+    if (registerLink) {
+        registerLink.innerHTML = 'Need a CDC account? <a href="cdc/register.html">Request access here</a>';
+        registerLink.style.display = 'block';
+    }
 } else if (loginType === 'company') {
     document.title = 'Company Login - LaunchPad';
     pageSubtitle.textContent = 'Partner Company';

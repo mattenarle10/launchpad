@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDC Registration - LaunchPad</title>
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../css/login.css">
+    <link rel="stylesheet" href="../../css/notifications.css">
+</head>
+<body>
+    <div class="login-page">
+        <!-- Left Side - Logo & Title -->
+        <div class="login-left">
+            <div class="logo-container">
+                <img src="../../images/logo/launchpad.png" alt="LaunchPad Logo" class="logo-icon">
+                <div class="title-container">
+                    <h1 class="portal-title">Launch<span class="text-sky">Pad</span></h1>
+                    <p class="portal-subtitle">CDC Portal</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Registration Form -->
+        <div class="login-right">
+            <div class="login-card">
+                <h2 class="login-title">CDC Registration</h2>
+
+                <!-- Alert Container -->
+                <div id="alert-container"></div>
+
+                <!-- Registration Form -->
+                <form id="cdc-register-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">First Name *</label>
+                            <input type="text" id="first_name" class="form-input form-input-light" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Name *</label>
+                            <input type="text" id="last_name" class="form-input form-input-light" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email Address *</label>
+                            <input type="email" id="email" class="form-input form-input-light" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Username *</label>
+                            <input type="text" id="username" class="form-input form-input-light" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Password *</label>
+                            <input type="password" id="password" class="form-input form-input-light" minlength="8" required>
+                            <small class="form-hint">Minimum 8 characters, must meet password policy</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirm Password *</label>
+                            <input type="password" id="confirm_password" class="form-input form-input-light" required>
+                            <small id="password-match" class="form-hint"></small>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submit-btn" class="btn btn-primary btn-block" style="margin-top: 16px;">Submit Registration</button>
+                </form>
+
+                <div class="login-footer">
+                    <p>Already have a CDC account? <a href="../login.html?type=cdc">Back to CDC Login</a></p>
+                    <p><a href="../../index.html">← Back to Home</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../../js/pages/cdc-register.js"></script>
+</body>
+</html>
