@@ -262,6 +262,15 @@ try {
             exit;
         }
     }
+    
+    // Route: /cdc
+    if ($pathParts[0] === 'cdc') {
+        // /cdc/register (POST - no auth)
+        if (count($pathParts) === 2 && $pathParts[1] === 'register') {
+            require __DIR__ . '/../routes/cdc/register.php';
+            exit;
+        }
+    }
 
     // Route: /admin/*
     if ($pathParts[0] === 'admin') {
@@ -274,6 +283,12 @@ try {
         // /admin/unverified/companies
         if (count($pathParts) === 3 && $pathParts[1] === 'unverified' && $pathParts[2] === 'companies') {
             require __DIR__ . '/../routes/admin/get-unverified-companies.php';
+            exit;
+        }
+
+        // /admin/unverified/cdc
+        if (count($pathParts) === 3 && $pathParts[1] === 'unverified' && $pathParts[2] === 'cdc') {
+            require __DIR__ . '/../routes/admin/get-unverified-cdc.php';
             exit;
         }
         
@@ -290,6 +305,13 @@ try {
             require __DIR__ . '/../routes/admin/verify-company.php';
             exit;
         }
+
+        // /admin/verify/cdc/:id
+        if (count($pathParts) === 4 && $pathParts[1] === 'verify' && $pathParts[2] === 'cdc') {
+            $id = $pathParts[3];
+            require __DIR__ . '/../routes/admin/verify-cdc.php';
+            exit;
+        }
         
         // /admin/reject/students/:id
         if (count($pathParts) === 4 && $pathParts[1] === 'reject' && $pathParts[2] === 'students') {
@@ -302,6 +324,13 @@ try {
         if (count($pathParts) === 4 && $pathParts[1] === 'reject' && $pathParts[2] === 'companies') {
             $id = $pathParts[3];
             require __DIR__ . '/../routes/admin/reject-company.php';
+            exit;
+        }
+
+        // /admin/reject/cdc/:id
+        if (count($pathParts) === 4 && $pathParts[1] === 'reject' && $pathParts[2] === 'cdc') {
+            $id = $pathParts[3];
+            require __DIR__ . '/../routes/admin/reject-cdc.php';
             exit;
         }
         
