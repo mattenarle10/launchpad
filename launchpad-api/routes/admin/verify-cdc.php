@@ -45,4 +45,12 @@ $stmt = $conn->prepare("DELETE FROM unverified_cdc_users WHERE id = ?");
 $stmt->bind_param('i', $cdcId);
 $stmt->execute();
 
+// Send verification email notification
+$cdcName = $user['first_name'] . ' ' . $user['last_name'];
+Mailer::sendVerificationApproved(
+    $user['email'],
+    $cdcName,
+    'cdc'
+);
+
 Response::success(['id' => $newId], 'CDC user verified successfully');

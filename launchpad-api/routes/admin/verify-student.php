@@ -89,5 +89,14 @@ $stmt = $conn->prepare("DELETE FROM unverified_students WHERE student_id = ?");
 $stmt->bind_param('i', $studentId);
 $stmt->execute();
 
+// Send verification email notification
+$studentName = $student['first_name'] . ' ' . $student['last_name'];
+Mailer::sendVerificationApproved(
+    $student['email'],
+    $studentName,
+    'student',
+    ['company_name' => $company['company_name']]
+);
+
 Response::success(['student_id' => $newStudentId], 'Student verified successfully');
 

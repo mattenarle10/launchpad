@@ -53,5 +53,12 @@ $stmt = $conn->prepare("DELETE FROM unverified_companies WHERE company_id = ?");
 $stmt->bind_param('i', $companyId);
 $stmt->execute();
 
+// Send verification email notification
+Mailer::sendVerificationApproved(
+    $company['email'],
+    $company['company_name'],
+    'company'
+);
+
 Response::success(['company_id' => $newCompanyId], 'Company verified successfully');
 
