@@ -3,10 +3,10 @@
  */
 
 // Local Development (commented for production)
-const API_BASE_URL = 'http://localhost/LaunchPad/launchpad-api/public';
+// const API_BASE_URL = 'http://localhost/LaunchPad/launchpad-api/public';
 
 // Production (Hostinger) - ACTIVE
-// const API_BASE_URL = 'https://launchpadph.net/launchpad-api/public';
+const API_BASE_URL = 'https://launchpadph.net/launchpad-api/public';
 
 class APIClient {
     constructor() {
