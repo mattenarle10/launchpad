@@ -39,7 +39,7 @@ $query = "
         p.required_hours,
         p.completed_hours,
         p.status as ojt_status,
-        p.completion_date,
+        p.end_date AS completion_date,
         (SELECT COUNT(*) FROM daily_reports dr WHERE dr.student_id = s.student_id AND dr.status = 'approved') as total_reports,
         (SELECT AVG(se.evaluation_score) FROM student_evaluations se WHERE se.student_id = s.student_id) as avg_evaluation
     FROM verified_students s
@@ -70,7 +70,7 @@ if ($course) {
     $types .= 's';
 }
 
-$query .= " ORDER BY p.completion_date DESC";
+$query .= " ORDER BY p.end_date DESC";
 
 $stmt = $conn->prepare($query);
 $stmt->bind_param($types, ...$params);
