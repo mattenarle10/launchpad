@@ -36,6 +36,9 @@ if ($result->num_rows === 0) {
 
 $student = $result->fetch_assoc();
 
+$semester = $student['semester'] ?? '1st';
+$academicYear = $student['academic_year'] ?? date('Y') . '-' . (date('Y') + 1);
+
 // Validate target company exists (must be a verified company)
 $stmt = $conn->prepare("SELECT company_id, company_name FROM verified_companies WHERE company_id = ?");
 $stmt->bind_param('i', $companyId);
@@ -49,11 +52,11 @@ $company = $companyResult->fetch_assoc();
 // Move to verified_students
 $stmt = $conn->prepare("
     INSERT INTO verified_students 
-    (id_num, first_name, last_name, email, contact_num, course, password, cor, company_name, company_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    (id_num, first_name, last_name, email, contact_num, course, password, cor, company_name, company_id, semester, academic_year)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ");
 $stmt->bind_param(
-    'sssssssssi',
+    'sssssssssiss',
     $student['id_num'],
     $student['first_name'],
     $student['last_name'],
@@ -63,7 +66,9 @@ $stmt->bind_param(
     $student['password'],
     $student['cor'],
     $company['company_name'],
-    $company['company_id']
+    $company['company_id'],
+    $semester,
+    $academicYear
 );
 $stmt->execute();
 $newStudentId = $conn->insert_id;
