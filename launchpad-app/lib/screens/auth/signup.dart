@@ -31,6 +31,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _emailController = TextEditingController();
   final _idNumberController = TextEditingController();
   String? _selectedCourse;
+  String? _selectedSemester;
+  String? _selectedAcademicYear;
+  late final List<String> _academicYearOptions;
 
   // Page 2 controllers
   final _firstNameController = TextEditingController();
@@ -48,6 +51,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
   String? _corFileName;
 
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    final currentYear = now.year;
+    _academicYearOptions = List.generate(4, (index) {
+      final startYear = currentYear - 1 + index;
+      final endYear = startYear + 1;
+      return '$startYear-$endYear';
+    });
+    _selectedSemester = '1st';
+    _selectedAcademicYear = _academicYearOptions.first;
+  }
 
   @override
   void dispose() {
@@ -123,7 +140,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
 
     setState(() => _isLoading = true);
-
+      
     try {
       // Prepare form data (company will be assigned during verification)
       final formData = FormData.fromMap({
@@ -134,6 +151,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
         'course': _selectedCourse,
         'contact_num': _contactController.text.trim(),
         'password': _passwordController.text,
+        'semester': _selectedSemester,
+        'academic_year': _selectedAcademicYear,
         'cor': await MultipartFile.fromFile(
           _corFile!.path,
           filename: _corFileName,
@@ -287,6 +306,40 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please select your course';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  CustomDropdown(
+                    label: 'Semester',
+                    value: _selectedSemester,
+                    items: const ['1st', '2nd', 'summer'],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedSemester = value;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select your semester';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  CustomDropdown(
+                    label: 'Academic Year',
+                    value: _selectedAcademicYear,
+                    items: _academicYearOptions,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedAcademicYear = value;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select your academic year';
                       }
                       return null;
                     },
