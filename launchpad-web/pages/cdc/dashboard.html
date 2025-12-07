@@ -76,6 +76,24 @@
 
             <!-- Dashboard Content -->
             <div class="dashboard-content">
+                <div class="filters-row" id="cdc-filters" style="display: flex; gap: 16px; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap;">
+                    <div class="filter-group" style="display: flex; flex-direction: column; gap: 4px; min-width: 160px;">
+                        <label for="filter-semester" style="font-size: 13px; font-weight: 600; color: #4B5563;">Semester</label>
+                        <select id="filter-semester" style="padding: 8px 10px; border-radius: 8px; border: 1px solid #E5E7EB; font-size: 13px; color: #111827;">
+                            <option value="">All</option>
+                            <option value="1st">1st</option>
+                            <option value="2nd">2nd</option>
+                            <option value="summer">Summer</option>
+                        </select>
+                    </div>
+                    <div class="filter-group" style="display: flex; flex-direction: column; gap: 4px; min-width: 180px;">
+                        <label for="filter-academic-year" style="font-size: 13px; font-weight: 600; color: #4B5563;">Academic Year</label>
+                        <select id="filter-academic-year" style="padding: 8px 10px; border-radius: 8px; border: 1px solid #E5E7EB; font-size: 13px; color: #111827;">
+                            <option value="">All</option>
+                        </select>
+                    </div>
+                </div>
+
                 <!-- Stats Grid -->
                 <div class="stats-grid">
                     <!-- Total Students -->
@@ -445,26 +463,34 @@
 
         async function loadTopStudents() {
             try {
-                const res = await client.get('/students');
-                const students = res.data || [];
-                
+                const semesterSelect = document.getElementById('filter-semester');
+                const academicYearSelect = document.getElementById('filter-academic-year');
+                const semester = semesterSelect?.value || '';
+                const academicYear = academicYearSelect?.value || '';
+
+                const response = await CDCAPI.getAllStudents(1, 1000, {
+                    semester,
+                    academicYear
+                });
+                const students = response.data || [];
+
                 // Filter and sort by evaluation_rank (all companies)
                 const rankedStudents = students
                     .filter(s => s.evaluation_rank != null && s.evaluation_rank > 0)
                     .sort((a, b) => b.evaluation_rank - a.evaluation_rank)
                     .slice(0, 5); // Top 5
-                
+
                 const topList = document.getElementById('cdc-top-students-list');
-                
+
                 if (rankedStudents.length === 0) {
                     topList.innerHTML = `
                         <div style="text-align: center; padding: 40px; opacity: 0.7; grid-column: 1 / -1;">
-                            <p>No evaluated students yet</p>
+                            <p>No evaluated students yet for the selected filters</p>
                         </div>
                     `;
                     return;
                 }
-                
+
                 topList.innerHTML = rankedStudents.map((student, index) => {
                     const rank = index + 1;
                     const isTop3 = rank <= 3;
@@ -508,6 +534,25 @@
             }
         }
 
+        function initSemesterAcademicYearFilters() {
+            const academicYearSelect = document.getElementById('filter-academic-year');
+            if (!academicYearSelect) return;
+
+            const now = new Date();
+            const currentYear = now.getFullYear();
+
+            for (let offset = -1; offset <= 2; offset++) {
+                const startYear = currentYear + offset;
+                const endYear = startYear + 1;
+                const value = `${startYear}-${endYear}`;
+
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = value;
+                academicYearSelect.appendChild(option);
+            }
+        }
+
         // Load components on page load
         document.addEventListener('DOMContentLoaded', async () => {
             await loadSidebar('dashboard', getSidebarMode());
@@ -529,13 +574,26 @@
                 }
             );
 
+            initSemesterAcademicYearFilters();
+
+            const semesterSelect = document.getElementById('filter-semester');
+            const academicYearSelect = document.getElementById('filter-academic-year');
+
+            semesterSelect?.addEventListener('change', () => {
+                loadTopStudents();
+            });
+
+            academicYearSelect?.addEventListener('change', () => {
+                loadTopStudents();
+            });
+
             // Load dashboard stats
             loadDashboardStats();
             
             // Load recent job postings
             loadRecentJobs();
             
-            // Load top students from all companies
+            // Load top students from all companies (respecting initial filters)
             loadTopStudents();
             
             // Setup download button
@@ -545,8 +603,13 @@
         function downloadAnalyticsReport() {
             try {
                 const timestamp = new Date().toISOString().split('T')[0];
+                const semesterSelect = document.getElementById('filter-semester');
+                const academicYearSelect = document.getElementById('filter-academic-year');
+                const semester = semesterSelect?.value || '';
+                const academicYear = academicYearSelect?.value || '';
                 let csvContent = "LaunchPad CDC Analytics Report\n";
-                csvContent += `Generated: ${new Date().toLocaleString()}\n\n`;
+                csvContent += `Generated: ${new Date().toLocaleString()}\n`;
+                csvContent += `Filters: Semester=${semester || 'All'}, Academic Year=${academicYear || 'All'}\n\n`;
                 
                 // User Statistics
                 csvContent += "USER STATISTICS\n";

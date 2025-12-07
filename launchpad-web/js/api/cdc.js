@@ -109,10 +109,28 @@ const CDCAPI = {
     },
 
     /**
-     * Get all verified students
+     * Get all verified students (optionally filtered)
      */
-    async getAllStudents(page = 1, pageSize = 100) {
-        return client.get(`/students?page=${page}&pageSize=${pageSize}`);
+    async getAllStudents(page = 1, pageSize = 100, filters = {}) {
+        const params = new URLSearchParams();
+        params.set('page', page);
+        params.set('pageSize', pageSize);
+
+        if (filters.semester) {
+            params.set('semester', filters.semester);
+        }
+        if (filters.academicYear) {
+            params.set('academic_year', filters.academicYear);
+        }
+        if (filters.course) {
+            params.set('course', filters.course);
+        }
+        if (filters.status) {
+            params.set('status', filters.status);
+        }
+
+        const queryString = params.toString();
+        return client.get(`/students?${queryString}`);
     },
 
     /**
