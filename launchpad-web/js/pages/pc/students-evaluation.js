@@ -296,7 +296,7 @@ async function openEvaluationModal(student) {
     });
     
     const footer = `
-        <button class="btn-modal" data-modal-close>Cancel</button>
+        <button class="btn-modal" data-modal-close id="evaluation-cancel-btn">Cancel</button>
         <button class="btn-modal btn-approve" id="save-evaluation-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
                 <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
@@ -310,11 +310,15 @@ async function openEvaluationModal(student) {
     modal.setFooter(footer);
     modal.open(content);
     
-    // Set up rating selection and score calculation
+    // Set up rating selection, score calculation, and footer actions
     setTimeout(() => {
         const ratingBtns = document.querySelectorAll('.rating-btn');
         const scoreDisplay = document.getElementById('calculated-score');
         const scoreBreakdown = document.getElementById('score-breakdown');
+
+        // Ensure Cancel button closes this modal instance
+        const cancelBtn = document.getElementById('evaluation-cancel-btn');
+        cancelBtn?.addEventListener('click', () => modal.close());
 
         // If we have a previous evaluation with stored answers, prefill the form
         if (latestEvaluation && latestEvaluation.answers) {

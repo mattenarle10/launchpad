@@ -233,7 +233,7 @@ async function openPerformanceModal(student) {
     });
     
     const footer = `
-        <button class="btn-modal btn-approve" data-modal-close>
+        <button class="btn-modal btn-approve" data-modal-close id="performance-close-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
                 <path d="M5 13l4 4L19 7"></path>
             </svg>
@@ -243,6 +243,12 @@ async function openPerformanceModal(student) {
     
     modal.setFooter(footer);
     modal.open(content);
+
+    // Ensure footer Close button is wired to this modal instance
+    setTimeout(() => {
+        const closeBtn = document.getElementById('performance-close-btn');
+        closeBtn?.addEventListener('click', () => modal.close());
+    }, 0);
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
