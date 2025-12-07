@@ -316,59 +316,74 @@
                 
                 dataTable.setData(filtered);
             }
-            function openStudentDetailsModal(student) {
-                const content = `
-                    <div class="detail-row">
-                        <span class="detail-label">ID Number:</span>
-                        <span class="detail-value">${student.id_num}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Name:</span>
-                        <span class="detail-value">${student.first_name} ${student.last_name}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Email:</span>
-                        <span class="detail-value">${student.email}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Course:</span>
-                        <span class="detail-value"><span class="course-badge ${student.course.toLowerCase()}">${student.course}</span></span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Semester:</span>
-                        <span class="detail-value">${student.semester || 'N/A'}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Academic Year:</span>
-                        <span class="detail-value">${student.academic_year || 'N/A'}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">OJT Status:</span>
-                        <span class="detail-value">
-                            ${student.ojt_status === 'in_progress' ? '<span class="status-badge ongoing">Ongoing</span>' : 
-                              student.ojt_status === 'completed' ? '<span class="status-badge completed">Completed</span>' : 
-                              '<span class="status-badge pending">Not Started</span>'}
-                        </span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Progress:</span>
-                        <span class="detail-value">${student.completed_hours || 0} / ${student.required_hours || 0} hrs (${student.completion_percentage || 0}%)</span>
-                    </div>
-                `;
-
-                const modal = createModal('pc-student-details-modal', {
-                    title: `Student Details - ${student.first_name} ${student.last_name}`,
-                    size: 'medium'
-                });
-
-                const footer = `
-                    <button class="btn-modal btn-approve" data-modal-close>Close</button>
-                `;
-
-                modal.setFooter(footer);
-                modal.open(content);
-            }
         });
+
+        function openStudentDetailsModal(student) {
+            const specializationHtml = student.specialization
+                ? student.specialization
+                    .split(',')
+                    .map(s => s.trim())
+                    .filter(Boolean)
+                    .slice(0, 3)
+                    .map(s => `<span class="tag-badge" style="background: #EDE9FE; color: #7C3AED; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 4px; display: inline-block;">${s}</span>`)
+                    .join(' ')
+                : '<span style="color: #9CA3AF;">Not specified</span>';
+
+            const content = `
+                <div class="detail-row">
+                    <span class="detail-label">ID Number:</span>
+                    <span class="detail-value">${student.id_num}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Name:</span>
+                    <span class="detail-value">${student.first_name} ${student.last_name}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Email:</span>
+                    <span class="detail-value">${student.email}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Course:</span>
+                    <span class="detail-value"><span class="course-badge ${student.course.toLowerCase()}">${student.course}</span></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Specializations:</span>
+                    <span class="detail-value">${specializationHtml}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Semester:</span>
+                    <span class="detail-value">${student.semester || 'N/A'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Academic Year:</span>
+                    <span class="detail-value">${student.academic_year || 'N/A'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">OJT Status:</span>
+                    <span class="detail-value">
+                        ${student.ojt_status === 'in_progress' ? '<span class="status-badge ongoing">Ongoing</span>' : 
+                          student.ojt_status === 'completed' ? '<span class="status-badge completed">Completed</span>' : 
+                          '<span class="status-badge pending">Not Started</span>'}
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Progress:</span>
+                    <span class="detail-value">${student.completed_hours || 0} / ${student.required_hours || 0} hrs (${student.completion_percentage || 0}%)</span>
+                </div>
+            `;
+
+            const modal = createModal('pc-student-details-modal', {
+                title: `Student Details - ${student.first_name} ${student.last_name}`,
+                size: 'medium'
+            });
+
+            const footer = `
+                <button class="btn-modal btn-approve" data-modal-close>Close</button>
+            `;
+
+            modal.setFooter(footer);
+            modal.open(content);
+        }
     </script>
 </body>
 </html>
