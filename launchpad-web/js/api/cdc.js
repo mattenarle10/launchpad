@@ -218,6 +218,116 @@ const CDCAPI = {
     },
 
     /**
+     * Load and display all evaluated students in a DataTable (CDC view)
+     */
+    async loadEvaluatedStudentsTable(tableWrapperId, statElementId) {
+        const tableWrapper = document.getElementById(tableWrapperId);
+        tableWrapper.innerHTML = '<div class="loading"><div class="loading-spinner"></div><p>Loading evaluated students...</p></div>';
+
+        try {
+            const response = await client.get('/admin/evaluated/students?pageSize=1000');
+            const students = response.data?.students || response.data || [];
+            const summary = response.data?.summary || null;
+
+            // Update stats if element exists
+            if (statElementId) {
+                const statElement = document.getElementById(statElementId);
+                if (statElement) statElement.textContent = students.length;
+            }
+
+            const dataTable = new DataTable({
+                containerId: tableWrapperId,
+                columns: [
+                    { key: 'id_num', label: 'ID Number', sortable: true },
+                    {
+                        key: 'first_name',
+                        label: 'Name',
+                        sortable: true,
+                        format: (value, row) => `${row.first_name} ${row.last_name}`
+                    },
+                    { key: 'email', label: 'Email', sortable: true },
+                    {
+                        key: 'course',
+                        label: 'Course',
+                        sortable: true,
+                        format: (value) => `<span class="course-badge ${value.toLowerCase()}">${value}</span>`
+                    },
+                    {
+                        key: 'company_name',
+                        label: 'Partner Company',
+                        sortable: true,
+                        format: (value) => value || '<span style="color: #9CA3AF;">Not assigned</span>'
+                    },
+                    {
+                        key: 'ojt_status',
+                        label: 'OJT Status',
+                        sortable: true,
+                        format: (value) => {
+                            if (!value) return '<span class="status-badge pending">Not Started</span>';
+                            const normalized = value === 'in_progress' ? 'ongoing' : value;
+                            const statusClass = normalized === 'completed' ? 'completed' : normalized === 'ongoing' ? 'ongoing' : 'pending';
+                            const text = normalized === 'not_started' ? 'Not Started' : normalized.charAt(0).toUpperCase() + normalized.slice(1);
+                            return `<span class="status-badge ${statusClass}">${text}</span>`;
+                        }
+                    },
+                    {
+                        key: 'evaluation_rank',
+                        label: 'Score',
+                        sortable: true,
+                        format: (value) => {
+                            if (value === null || value === undefined) {
+                                return '<span style="color: #9CA3AF;">Not Evaluated</span>';
+                            }
+                            const score = parseInt(value, 10);
+                            const color = score >= 80 ? '#10B981' : score >= 60 ? '#F59E0B' : '#EF4444';
+                            return `<span style="color: ${color}; font-weight: 600;">${score}/100</span>`;
+                        }
+                    },
+                    {
+                        key: 'performance_score',
+                        label: 'Performance',
+                        sortable: true,
+                        format: (value) => {
+                            if (!value) return '<span style="color: #9CA3AF;">--</span>';
+                            const colors = {
+                                'Excellent': '#10B981',
+                                'Good': '#6366F1',
+                                'Satisfactory': '#F59E0B',
+                                'Needs Improvement': '#F97316',
+                                'Poor': '#EF4444'
+                            };
+                            return `<span style="color: ${colors[value] || '#6B7280'}; font-weight: 500;">${value}</span>`;
+                        }
+                    }
+                ],
+                data: students,
+                pageSize: 10,
+                emptyMessage: 'No evaluated students found'
+            });
+
+            return { dataTable, students, summary };
+
+        } catch (error) {
+            console.error('Error loading evaluated students:', error);
+            tableWrapper.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                    </div>
+                    <div class="empty-state-text">Error loading evaluated students</div>
+                    <div class="empty-state-subtext">${error.message}</div>
+                </div>
+            `;
+            showError('Failed to load evaluated students: ' + error.message);
+            throw error;
+        }
+    },
+
+    /**
      * Load and display unverified CDC users in a DataTable
      */
     async loadUnverifiedCdcUsersTable(tableWrapperId, statElementId) {

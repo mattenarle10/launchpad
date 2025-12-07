@@ -415,6 +415,12 @@ try {
             require __DIR__ . '/../routes/admin/get-companies.php';
             exit;
         }
+
+        // /admin/evaluated/students (GET - CDC views evaluated students)
+        if (count($pathParts) === 3 && $pathParts[1] === 'evaluated' && $pathParts[2] === 'students') {
+            require __DIR__ . '/../routes/admin/get-evaluated-students.php';
+            exit;
+        }
         
         // /admin/students/:id/requirements (GET - CDC views a student's requirements)
         if (count($pathParts) === 4 && $pathParts[1] === 'students' && is_numeric($pathParts[2]) && $pathParts[3] === 'requirements') {
