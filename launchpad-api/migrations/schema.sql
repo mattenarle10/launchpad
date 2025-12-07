@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.2
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Generation Time: Dec 03, 2025 at 08:49 AM
--- Server version: 10.4.28-MariaDB
--- PHP Version: 8.2.4
+-- Host: 127.0.0.1:3306
+-- Generation Time: Dec 07, 2025 at 12:45 PM
+-- Server version: 11.8.3-MariaDB-log
+-- PHP Version: 7.2.34
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `launchpad_db`
+-- Database: `u153905861_launchpad_db`
 --
 
 -- --------------------------------------------------------
@@ -49,6 +49,7 @@ CREATE TABLE `daily_reports` (
   `student_id` int(11) NOT NULL,
   `report_date` date NOT NULL,
   `hours_requested` decimal(5,2) NOT NULL,
+  `hours_approved` decimal(5,2) DEFAULT NULL,
   `description` text NOT NULL,
   `activity_type` varchar(100) DEFAULT NULL,
   `report_file` varchar(255) NOT NULL,
@@ -56,6 +57,10 @@ CREATE TABLE `daily_reports` (
   `reviewed_by` int(11) DEFAULT NULL,
   `reviewed_at` timestamp NULL DEFAULT NULL,
   `rejection_reason` text DEFAULT NULL,
+  `company_validated` tinyint(1) DEFAULT 0,
+  `company_validated_at` timestamp NULL DEFAULT NULL,
+  `company_validated_by` int(11) DEFAULT NULL,
+  `company_remarks` text DEFAULT NULL,
   `submitted_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -74,7 +79,7 @@ CREATE TABLE `evaluation_history` (
   `feedback` text DEFAULT NULL COMMENT 'Optional feedback from company',
   `evaluated_by` int(11) NOT NULL COMMENT 'Company user who submitted evaluation',
   `evaluation_date` timestamp NOT NULL DEFAULT current_timestamp()
-) ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -162,7 +167,7 @@ CREATE TABLE `student_evaluations` (
   `evaluation_year` int(11) NOT NULL COMMENT 'Year (e.g., 2025)',
   `category` varchar(20) DEFAULT NULL COMMENT 'Excellent, Good, Enough, Poor, Very Poor based on score',
   `evaluated_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -180,6 +185,22 @@ CREATE TABLE `student_requirements` (
   `description` text DEFAULT NULL COMMENT 'Optional description of the requirement',
   `submitted_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Student requirement submissions';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `unverified_cdc_users`
+--
+
+CREATE TABLE `unverified_cdc_users` (
+  `id` int(11) NOT NULL,
+  `username` varchar(50) NOT NULL,
+  `email` varchar(150) NOT NULL,
+  `first_name` varchar(50) NOT NULL,
+  `last_name` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -219,7 +240,9 @@ CREATE TABLE `unverified_students` (
   `password` varchar(255) NOT NULL,
   `cor` varchar(255) NOT NULL COMMENT 'Certificate of Registration',
   `company_name` varchar(150) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `semester` enum('1st','2nd','summer') DEFAULT '1st',
+  `academic_year` varchar(20) DEFAULT '2024-2025'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -264,8 +287,10 @@ CREATE TABLE `verified_students` (
   `verified_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `evaluation_rank` int(11) DEFAULT NULL COMMENT 'Company evaluation rank (0-100)',
   `performance_score` enum('Excellent','Good','Satisfactory','Needs Improvement','Poor') DEFAULT NULL COMMENT 'Company performance assessment',
-  `specialization` varchar(100) DEFAULT NULL COMMENT 'Student specialization/focus area'
-) ;
+  `specialization` varchar(100) DEFAULT NULL COMMENT 'Student specialization/focus area',
+  `semester` enum('1st','2nd','summer') DEFAULT '1st',
+  `academic_year` varchar(20) DEFAULT '2024-2025'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Indexes for dumped tables
@@ -286,7 +311,9 @@ ALTER TABLE `daily_reports`
   ADD PRIMARY KEY (`report_id`),
   ADD KEY `reviewed_by` (`reviewed_by`),
   ADD KEY `idx_student_status` (`student_id`,`status`),
-  ADD KEY `idx_status` (`status`);
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `idx_company_validation` (`student_id`,`company_validated`),
+  ADD KEY `fk_company_validator` (`company_validated_by`);
 
 --
 -- Indexes for table `evaluation_history`
@@ -346,6 +373,14 @@ ALTER TABLE `student_requirements`
   ADD KEY `idx_submitted` (`submitted_at`);
 
 --
+-- Indexes for table `unverified_cdc_users`
+--
+ALTER TABLE `unverified_cdc_users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `username` (`username`),
+  ADD UNIQUE KEY `email` (`email`);
+
+--
 -- Indexes for table `unverified_companies`
 --
 ALTER TABLE `unverified_companies`
@@ -376,7 +411,8 @@ ALTER TABLE `verified_students`
   ADD PRIMARY KEY (`student_id`),
   ADD UNIQUE KEY `id_num` (`id_num`),
   ADD UNIQUE KEY `email` (`email`),
-  ADD KEY `company_id` (`company_id`);
+  ADD KEY `company_id` (`company_id`),
+  ADD KEY `idx_semester_year` (`semester`,`academic_year`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -437,6 +473,12 @@ ALTER TABLE `student_requirements`
   MODIFY `requirement_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `unverified_cdc_users`
+--
+ALTER TABLE `unverified_cdc_users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `unverified_companies`
 --
 ALTER TABLE `unverified_companies`
@@ -469,7 +511,8 @@ ALTER TABLE `verified_students`
 --
 ALTER TABLE `daily_reports`
   ADD CONSTRAINT `daily_reports_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `verified_students` (`student_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `daily_reports_ibfk_2` FOREIGN KEY (`reviewed_by`) REFERENCES `cdc_users` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `daily_reports_ibfk_2` FOREIGN KEY (`reviewed_by`) REFERENCES `cdc_users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_company_validator` FOREIGN KEY (`company_validated_by`) REFERENCES `verified_companies` (`company_id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `evaluation_history`
