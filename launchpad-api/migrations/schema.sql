@@ -166,6 +166,8 @@ CREATE TABLE `student_evaluations` (
   `evaluation_month` int(11) NOT NULL COMMENT 'Month (1-12)',
   `evaluation_year` int(11) NOT NULL COMMENT 'Year (e.g., 2025)',
   `category` varchar(20) DEFAULT NULL COMMENT 'Excellent, Good, Enough, Poor, Very Poor based on score',
+  `comments` text DEFAULT NULL COMMENT 'Optional overall comments from company',
+  `answers_json` text DEFAULT NULL COMMENT 'JSON encoded per-question ratings for prefill',
   `evaluated_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

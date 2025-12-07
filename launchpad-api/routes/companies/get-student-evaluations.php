@@ -43,6 +43,8 @@ $stmt = $conn->prepare("
         evaluation_month,
         evaluation_year,
         category,
+        comments,
+        answers_json,
         evaluated_at
     FROM student_evaluations
     WHERE student_id = ? AND company_id = ?
@@ -54,6 +56,14 @@ $result = $stmt->get_result();
 
 $evaluations = [];
 while ($row = $result->fetch_assoc()) {
+    $answers = null;
+    if (!empty($row['answers_json'])) {
+        $decoded = json_decode($row['answers_json'], true);
+        if (is_array($decoded)) {
+            $answers = $decoded;
+        }
+    }
+
     $evaluations[] = [
         'evaluation_id' => intval($row['evaluation_id']),
         'evaluation_score' => intval($row['evaluation_score']),
@@ -61,6 +71,8 @@ while ($row = $result->fetch_assoc()) {
         'evaluation_month' => intval($row['evaluation_month']),
         'evaluation_year' => intval($row['evaluation_year']),
         'category' => $row['category'],
+        'comments' => $row['comments'],
+        'answers' => $answers,
         'evaluated_at' => $row['evaluated_at']
     ];
 }

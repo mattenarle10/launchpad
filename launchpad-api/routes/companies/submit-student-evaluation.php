@@ -21,6 +21,9 @@ $data = json_decode(file_get_contents('php://input'), true);
 
 $evaluationScore = isset($data['evaluation_score']) ? intval($data['evaluation_score']) : null;
 $evaluationPeriod = isset($data['evaluation_period']) ? $data['evaluation_period'] : null;
+// Optional overall comments and per-question answers (for prefill)
+$comments = isset($data['comments']) ? trim($data['comments']) : null;
+$answers = (isset($data['answers']) && is_array($data['answers'])) ? $data['answers'] : [];
 
 // Validate score
 if ($evaluationScore === null || $evaluationScore < 0 || $evaluationScore > 100) {
@@ -84,18 +87,19 @@ if ($tableExists) {
     $stmt->execute();
     $existing = $stmt->get_result();
 
+    $evaluationId = null;
+
     if ($existing->num_rows > 0) {
-        // Update existing evaluation
+        // Update existing evaluation (keep same period record)
+        $row = $existing->fetch_assoc();
+        $evaluationId = intval($row['evaluation_id']);
+
         $stmt = $conn->prepare("
             UPDATE student_evaluations 
             SET evaluation_score = ?, category = ?, evaluated_at = CURRENT_TIMESTAMP
-            WHERE student_id = ? 
-            AND company_id = ? 
-            AND evaluation_period = ? 
-            AND evaluation_month = ? 
-            AND evaluation_year = ?
+            WHERE evaluation_id = ?
         ");
-        $stmt->bind_param('isiisii', $evaluationScore, $category, $studentId, $companyId, $evaluationPeriod, $currentMonth, $currentYear);
+        $stmt->bind_param('isi', $evaluationScore, $category, $evaluationId);
         $stmt->execute();
     } else {
         // Insert new evaluation
@@ -105,6 +109,20 @@ if ($tableExists) {
             VALUES (?, ?, ?, ?, ?, ?, ?)
         ");
         $stmt->bind_param('iiisiis', $studentId, $companyId, $evaluationScore, $evaluationPeriod, $currentMonth, $currentYear, $category);
+        $stmt->execute();
+        $evaluationId = $stmt->insert_id;
+    }
+
+    // Store optional comments and per-question answers as JSON for prefill
+    if ($evaluationId !== null) {
+        $answersJson = !empty($answers) ? json_encode($answers) : null;
+
+        $stmt = $conn->prepare("
+            UPDATE student_evaluations
+            SET comments = ?, answers_json = ?
+            WHERE evaluation_id = ?
+        ");
+        $stmt->bind_param('ssi', $comments, $answersJson, $evaluationId);
         $stmt->execute();
     }
 }

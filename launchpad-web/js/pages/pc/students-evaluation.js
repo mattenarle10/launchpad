@@ -146,6 +146,18 @@ async function loadStudentsTable() {
 async function openEvaluationModal(student) {
     // Single final evaluation (no monthly period selection)
 
+    // Try to fetch latest evaluation for prefill (optional)
+    let latestEvaluation = null;
+    try {
+        const res = await client.get(`/companies/students/${student.student_id}/evaluations`);
+        const evals = res.data?.evaluations || [];
+        if (evals.length > 0) {
+            latestEvaluation = evals[0];
+        }
+    } catch (e) {
+        console.error('Error fetching existing evaluations for prefill:', e);
+    }
+
     // Generate categories and questions HTML
     const categoriesHtml = EVALUATION_CATEGORIES.map(cat => `
         <div class="eval-category" style="margin-bottom: 24px;">
@@ -303,6 +315,43 @@ async function openEvaluationModal(student) {
         const ratingBtns = document.querySelectorAll('.rating-btn');
         const scoreDisplay = document.getElementById('calculated-score');
         const scoreBreakdown = document.getElementById('score-breakdown');
+
+        // If we have a previous evaluation with stored answers, prefill the form
+        if (latestEvaluation && latestEvaluation.answers) {
+            try {
+                EVALUATION_CATEGORIES.forEach(cat => {
+                    cat.questions.forEach(q => {
+                        const value = latestEvaluation.answers[q.id];
+                        if (value === null || value === undefined) return;
+
+                        const radio = document.querySelector(`input[name="${q.id}"][value="${value}"]`);
+                        if (radio) {
+                            radio.checked = true;
+                            const btn = radio.closest('label')?.querySelector('.rating-btn');
+                            if (btn) {
+                                const questionContainer = btn.closest('.eval-question');
+                                if (questionContainer) {
+                                    questionContainer.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('selected'));
+                                }
+                                btn.classList.add('selected');
+                            }
+                        }
+                    });
+                });
+
+                if (typeof latestEvaluation.comments === 'string' && latestEvaluation.comments.length > 0) {
+                    const commentsEl = document.getElementById('evaluation-comments');
+                    if (commentsEl) {
+                        commentsEl.value = latestEvaluation.comments;
+                    }
+                }
+
+                // Recalculate score based on prefilled answers
+                calculateScore();
+            } catch (prefillErr) {
+                console.error('Error prefilling evaluation form:', prefillErr);
+            }
+        }
         
         // Handle rating selection
         ratingBtns.forEach(btn => {
@@ -404,10 +453,22 @@ async function openEvaluationModal(student) {
                 return;
             }
 
+            // Build answers object for backend prefill storage
+            const answers = {};
+            EVALUATION_CATEGORIES.forEach(cat => {
+                cat.questions.forEach(q => {
+                    const selected = document.querySelector(`input[name="${q.id}"]:checked`);
+                    if (selected) {
+                        answers[q.id] = parseInt(selected.value, 10);
+                    }
+                });
+            });
+
             try {
                 const res = await client.post(`/companies/students/${student.student_id}/evaluations`, {
                     evaluation_score: score,
-                    comments: comments
+                    comments: comments,
+                    answers: answers
                 });
 
                 modal.close();
