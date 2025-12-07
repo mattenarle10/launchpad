@@ -136,9 +136,63 @@
         import { showError } from '../../js/utils/notifications.js';
         import { getSidebarMode } from '../../js/utils/sidebar-helper.js';
         import DataTable from '../../js/pages/table.js';
+        import { createModal } from '../../js/utils/modal.js';
 
         let allStudents = [];
         let dataTable = null;
+
+        const EVALUATION_CATEGORIES = [
+            {
+                id: 'competence',
+                name: 'I. COMPETENCE',
+                weight: 40,
+                questions: [
+                    { id: 'c1', text: 'Exhibits workable knowledge and understanding of the assigned tasks' },
+                    { id: 'c2', text: 'Expresses willingness to work in groups' },
+                    { id: 'c3', text: 'Receptive to ideas of the other people' },
+                    { id: 'c4', text: 'Shows positive response to corrections made by his/her superiors' },
+                    { id: 'c5', text: 'Submits quality work' }
+                ]
+            },
+            {
+                id: 'attendance',
+                name: 'II. ATTENDANCE AND PUNCTUALITY',
+                weight: 30,
+                questions: [
+                    { id: 'a1', text: 'Maintains regular OJT time' },
+                    { id: 'a2', text: 'Reports to work on time' },
+                    { id: 'a3', text: 'Notifies the Supervisor ahead of time if unable to report for duty' },
+                    { id: 'a4', text: 'Makes up for absences' }
+                ]
+            },
+            {
+                id: 'communication',
+                name: 'III. COMMUNICATION SKILLS',
+                weight: 20,
+                questions: [
+                    { id: 'cm1', text: 'Proficiency in English' },
+                    { id: 'cm2', text: 'Ability to express ideas and deliver them clearly' }
+                ]
+            },
+            {
+                id: 'personality',
+                name: 'IV. PERSONALITY',
+                weight: 10,
+                questions: [
+                    { id: 'p1', text: 'Physically neat in appearance' },
+                    { id: 'p2', text: 'Relates well with people in a pleasing manner and maintains sincerity and fairness when confronted with difficulties' },
+                    { id: 'p3', text: 'Possesses self-confidence in his/her ability and shows a high level of initiative' },
+                    { id: 'p4', text: 'Shows ability to manage time and identify priorities' }
+                ]
+            }
+        ];
+
+        const RATING_SCALE = [
+            { value: 1, label: 'VG', fullLabel: 'Very Good', color: '#10B981' },
+            { value: 2, label: 'G', fullLabel: 'Good', color: '#6366F1' },
+            { value: 3, label: 'F', fullLabel: 'Fair', color: '#F59E0B' },
+            { value: 4, label: 'P', fullLabel: 'Poor', color: '#EF4444' }
+        ];
 
         async function loadCompletedStudents() {
             const tableWrapper = document.getElementById('table-wrapper');
@@ -175,7 +229,16 @@
                             sortable: true,
                             format: (value, row) => `${row.first_name} ${row.last_name}`
                         },
-                        { key: 'email', label: 'Email', sortable: true },
+                        { 
+                            key: 'email', 
+                            label: 'Email', 
+                            sortable: true,
+                            format: (value) => `
+                                <span style="max-width: 180px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    ${value}
+                                </span>
+                            `
+                        },
                         { 
                             key: 'course', 
                             label: 'Course', 
@@ -201,32 +264,13 @@
                                 const date = new Date(value);
                                 return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                             }
-                        },
-                        { 
-                            key: 'avg_evaluation', 
-                            label: 'Evaluation', 
-                            sortable: true,
-                            format: (value) => {
-                                if (!value) return '<span style="color: #9CA3AF;">--</span>';
-                                const color = value >= 80 ? '#10B981' : value >= 60 ? '#F59E0B' : '#EF4444';
-                                return `<span style="color: ${color}; font-weight: 600;">${value}/100</span>`;
-                            }
-                        },
-                        { 
-                            key: 'performance_score', 
-                            label: 'Performance', 
-                            sortable: true,
-                            format: (value) => {
-                                if (!value) return '<span style="color: #9CA3AF;">--</span>';
-                                const colors = {
-                                    'Excellent': '#10B981',
-                                    'Good': '#6366F1',
-                                    'Satisfactory': '#F59E0B',
-                                    'Needs Improvement': '#F97316',
-                                    'Poor': '#EF4444'
-                                };
-                                return `<span style="color: ${colors[value] || '#6B7280'}; font-weight: 500;">${value}</span>`;
-                            }
+                        }
+                    ],
+                    actions: [
+                        {
+                            type: 'view',
+                            label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>View Evaluation Details',
+                            onClick: (row) => openEvaluationBreakdownModal(row)
                         }
                     ],
                     data: allStudents,
@@ -244,6 +288,201 @@
                 `;
                 showError('Failed to load completed students: ' + error.message);
             }
+        }
+
+        async function openEvaluationBreakdownModal(student) {
+            let evalData = null;
+            try {
+                const res = await client.get(`/companies/students/${student.student_id}/evaluations`);
+                evalData = res.data;
+            } catch (e) {
+                console.error('Error fetching evaluation data:', e);
+                showError('Failed to load evaluation details');
+                return;
+            }
+
+            const evaluations = evalData?.evaluations || [];
+            if (!evaluations.length) {
+                showError('No evaluation found for this student');
+                return;
+            }
+
+            const latest = evaluations[0];
+            const answers = latest.answers || {};
+
+            const categoryScores = {};
+            let totalQuestions = 0;
+            let answeredQuestions = 0;
+
+            EVALUATION_CATEGORIES.forEach(cat => {
+                let catTotal = 0;
+                let catAnswered = 0;
+
+                cat.questions.forEach(q => {
+                    totalQuestions++;
+                    const rating = answers[q.id];
+                    if (rating === null || rating === undefined) {
+                        return;
+                    }
+                    const questionScore = (5 - rating) * 25;
+                    catTotal += questionScore;
+                    catAnswered++;
+                    answeredQuestions++;
+                });
+
+                categoryScores[cat.id] = catAnswered > 0 ? Math.round(catTotal / catAnswered) : null;
+            });
+
+            let weightedScore = 0;
+            let weightedTotal = 0;
+
+            if (categoryScores.competence !== null && categoryScores.competence !== undefined) {
+                weightedScore += categoryScores.competence * 0.40;
+                weightedTotal += 40;
+            }
+            if (categoryScores.attendance !== null && categoryScores.attendance !== undefined) {
+                weightedScore += categoryScores.attendance * 0.30;
+                weightedTotal += 30;
+            }
+            if (categoryScores.communication !== null && categoryScores.communication !== undefined) {
+                weightedScore += categoryScores.communication * 0.20;
+                weightedTotal += 20;
+            }
+            if (categoryScores.personality !== null && categoryScores.personality !== undefined) {
+                weightedScore += categoryScores.personality * 0.10;
+                weightedTotal += 10;
+            }
+
+            const finalScore = weightedTotal > 0 ? Math.round(weightedScore * (100 / weightedTotal)) : (latest.evaluation_score || 0);
+
+            const getRatingInfo = (value) => RATING_SCALE.find(r => r.value === value) || null;
+
+            const categoriesHtml = EVALUATION_CATEGORIES.map(cat => `
+                <div style="margin-bottom: 24px; border: 1px solid #E5E7EB; border-radius: 8px; overflow: hidden;">
+                    <div style="background: #4A6491; color: white; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 600;">${cat.name}</span>
+                        <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 12px;">${cat.weight}%</span>
+                    </div>
+                    <div style="padding: 12px 16px; background: white;">
+                        ${cat.questions.map((q, idx) => {
+                            const rating = answers[q.id];
+                            const info = rating ? getRatingInfo(rating) : null;
+                            const label = info ? info.fullLabel : 'Not rated';
+                            const color = info ? info.color : '#9CA3AF';
+                            const short = info ? info.label : '--';
+                            return `
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: ${idx < cat.questions.length - 1 ? '1px solid #F3F4F6' : 'none'};">
+                                    <div style="font-size: 13px; color: #374151; max-width: 70%;">
+                                        ${idx + 1}. ${q.text}
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="font-size: 12px; color: #6B7280; margin-bottom: 4px;">Rating</div>
+                                        <div style="display: inline-flex; align-items: center; gap: 6px;">
+                                            <span style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 999px; background: #F9FAFB; border: 1px solid #E5E7EB; font-weight: 600; color: ${color}; font-size: 14px;">${rating || '-'}</span>
+                                            <span style="font-size: 12px; color: ${color}; font-weight: 500;">${label}${short && short !== label ? ` (${short})` : ''}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            const content = `
+                <div style="padding: 10px 0;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #E5E7EB;">
+                        <div>
+                            <div style="font-size: 12px; color: #6B7280;">Student</div>
+                            <div style="font-weight: 600; color: #1F2937;">${student.full_name || (student.first_name + ' ' + student.last_name)}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #6B7280;">ID Number</div>
+                            <div style="font-weight: 600; color: #1F2937;">${student.id_num}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #6B7280;">Course</div>
+                            <div><span class="course-badge ${student.course.toLowerCase()}">${student.course}</span></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #6B7280;">Semester</div>
+                            <div style="font-weight: 600; color: #1F2937;">${student.semester || 'N/A'}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #6B7280;">Academic Year</div>
+                            <div style="font-weight: 600; color: #1F2937;">${student.academic_year || 'N/A'}</div>
+                        </div>
+                    </div>
+
+                    <div style="background: linear-gradient(135deg, #4A6491 0%, #3D5A7E 100%); padding: 18px; border-radius: 12px; color: white; margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                            <div>
+                                <div style="font-size: 13px; opacity: 0.9;">Final Evaluation Score</div>
+                                <div style="font-size: 42px; font-weight: 700;">${latest.evaluation_score || finalScore}</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 12px; opacity: 0.9; margin-bottom: 6px;">Performance Category</div>
+                                <div style="font-size: 16px; font-weight: 600; background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; display: inline-block;">
+                                    ${latest.category || student.performance_score || 'Not Assessed'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: #F3F4F6; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 12px; color: #4B5563;">
+                        <div style="display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; text-align: center;">
+                            <div>
+                                <div style="opacity: 0.7;">Competence</div>
+                                <div style="font-weight: 600;">${categoryScores.competence ?? '-'}</div>
+                            </div>
+                            <div>
+                                <div style="opacity: 0.7;">Attendance</div>
+                                <div style="font-weight: 600;">${categoryScores.attendance ?? '-'}</div>
+                            </div>
+                            <div>
+                                <div style="opacity: 0.7;">Communication</div>
+                                <div style="font-weight: 600;">${categoryScores.communication ?? '-'}</div>
+                            </div>
+                            <div>
+                                <div style="opacity: 0.7;">Personality</div>
+                                <div style="font-weight: 600;">${categoryScores.personality ?? '-'}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">Company Comments</div>
+                        <div style="font-size: 13px; color: #4B5563; background: #F9FAFB; border-radius: 8px; padding: 12px; border: 1px solid #E5E7EB; min-height: 48px;">
+                            ${latest.comments && latest.comments.trim().length > 0 ? latest.comments.replace(/\n/g, '<br>') : '<span style="color: #9CA3AF;">No comments provided.</span>'}
+                        </div>
+                    </div>
+
+                    <div style="border-top: 2px solid #E5E7EB; padding-top: 18px; margin-top: 10px;">
+                        <h3 style="font-size: 15px; font-weight: 600; color: #3D5A7E; margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A6491" stroke-width="2">
+                                <path d="M9 11l3 3L22 4"></path>
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                            </svg>
+                            Evaluation Breakdown
+                        </h3>
+                        <div style="max-height: 380px; overflow-y: auto; padding-right: 4px;">
+                            ${categoriesHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const modal = createModal('completed-eval-breakdown-modal', {
+                title: `Evaluation Details - ${student.full_name || (student.first_name + ' ' + student.last_name)}`,
+                size: 'large'
+            });
+
+            const footer = `
+                <button class="btn-modal btn-approve" data-modal-close>Close</button>
+            `;
+
+            modal.setFooter(footer);
+            modal.open(content);
         }
 
         function applyFilters() {
