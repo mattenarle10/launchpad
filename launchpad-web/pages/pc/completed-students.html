@@ -182,11 +182,15 @@
                             sortable: true,
                             format: (value) => `<span class="course-badge ${value.toLowerCase()}">${value}</span>`
                         },
-                        { 
-                            key: 'completed_hours', 
-                            label: 'Hours', 
-                            sortable: true,
-                            format: (value, row) => `${value} / ${row.required_hours} hrs`
+                        {
+                            key: 'semester',
+                            label: 'Semester',
+                            sortable: true
+                        },
+                        {
+                            key: 'academic_year',
+                            label: 'Academic Year',
+                            sortable: true
                         },
                         { 
                             key: 'completion_date', 
