@@ -369,6 +369,48 @@
     opacity: 0.8;
 }
 
+/* Password requirements checklist (login + register) */
+.password-requirements {
+    margin-top: 8px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.35);
+    border: 1px solid rgba(148, 163, 184, 0.6);
+}
+
+.password-requirements-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-light);
+    margin: 0 0 6px 0;
+}
+
+.password-requirements .requirement {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 4px;
+}
+
+.password-requirements .requirement:last-child {
+    margin-bottom: 0;
+}
+
+.password-requirements .check-icon {
+    display: inline-block;
+    width: 14px;
+}
+
+.password-requirements .requirement.met {
+    color: #bbf7d0;
+}
+
+.password-requirements .requirement.met .check-icon {
+    color: #22c55e;
+}
+
 .back-link {
     color: var(--text-light);
     text-decoration: none;

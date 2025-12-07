@@ -6,6 +6,7 @@ const submitBtn = document.getElementById('submit-btn');
 const passwordInput = document.getElementById('password');
 const confirmPasswordInput = document.getElementById('confirm_password');
 const passwordMatchHint = document.getElementById('password-match');
+const passwordRequirementsEl = document.getElementById('password-requirements');
 
 function updatePasswordMatchHint() {
     if (!passwordInput || !confirmPasswordInput || !passwordMatchHint) return;
@@ -27,8 +28,38 @@ function updatePasswordMatchHint() {
 }
 
 if (passwordInput && confirmPasswordInput) {
-    passwordInput.addEventListener('input', updatePasswordMatchHint);
+    passwordInput.addEventListener('input', () => {
+        updatePasswordMatchHint();
+        updatePasswordRequirements(passwordInput.value);
+    });
     confirmPasswordInput.addEventListener('input', updatePasswordMatchHint);
+}
+
+function updatePasswordRequirements(password) {
+    if (!passwordRequirementsEl) return true;
+
+    const requirements = {
+        length: password.length >= 8,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /[0-9]/.test(password),
+        special: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>\/?]/.test(password)
+    };
+
+    Object.entries(requirements).forEach(([key, met]) => {
+        const el = passwordRequirementsEl.querySelector(`.requirement[data-check="${key}"]`);
+        if (!el) return;
+        const icon = el.querySelector('.check-icon');
+        if (met) {
+            el.classList.add('met');
+            if (icon) icon.textContent = '✓';
+        } else {
+            el.classList.remove('met');
+            if (icon) icon.textContent = '○';
+        }
+    });
+
+    return Object.values(requirements).every(v => v);
 }
 
 form?.addEventListener('submit', async (e) => {
@@ -46,8 +77,8 @@ form?.addEventListener('submit', async (e) => {
         return;
     }
 
-    if (password.length < 8) {
-        showError('Password must be at least 8 characters');
+    if (!updatePasswordRequirements(password)) {
+        showError('Please meet all password requirements shown below the password field.');
         return;
     }
 

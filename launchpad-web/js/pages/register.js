@@ -26,6 +26,7 @@ const successNavigation = document.getElementById('success-navigation');
 const passwordInput = document.getElementById('password');
 const confirmPasswordInput = document.getElementById('confirm_password');
 const passwordMatchHint = document.getElementById('password-match');
+const passwordRequirementsEl = document.getElementById('password-requirements');
 
 // Show specific step
 function showStep(step) {
@@ -68,8 +69,8 @@ function validateStep(step) {
         const password = passwordInput.value;
         const confirmPassword = confirmPasswordInput.value;
         
-        if (password.length < 8) {
-            showError('Password must be at least 8 characters');
+        if (!updatePasswordRequirements(password)) {
+            showError('Please meet all password requirements shown below the password field.');
             return false;
         }
         
@@ -80,6 +81,33 @@ function validateStep(step) {
     }
     
     return true;
+}
+
+function updatePasswordRequirements(password) {
+    if (!passwordRequirementsEl) return true;
+
+    const requirements = {
+        length: password.length >= 8,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /[0-9]/.test(password),
+        special: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>\/?]/.test(password)
+    };
+
+    Object.entries(requirements).forEach(([key, met]) => {
+        const el = passwordRequirementsEl.querySelector(`.requirement[data-check="${key}"]`);
+        if (!el) return;
+        const icon = el.querySelector('.check-icon');
+        if (met) {
+            el.classList.add('met');
+            if (icon) icon.textContent = '✓';
+        } else {
+            el.classList.remove('met');
+            if (icon) icon.textContent = '○';
+        }
+    });
+
+    return Object.values(requirements).every(v => v);
 }
 
 // Toggle password visibility
@@ -221,6 +249,14 @@ function setupFilePreview(inputId, previewId) {
 // Event listeners
 backBtn.addEventListener('click', prevStep);
 nextBtn.addEventListener('click', nextStep);
+
+// Initialize password requirements checklist
+if (passwordInput) {
+    updatePasswordRequirements(passwordInput.value);
+    passwordInput.addEventListener('input', () => {
+        updatePasswordRequirements(passwordInput.value);
+    });
+}
 
 // Setup file previews
 setupFilePreview('company_logo', 'logo-preview');
