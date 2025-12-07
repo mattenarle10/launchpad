@@ -633,6 +633,15 @@ const CDCAPI = {
                         sortable: true,
                         format: (value) => `<span class="course-badge ${value.toLowerCase()}">${value}</span>`
                     },
+                    {
+                        key: 'company_name',
+                        label: 'Partner Company',
+                        sortable: true,
+                        format: (value) => {
+                            if (!value) return '<span style="color: #9CA3AF;">Not assigned</span>';
+                            return value;
+                        }
+                    },
                     { 
                         key: 'specialization', 
                         label: 'Specializations', 
@@ -652,12 +661,6 @@ const CDCAPI = {
                             const statusClass = value === 'completed' ? 'completed' : value === 'ongoing' ? 'ongoing' : 'pending';
                             return `<span class="status-badge ${statusClass}">${value || 'N/A'}</span>`;
                         }
-                    },
-                    { 
-                        key: 'verified_at', 
-                        label: 'Verified', 
-                        sortable: true,
-                        format: (value) => this.formatDate(value)
                     }
                 ],
                 actions: [
