@@ -244,6 +244,17 @@ try {
             exit;
         }
         
+        // /companies/ojt/:id/hours (PUT - update student's OJT hours)
+        if (count($pathParts) === 4 && $pathParts[1] === 'ojt' && is_numeric($pathParts[2]) && $pathParts[3] === 'hours') {
+            $id = $pathParts[2];
+            if ($method === 'PUT') {
+                require __DIR__ . '/../routes/companies/update-ojt-hours.php';
+            } else {
+                Response::error('Method not allowed', 405);
+            }
+            exit;
+        }
+
         // /companies/students/completed (GET - get completed OJT students)
         if (count($pathParts) === 3 && $pathParts[1] === 'students' && $pathParts[2] === 'completed') {
             require __DIR__ . '/../routes/companies/get-completed-students.php';

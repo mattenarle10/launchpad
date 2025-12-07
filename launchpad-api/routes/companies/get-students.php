@@ -20,6 +20,7 @@ $companyId = intval($user['id']);
 // Get all students assigned to this company with their OJT progress
 $stmt = $conn->prepare("
     SELECT 
+        p.progress_id,
         s.student_id,
         s.id_num,
         s.first_name,
@@ -53,6 +54,7 @@ $result = $stmt->get_result();
 $students = [];
 while ($row = $result->fetch_assoc()) {
     $students[] = [
+        'progress_id' => isset($row['progress_id']) ? intval($row['progress_id']) : null,
         'student_id' => intval($row['student_id']),
         'id_num' => $row['id_num'],
         'first_name' => $row['first_name'],
