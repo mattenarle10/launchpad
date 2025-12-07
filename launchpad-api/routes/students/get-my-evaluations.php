@@ -38,8 +38,8 @@ $result = $stmt->get_result();
 
 $evaluations = [];
 while ($row = $result->fetch_assoc()) {
-    // Format period name
-    $periodName = $row['evaluation_period'] === 'first_half' ? '1st-15th' : '16th-End';
+    // Use a generic label for the evaluation period to align with single final evaluation
+    $periodName = 'Final';
     $monthName = date('F', mktime(0, 0, 0, $row['evaluation_month'], 1));
     
     $evaluations[] = [

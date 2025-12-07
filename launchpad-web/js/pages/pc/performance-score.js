@@ -119,14 +119,6 @@ async function openPerformanceModal(student) {
     const evaluationRank = student.evaluation_rank || 0;
     const performanceScore = student.performance_score || 'Not Assessed';
     const evaluations = evalData?.evaluations || [];
-    const currentMonth = new Date().getMonth() + 1;
-    const currentYear = new Date().getFullYear();
-    const monthName = new Date().toLocaleString('default', { month: 'long' });
-    
-    // Get current month's evaluations
-    const firstHalfEval = evalData?.first_half_evaluation;
-    const secondHalfEval = evalData?.second_half_evaluation;
-    const evaluationsThisMonth = evalData?.evaluations_this_month || 0;
     
     const content = `
         <div style="padding: 10px 0;">
@@ -154,41 +146,6 @@ async function openPerformanceModal(student) {
                 </div>
             </div>
             
-            <!-- Current Month Evaluations -->
-            <div style="background: #F3F4F6; padding: 16px; border-radius: 12px; margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A6491" stroke-width="2">
-                            <line x1="12" y1="1" x2="12" y2="23"></line>
-                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                        </svg>
-                        <span style="font-weight: 600; color: #3D5A7E; font-size: 15px;">${monthName} ${currentYear} Evaluations</span>
-                    </div>
-                    <span style="font-weight: 700; color: ${evaluationsThisMonth === 2 ? '#10B981' : '#F59E0B'}; font-size: 16px;">${evaluationsThisMonth}/2</span>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <div style="background: white; padding: 14px; border-radius: 8px; border: 2px solid ${firstHalfEval ? '#10B981' : '#E5E7EB'};">
-                        <div style="font-size: 11px; color: #6B7280; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">1st-15th</div>
-                        ${firstHalfEval ? `
-                            <div style="font-weight: 700; color: #10B981; font-size: 28px; margin-bottom: 4px;">${firstHalfEval.score}</div>
-                            <div style="font-size: 12px; color: #374151; font-weight: 600;">${firstHalfEval.category}</div>
-                        ` : `
-                            <div style="font-weight: 600; color: #9CA3AF; font-size: 14px; padding: 10px 0;">Not Evaluated</div>
-                        `}
-                    </div>
-                    
-                    <div style="background: white; padding: 14px; border-radius: 8px; border: 2px solid ${secondHalfEval ? '#10B981' : '#E5E7EB'};">
-                        <div style="font-size: 11px; color: #6B7280; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">16th-End</div>
-                        ${secondHalfEval ? `
-                            <div style="font-weight: 700; color: #10B981; font-size: 28px; margin-bottom: 4px;">${secondHalfEval.score}</div>
-                            <div style="font-size: 12px; color: #374151; font-weight: 600;">${secondHalfEval.category}</div>
-                        ` : `
-                            <div style="font-weight: 600; color: #9CA3AF; font-size: 14px; padding: 10px 0;">Not Evaluated</div>
-                        `}
-                    </div>
-                </div>
-            </div>
             
             <!-- Grading Criteria -->
             <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #E5E7EB;">
@@ -246,14 +203,13 @@ async function openPerformanceModal(student) {
                     <div style="max-height: 300px; overflow-y: auto;">
                         ${evaluations.map(evaluation => {
                             const date = new Date(evaluation.evaluated_at);
-                            const monthYear = date.toLocaleString('default', { month: 'short', year: 'numeric' });
-                            const period = evaluation.evaluation_period === 'first_half' ? '1st-15th' : '16th-End';
+                            const dateLabel = date.toLocaleString('default', { month: 'short', day: 'numeric', year: 'numeric' });
                             const color = evaluation.evaluation_score >= 80 ? '#10B981' : evaluation.evaluation_score >= 60 ? '#F59E0B' : '#EF4444';
                             return `
                                 <div style="background: white; padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid ${color};">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
                                         <div>
-                                            <div style="font-weight: 600; color: #374151;">${monthYear} - ${period}</div>
+                                            <div style="font-weight: 600; color: #374151;">${dateLabel}</div>
                                             <div style="font-size: 12px; color: #6B7280; margin-top: 2px;">${evaluation.category}</div>
                                         </div>
                                         <div style="font-size: 24px; font-weight: 700; color: ${color};">${evaluation.evaluation_score}</div>

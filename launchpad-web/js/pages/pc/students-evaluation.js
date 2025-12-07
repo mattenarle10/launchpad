@@ -77,21 +77,6 @@ async function loadStudentsTable() {
     try {
         const res = await client.get('/companies/students');
         allStudents = res.data || [];
-        
-        // Fetch evaluation counts for each student
-        const currentMonth = new Date().getMonth() + 1;
-        const currentYear = new Date().getFullYear();
-        
-        for (let student of allStudents) {
-            try {
-                const evalRes = await client.get(`/companies/students/${student.student_id}/evaluations`);
-                student.evaluations_this_month = evalRes.data.evaluations_this_month || 0;
-                student.current_evaluation = evalRes.data.current_evaluation;
-            } catch (e) {
-                student.evaluations_this_month = 0;
-                student.current_evaluation = null;
-            }
-        }
 
         // Create DataTable
         dataTable = new DataTable({
@@ -132,16 +117,6 @@ async function loadStudentsTable() {
                         const color = value >= 80 ? '#10B981' : value >= 60 ? '#F59E0B' : '#EF4444';
                         return `<span style="color: ${color}; font-weight: 600;">${value}/100</span>`;
                     }
-                },
-                { 
-                    key: 'evaluations_this_month', 
-                    label: 'This Month', 
-                    sortable: false,
-                    format: (value) => {
-                        const count = value || 0;
-                        const color = count === 2 ? '#10B981' : count === 1 ? '#F59E0B' : '#9CA3AF';
-                        return `<span style="color: ${color}; font-weight: 600;">${count}/2 Evaluations</span>`;
-                    }
                 }
             ],
             actions: [
@@ -169,21 +144,8 @@ async function loadStudentsTable() {
 }
 
 async function openEvaluationModal(student) {
-    // Fetch current evaluation data
-    let evalData = null;
-    try {
-        const res = await client.get(`/companies/students/${student.student_id}/evaluations`);
-        evalData = res.data;
-    } catch (e) {
-        console.error('Error fetching evaluation data:', e);
-    }
-    
-    const evaluationsThisMonth = evalData?.evaluations_this_month ?? 0;
-    const monthName = new Date(evalData?.current_year, evalData?.current_month - 1).toLocaleString('default', { month: 'long' });
-    
-    const firstHalfEval = evalData?.first_half_evaluation;
-    const secondHalfEval = evalData?.second_half_evaluation;
-    
+    // Single final evaluation (no monthly period selection)
+
     // Generate categories and questions HTML
     const categoriesHtml = EVALUATION_CATEGORIES.map(cat => `
         <div class="eval-category" style="margin-bottom: 24px;">
@@ -241,38 +203,10 @@ async function openEvaluationModal(student) {
                     <div><span class="course-badge ${student.course.toLowerCase()}">${student.course}</span></div>
                 </div>
             </div>
-            
-            <!-- Evaluation Status -->
-            <div style="background: #EFF6FF; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A6491" stroke-width="2">
-                        <path d="M3 3v18h18"></path>
-                        <path d="M18 17V9"></path>
-                        <path d="M13 17V5"></path>
-                        <path d="M8 17v-3"></path>
-                    </svg>
-                    <span style="font-weight: 600; color: #3D5A7E; font-size: 14px;">${monthName} Evaluations</span>
-                </div>
-                <div style="display: flex; gap: 12px; align-items: center;">
-                    <span style="font-size: 13px; color: ${firstHalfEval ? '#10B981' : '#9CA3AF'};">
-                        1st-15th: ${firstHalfEval ? `${firstHalfEval.score}/100` : 'Pending'}
-                    </span>
-                    <span style="font-size: 13px; color: ${secondHalfEval ? '#10B981' : '#9CA3AF'};">
-                        16th-End: ${secondHalfEval ? `${secondHalfEval.score}/100` : 'Pending'}
-                    </span>
-                    <span style="font-weight: 700; color: ${evaluationsThisMonth === 2 ? '#10B981' : '#F59E0B'};">${evaluationsThisMonth}/2</span>
-                </div>
-            </div>
-            
-            <!-- Period Selection -->
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #3D5A7E; font-size: 14px;">
-                    Evaluation Period <span style="color: #EF4444;">*</span>
-                </label>
-                <select id="evaluation-period" style="width: 100%; padding: 12px; border: 2px solid #E5E7EB; border-radius: 8px; font-size: 14px;">
-                    <option value="first_half" ${!firstHalfEval ? 'selected' : ''}>1st-15th of ${monthName}</option>
-                    <option value="second_half" ${firstHalfEval && !secondHalfEval ? 'selected' : ''}>16th-End of ${monthName}</option>
-                </select>
+
+            <!-- Evaluation Info -->
+            <div style="background: #EFF6FF; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; color: #3D5A7E;">
+                This form records the student's <strong>final OJT performance evaluation</strong> for the semester.
             </div>
             
             <!-- Rating Scale Legend -->
@@ -460,31 +394,27 @@ async function openEvaluationModal(student) {
             return answeredQuestions === totalQuestions ? finalScore : null;
         }
         
-        // Save button handler
+        // Save button handler (single final evaluation)
         document.getElementById('save-evaluation-btn')?.addEventListener('click', async () => {
             const score = calculateScore();
-            const period = document.getElementById('evaluation-period').value;
             const comments = document.getElementById('evaluation-comments').value.trim();
-            
+
             if (score === null) {
                 showError('Please answer all 15 questions');
                 return;
             }
-            
+
             try {
                 const res = await client.post(`/companies/students/${student.student_id}/evaluations`, {
                     evaluation_score: score,
-                    evaluation_period: period,
                     comments: comments
                 });
-                
+
                 modal.close();
                 const category = res.data.category;
-                const evalCount = res.data.evaluations_this_month;
-                const periodText = period === 'first_half' ? '1st-15th' : '16th-End';
-                showSuccess(`${student.first_name} ${student.last_name} evaluated: ${score}/100 (${category}) - ${periodText} - ${evalCount}/2 this month`);
-                
-                // Reload table
+                showSuccess(`${student.first_name} ${student.last_name} final evaluation submitted: ${score}/100 (${category})`);
+
+                // Reload table so updated evaluation_rank is shown
                 setTimeout(() => loadStudentsTable(), 1000);
             } catch (error) {
                 console.error('Error saving evaluation:', error);
