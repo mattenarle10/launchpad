@@ -23,9 +23,12 @@ $stmt = $conn->prepare("
         eh.feedback,
         eh.evaluation_date,
         c.company_name,
-        c.company_logo
+        c.company_logo,
+        s.semester,
+        s.academic_year
     FROM evaluation_history eh
     JOIN verified_companies c ON eh.company_id = c.company_id
+    JOIN verified_students s ON eh.student_id = s.student_id
     WHERE eh.student_id = ?
     ORDER BY eh.evaluation_date DESC
 ");
@@ -43,7 +46,9 @@ while ($row = $result->fetch_assoc()) {
         'feedback' => $row['feedback'],
         'evaluation_date' => $row['evaluation_date'],
         'company_name' => $row['company_name'],
-        'company_logo' => $row['company_logo']
+        'company_logo' => $row['company_logo'],
+        'semester' => $row['semester'],
+        'academic_year' => $row['academic_year']
     ];
 }
 

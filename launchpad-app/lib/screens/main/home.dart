@@ -478,6 +478,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           // Requirements Card
                           _buildRequirementsCard(),
                           const SizedBox(height: 20),
+                          if (_userData?['semester'] != null && _userData?['academic_year'] != null) ...[
+                            Text(
+                              'Final Evaluation - ${_userData!['semester']} Sem ${_userData!['academic_year']}',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF4A6491),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                          ],
                           
                           // Stats Grid
                           _buildStatsGrid(),

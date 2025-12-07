@@ -96,7 +96,8 @@ class StudentApi extends BaseApiGroup {
   
   /// Get evaluation history
   Future<Map<String, dynamic>> getEvaluationHistory() async {
-    return await client.get('/students/evaluations');
+    final response = await client.get('/students/evaluation/history');
+    return response as Map<String, dynamic>;
   }
 
   // ==================== REQUIREMENTS API ====================

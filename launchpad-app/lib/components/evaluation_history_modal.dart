@@ -28,9 +28,9 @@ class EvaluationHistoryModal {
       // Group evaluations by month
       final groupedEvaluations = <String, List<Map<String, dynamic>>>{};
       for (var eval in history) {
-        final monthName = eval['month_name'] ?? 'Unknown';
-        final year = eval['evaluation_year'] ?? 0;
-        final key = '$monthName $year';
+        final semester = (eval['semester'] ?? 'Unknown') as String;
+        final academicYear = (eval['academic_year'] ?? '') as String;
+        final key = academicYear.isNotEmpty ? '$semester Semester $academicYear' : semester;
         
         if (!groupedEvaluations.containsKey(key)) {
           groupedEvaluations[key] = [];
@@ -216,7 +216,7 @@ class _CompactEvaluationItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final score = evaluation['evaluation_rank'] as int;
     final performance = evaluation['performance_score'] as String;
-    final periodName = evaluation['period_name'] ?? '';
+    final periodName = (evaluation['period_name'] ?? 'Final') as String;
     
     final scoreColor = _getScoreColor(score);
     
