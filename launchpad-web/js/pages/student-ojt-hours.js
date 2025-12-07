@@ -56,7 +56,7 @@ async function loadStudentsTable() {
 
         studentsData = students;
 
-        // Create DataTable
+        // Create DataTable (read-only summary with per-student ledger)
         dataTable = new DataTable({
             containerId: 'students-table-wrapper',
             columns: [
@@ -77,6 +77,12 @@ async function loadStudentsTable() {
                     sortable: true,
                     format: (value) => `<span class="course-badge ${value.toLowerCase()}">${value}</span>`
                 },
+                {
+                    key: 'company_name',
+                    label: 'Partner Company',
+                    sortable: true,
+                    format: (value) => value || '<span style="color: #9CA3AF;">Not assigned</span>'
+                },
                 { 
                     key: 'completed_hours', 
                     label: 'Completed Hours', 
@@ -96,9 +102,9 @@ async function loadStudentsTable() {
             ],
             actions: [
                 {
-                    type: 'edit',
-                    label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>Update Hours',
-                    onClick: (row) => editHoursModal(row)
+                    type: 'view',
+                    label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>View Ledger',
+                    onClick: (row) => openHoursLedgerModal(row)
                 }
             ],
             data: students,
@@ -123,6 +129,111 @@ async function loadStudentsTable() {
             </div>
         `;
         showError('Failed to load students: ' + error.message);
+    }
+}
+
+async function openHoursLedgerModal(student) {
+    const modal = createModal('ojt-hours-ledger-modal', {
+        title: `OJT Hours Ledger`,
+        size: 'large'
+    });
+
+    const content = `
+        <div style="padding: 10px 0;">
+            <p style="margin-bottom: 16px; color: #6B7280;">
+                Ledger of approved daily reports for <strong>${student.first_name} ${student.last_name}</strong>
+                (${student.id_num})${student.company_name ? ' at <strong>' + student.company_name + '</strong>' : ''}.
+            </p>
+            <div id="ojt-ledger-body">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading ledger...</p>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const footer = `
+        <button class="btn-modal" data-modal-close id="ojt-ledger-close-btn">Close</button>
+    `;
+
+    modal.setFooter(footer);
+    modal.open(content);
+
+    // Ensure the footer Close button is wired to close the modal instance
+    setTimeout(() => {
+        const closeBtn = document.getElementById('ojt-ledger-close-btn');
+        closeBtn?.addEventListener('click', () => modal.close());
+    }, 0);
+
+    try {
+        const response = await client.get(`/admin/reports/approved?student_id=${student.student_id}&pageSize=100`);
+        const reports = response.data || [];
+        const bodyEl = document.getElementById('ojt-ledger-body');
+
+        if (!reports.length) {
+            bodyEl.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-text">No approved reports found</div>
+                    <div class="empty-state-subtext">Hours ledger will appear here once daily reports are approved.</div>
+                </div>
+            `;
+            return;
+        }
+
+        const rowsHtml = reports.map((report) => {
+            const reportDate = report.report_date ? new Date(report.report_date) : null;
+            const reviewedAt = report.reviewed_at ? new Date(report.reviewed_at) : null;
+            const displayDate = reportDate || reviewedAt;
+            const dateText = displayDate
+                ? displayDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+                : '-';
+            const hours = report.hours_approved !== null && report.hours_approved !== undefined
+                ? report.hours_approved
+                : report.hours_requested;
+            const source = report.company_validated ? 'Partner Company' : 'CDC';
+
+            return `
+                <tr>
+                    <td>${dateText}</td>
+                    <td>${hours}</td>
+                    <td>${report.activity_type || '-'}</td>
+                    <td>${source}</td>
+                </tr>
+            `;
+        }).join('');
+
+        bodyEl.innerHTML = `
+            <div class="table-container" style="margin-top: 8px;">
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Hours</th>
+                                <th>Activity</th>
+                                <th>Approved By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Error loading OJT hours ledger:', error);
+        const bodyEl = document.getElementById('ojt-ledger-body');
+        if (bodyEl) {
+            bodyEl.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-text">Error loading ledger</div>
+                    <div class="empty-state-subtext">${error.message}</div>
+                </div>
+            `;
+        }
+        showError('Failed to load hours ledger: ' + error.message);
     }
 }
 
