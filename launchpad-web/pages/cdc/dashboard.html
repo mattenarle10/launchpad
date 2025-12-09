@@ -373,7 +373,15 @@
 
         async function loadDashboardStats() {
             try {
-                const res = await CDCAPI.getOJTStats();
+                const semesterSelect = document.getElementById('filter-semester');
+                const academicYearSelect = document.getElementById('filter-academic-year');
+                const semester = semesterSelect?.value || '';
+                const academicYear = academicYearSelect?.value || '';
+
+                const res = await CDCAPI.getOJTStats({
+                    semester,
+                    academicYear
+                });
                 const s = res.data || {};
                 
                 const totalStudents = s.total_students ?? 0;
@@ -580,10 +588,12 @@
             const academicYearSelect = document.getElementById('filter-academic-year');
 
             semesterSelect?.addEventListener('change', () => {
+                loadDashboardStats();
                 loadTopStudents();
             });
 
             academicYearSelect?.addEventListener('change', () => {
+                loadDashboardStats();
                 loadTopStudents();
             });
 

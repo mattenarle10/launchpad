@@ -103,9 +103,20 @@ const CDCAPI = {
 
     /**
      * Get OJT dashboard statistics
+     * @param {Object} filters - Optional filters (semester, academicYear)
      */
-    async getOJTStats() {
-        return client.get('/admin/ojt/stats');
+    async getOJTStats(filters = {}) {
+        const params = new URLSearchParams();
+        
+        if (filters.semester) {
+            params.set('semester', filters.semester);
+        }
+        if (filters.academicYear) {
+            params.set('academic_year', filters.academicYear);
+        }
+        
+        const queryString = params.toString();
+        return client.get(`/admin/ojt/stats${queryString ? '?' + queryString : ''}`);
     },
 
     /**
